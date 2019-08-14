@@ -1,0 +1,120 @@
+﻿[
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+	[
+    {
+      "multiterm": true,
+      "title": "玩法:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -80,
+	  "itemWidth": 232,
+      "id": [
+        "hutype"
+      ],
+      "data": [
+        "点炮胡"
+      ],
+      "selectIndex": [
+      ]
+    }
+  ],
+  [
+    {
+      "exData": [
+	  4,
+	  3,
+	  2
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4人",
+        "3人",
+        "2人"
+      ],
+      "type": 1,
+      "itemHeight": -80,
+	  "itemWidth": 232,
+      "group": 21,
+      "title": "人数:",
+      "id": "pnum"
+    }
+  ],
+  [
+    {
+	 "exData": [
+	  4,
+	  8,
+	  16
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4局",
+        "8局",
+        "16局"
+      ],
+      "type": 1,
+      "group": 22,
+      "itemHeight": -80,
+      "itemWidth": 232,
+      "maxPerLine": 3,
+      "title": "局数:",
+      "id": "rounds"
+    }
+  ],
+  [
+    {
+      "exData": [
+	  0,
+	  1
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "胡庄",
+        "轮庄"
+      ],
+      "type": 1,
+      "itemHeight": -160,
+      "group": 23,
+      "title": "坐庄:",
+      "id": "bBankerType"
+    }
+  ],
+  [
+    {
+      "multiterm": true,
+      "selectIndex": [
+      ], 
+      "itemHeight": -80,
+	  "itemWidth": 232,
+	  "maxPerLine": 2,
+      "data": [
+		"清一色",
+		"下注"
+      ],
+      "title": "特殊:", 
+       "type":0, 
+       "group":0,
+      "id": [
+		"nOneColor",
+		"bSupportXiaPao"
+      ]
+	}
+  ]
+]

@@ -1,0 +1,641 @@
+--[[--
+ * @Description: 玩家信息UI组件
+ * @Author:      ShushingWong
+ * @FileName:    mahjong_player_ui.lua
+ * @DateTime:    2017-06-19 16:21:14
+ ]]
+ require "logic/gvoice_sys/gvoice_sys"
+
+shisanshui_player_ui = {}
+
+shisanshui_player_ui.__index = shisanshui_player_ui
+this = shisanshui_player_ui
+
+
+--互动表情动画
+local iEAnimTbl = {
+	{frameName="woshou", frameCount=15},
+	{frameName="songhua", frameCount=13},
+	{frameName="xihongshi", frameCount=13},
+	{frameName="zhuantou", frameCount=12},
+	{frameName="poshui", frameCount=14},
+}
+--互动表情音效
+local iESfxTbl = {
+	"woshou", 
+	"kiss_flowers", 
+	"xihongshi", 
+	"banzhuan", 
+	"polenshui", 
+}
+
+function shisanshui_player_ui.New( transform ,ui)
+ 	local this = {}
+ 	setmetatable(this, shisanshui_player_ui)
+ 	this.transform = transform
+	this.viewSeat = -1
+	this.all_score = 0
+	this.shisangshui_ui = ui
+	this.posititon_index = 0
+	this.posititon_index = index;
+ 	local function FindChild()
+
+	 	this.roomCardLabel = subComponentGet(this.transform, "bg/roomCard/roomCardNum", typeof(UILabel))
+	 	this.SetRoomCardNum(0)
+
+	 	-- 花牌图标
+	 	this.huaPoint = child(this.transform, "bg/roomCard")
+
+	    --庄家
+		this.banker = child(this.transform, "bg/head/banker")
+		if this.banker~=nil then
+	       this.banker.gameObject:SetActive(false)
+	    end
+		--房主
+		this.fangzhu = child(this.transform, "bg/head/fangzhu")
+		if this.fangzhu~=nil then
+	       this.fangzhu.gameObject:SetActive(false)
+	    end
+	    --托管
+		this.machine = child(this.transform, "bg/head/machine")
+		if this.machine~=nil then
+	       this.machine.gameObject:SetActive(false)
+	    end
+	    --离线
+		this.offline = child(this.transform, "bg/head/offline")
+		if this.offline~=nil then
+	       this.offline.gameObject:SetActive(false)
+	    end
+	    --互动
+		this.interact = child(this.transform, "bg/head/personalInfo")
+		if this.interact~=nil then
+	       this.interact.gameObject:SetActive(false)
+	    end
+	    --金币
+	    this.score = child(this.transform, "bg/score/scorelabel")
+		if this.score ~= nil then
+			--this.score.gameObject:SetActive(false)
+			this.SetScore(this.all_score)
+		end
+	    --昵称
+	    this.name = child(this.transform, "bg/name")
+	    --准备状态
+		this.readystate = child(this.transform, "bg/obj/readystate")
+		if this.readystate~=nil then
+	       this.readystate.gameObject:SetActive(false)
+	    end
+		
+		--显示正数总分
+		this.positiveLabel = child(this.transform,"bg/pao/positiveLabel")
+		if this.positiveLabel ~= nil then
+			this.positiveLabel.gameObject:SetActive(false)
+		end
+		
+		--显示负数总分
+		this.negativeLabel = child(this.transform,"bg/pao/negativeLabel")
+		if this.negativeLabel ~= nil then
+			this.negativeLabel.gameObject:SetActive(false)
+			
+		end
+		
+		--显示水庄倍数
+		this.beishuLabel = child(this.transform,"bg/pao/beishuLabel")
+		if this.beishuLabel ~= nil then
+			this.beishuLabel.gameObject:SetActive(false)
+		end
+
+	    this.shoot = child(this.transform, "bg/obj/shoot")
+
+		this.shootHole = {}
+	    this.shootHole[1] = child(this.transform, "bg/obj/shootHole1")
+	    this.shootHole[2] = child(this.transform, "bg/obj/shootHole2")
+	    this.shootHole[3] = child(this.transform, "bg/obj/shootHole3")
+	    --头像
+	    this.head = child(this.transform,"bg/head")
+		addClickCallbackSelf(this.head.gameObject,this.Onbtn_PlayerIconClick,this)
+	    
+		 --聊天
+	    this.chat_root = child(this.transform,"bg/chat")
+	    if this.chat_root~=nil then
+	    	this.chat_root.gameObject:SetActive(true)
+		end
+	    this.chat_img = child(this.chat_root,"img_root")
+	    if this.chat_img~=nil then
+	    	this.chat_img.gameObject:SetActive(true)
+	    end
+	    this.chat_img_sprite = child(this.chat_img,"img")
+	    if this.chat_img_sprite ~=nil then
+	    	this.chat_img_sprite.gameObject:SetActive(false)
+	    end
+	 
+		this.chat_text = child(this.chat_root,"text_root")
+		if this.chat_text then
+			this.chat_text.gameObject:SetActive(false)
+		    this.chat_text_label = child(this.chat_text,"msg")
+		end
+
+		this.chat_sound = child(this.chat_root,"sound_root")
+		if this.chat_sound then
+			this.chat_sound.gameObject:SetActive(false)
+		end
+
+	end
+
+    --设置金币
+	
+	function this.SetScore( score )
+		if this.scorelabel==nil then
+			this.scorelabel = this.score.gameObject:GetComponent(typeof(UILabel))
+		end
+		if score == nil then score = 0 end
+		this.all_score =  tonumber(this.all_score) + tonumber(score)
+	
+	--	this.scorelabel.text = score
+		this.scorelabel.text =  tostring(this.all_score)
+	end
+	
+	function this.AddScore(score)
+		if this.scorelabel==nil then
+			this.scorelabel = this.score.gameObject:GetComponent(typeof(UILabel))
+		end
+		if score == nil then score = 0 end
+		this.all_score =  score
+		this.scorelabel.text =  tostring(score)
+	end
+	
+	function this.SetTotalPoints(points)
+		this.positiveLabel.gameObject:SetActive(false)
+		this.negativeLabel.gameObject:SetActive(false)
+		if points ~= nil then
+			if points > 0 then
+				local pointsLabel = this.positiveLabel.gameObject:GetComponent(typeof(UILabel))
+				pointsLabel.text = "+"..tostring(points)
+				componentGet(this.positiveLabel,"TweenPosition"):ResetToBeginning ()
+				this.positiveLabel.gameObject:SetActive(true)
+				componentGet(this.positiveLabel,"TweenPosition").enabled =true
+			else
+				local negativeLabel = this.negativeLabel.gameObject:GetComponent(typeof(UILabel))
+				negativeLabel.text = tostring(points)
+				componentGet(this.negativeLabel,"TweenPosition"):ResetToBeginning ()
+				this.negativeLabel.gameObject:SetActive(true)
+				componentGet(this.negativeLabel,"TweenPosition").enabled =true
+			end
+		end
+	end
+	
+	function this.HideTotalPoints()
+		if this.positiveLabel == nil then
+			this.positiveLabel = child(this.transform,"bg/pao/positiveLabel")
+		end
+		
+		if this.negativeLabel == nil then
+			this.negativeLabel = child(this.transform,"bg/pao/negativeLabel")
+		end
+		this.positiveLabel.gameObject:SetActive(false)
+		this.negativeLabel.gameObject:SetActive(false)
+		this.positiveLabel.localPosition=Vector3(0,0,0)
+		this.negativeLabel.localPosition=Vector3(0,0,0)	
+	end
+	
+	function this.SetBeiShu(beishu)
+		local beishuLabel = this.beishuLabel.gameObject:GetComponent(typeof(UILabel))
+		beishuLabel.text = tostring(beishu).."B"
+		this.beishuLabel.gameObject:SetActive(true)
+	end
+	
+	function this.HideBeiShu()
+		this.beishuLabel.gameObject:SetActive(false)
+	end
+	
+	function this.SetRoomCardNum( num )
+		if this.roomCardLabel ~= nil then
+			this.roomCardLabel.text = "X" .. num
+		end
+	end
+
+
+	--设置昵称
+	function this.SetName( name )
+		if this.namelabel==nil then
+			this.namelabel = this.name.gameObject:GetComponent(typeof(UILabel))
+		end
+		this.namelabel.text = name
+	end
+
+	--设置头像
+	function this.SetHead( url )
+		-- 自己不显示UI
+		if this.viewSeat == 1 then
+	--		return
+		end
+		if this.headTexture==nil then
+			this.headTexture = this.head.gameObject:GetComponent(typeof(UITexture))
+		end
+		--hisangshui_ui_sys.GetHeadPic(this.headTexture,url)
+		hall_data.getuserimage(this.headTexture,2,url)
+	end
+	
+	--设置VIP等级，0不显示
+	function this.SetVIP(level)
+		-- if level>0 then
+		-- 	this.vip.gameObject:SetActive(true)
+		-- else
+		-- 	this.vip.gameObject:SetActive(false)
+		-- end
+	end
+
+	--显示玩家用户
+	function this.Show( usersdata, viewSeat )
+		this.transform.gameObject:SetActive(true)
+		this.viewSeat = viewSeat
+		this.userdata = usersdata
+		this.logicSeat = player_seat_mgr.GetLogicSeatNumByViewSeat(this.viewSeat)
+		this.SetName(usersdata.name)
+	--	this.SetScore( this.all_score)
+		-- this.SetVIP(usersdata.vip)
+		this.SetHead(usersdata.headurl)
+		this.SetMachine(false)
+	--	this.SetOffline(false)
+		this.SetFangzhu(usersdata.owner)
+		if (this.userdata.saved ~= nil) then
+			gps_data.SetGpsData(usersdata.headurl,2,this.posititon_index,this.viewSeat,this.userdata.saved)
+		end
+	end
+
+	function this.Hide()
+		gps_data.RemoveOne(this.posititon_index)
+		this.transform.gameObject:SetActive(false)
+		this.SetOffline(false)
+		this.all_score = 0
+		this.scorelabel.text =  0
+		this.SetReady(false)
+		this.SetBanker(false)
+		this.SetFangzhu(false)
+	end
+
+	--设置准备状态
+	function this.SetReady( isReady )
+		this.readystate.gameObject:SetActive(isReady or false)
+	end
+	
+	--设置准备按钮的坐标位置
+	function this.SetReadyLocalPosition(x,y)
+		this.readystate.gameObject.transform.localPosition = Vector3(x,y,0)
+	end
+
+	--设置聊天消息坐标位置
+	function this.SetChatTextLocalPosition(index,x,y)
+		-- this.chat_text = child(this.chat_text_root,"text_root"..tostring(index))
+	 --    if this.chat_text~=nil then
+	 --    	this.chat_text.gameObject:SetActive(false)
+
+	 --    	this.chat_text.transform.localPosition = Vector3.New(x,y,0)
+	 --    end
+	 --    this.chat_text_label = child(this.chat_text,"msg")
+	end
+
+	--设置语音消息坐标位置
+	function this.SetChatSoundLocalPosition(index,x,y)
+		-- this.chat_sound = child(this.chatSoundRoot,"sound_root"..tostring(index))
+	 --    if this.chat_sound~=nil then
+	 --    	this.chat_sound.gameObject:SetActive(false)
+
+	 --    	this.chat_sound.transform.localPosition = Vector3.New(x,y,0)
+	 --    end
+	end
+
+	--设置庄家
+	function this.SetBanker(isBanker)
+		this.banker.gameObject:SetActive(isBanker or false)
+	end
+
+	--设置房主
+	function this.SetFangzhu(isFangzhu)
+		this.fangzhu.gameObject:SetActive(isFangzhu or false)
+	end
+	
+	--设置下跑
+	function this.SetPao(num)
+		-- this.pao.gameObject:SetActive(true)
+		-- if this.paoLabel_comp == nil then
+		-- 	this.paoLabel_comp = this.paoLabel:GetComponent(typeof(UILabel))
+		-- end
+		-- this.paoLabel_comp.text = "x"..num
+	end
+
+	function this.HidePao()
+		-- this.pao.gameObject:SetActive(false)
+	end
+
+	--设置托管
+	function this.SetMachine(isMachine)
+		this.machine.gameObject:SetActive(isMachine or false)
+	end
+
+	--设置互动
+	function this.SetInteract(isInteract)
+		this.interact.gameObject:SetActive(isInteract or false)
+	end
+
+	--设置离线
+	function this.SetOffline(isOffline)
+		this.offline.gameObject:SetActive(isOffline or false)
+	end
+
+	function this.GetHuaPointPos()
+		return this.huaPoint.position
+	end
+	
+	function this.ShootTran()
+		return this.shoot
+	end
+	
+	function this.ShootHoleTran(index)
+		if index <= 3 then
+			return this.shootHole[index]
+		end
+		return nil
+	end
+	
+	-- local chatImgAnimationTbl = {["1"]="benpao",["2"]="bishi",["3"]="buhaoyisi",["4"]="fanu",["5"]="haiye",["6"]="jingya",["7"]="kuqi",["8"]="shuqian",["9"]="xuanyao"}
+	local chatImgAnimationTbl = {
+			["1"]="01_feiwen",["2"]="02_deyi",["3"]="03_haose",["4"]="04_tianping",["5"]="05_shaxiao",
+			["6"]="06_paoxiao",["7"]="07_shuashuai",["8"]="08_chaoxiao",["9"]="09_xinsui",["10"]="10_daku",
+			["11"]="11_tongku",["12"]="12_weiquku",["13"]="13_benkui",["14"]="14_tu",["15"]="15_jingdiaoya",
+			["16"]="16_qituxue",["17"]="17_nibuxing",["18"]="19_qidao",["19"]="20_touyun",["20"]="22_bishi",
+			["21"]="23_maohan",["22"]="24_zaijian",["23"]="25_gun",["24"]="26_kan",["25"]="27_jingkong",
+			["26"]="28_zhuangpingmu",
+		}
+	
+	--设置聊天
+	function this.SetChatImg(content)
+		local renderQueue = 0
+		local nameLabel = subComponentGet(this.transform, "bg/name", typeof(UILabel))
+		-- local headTex = subComponentGet(this.transform, "bg/head", "UITexture")
+		if nameLabel ~= nil then
+			renderQueue = 3015--nameLabel.drawCall.renderQueue + 2
+		end
+		Trace("______"..tostring(content))
+		-- local animPath = data_center.GetAppConfDataTble().appPath.."/effects/emoticon2"
+		local animPath = data_center.GetAppConfDataTble().appPath.."/effects/expression_new"
+		local animtGObj = animations_sys.PlayAnimationByScreenPosition(child(this.transform, "chatAniRoot"),0,100,animPath,chatImgAnimationTbl[content],120,120,false, function()			
+		end, renderQueue)
+		
+		if animtGObj and this.sortingOrder then
+			local topLayerIndex = this.sortingOrder +this.m_subPanelCount +1
+			Utils.SetEffectSortLayer(animtGObj, topLayerIndex)
+		end
+	end
+
+	function this.SetChatText(content)
+		componentGet(this.chat_text_label,"UILabel").text = content
+
+		this.LimitChatMsgHide()
+		this.chat_text.gameObject:SetActive(true)
+		this.LimitChatMsgShow()
+
+		local tIndex = chat_model.GetChatIndexByContent(content)
+		if tIndex~=nil then
+			ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/shisanshui/"..tIndex)
+		else
+			Trace("chat sound not exit!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+		end
+	end
+	
+	local timer_Elapse = nil --消息时间间隔
+	function this.LimitChatMsgShow()
+		timer_Elapse = Timer.New(this.OnTimer_Proc , 3, 1)
+		timer_Elapse:Start()
+		this.chat_text.gameObject:SetActive(true)
+	end
+	function this.LimitChatMsgHide()
+		if timer_Elapse ~= nil then
+		    timer_Elapse:Stop()		
+		    timer_Elapse = nil    
+		end
+		--this.chat_img.gameObject:SetActive(false)
+		this.chat_text.gameObject:SetActive(false)
+	end
+	
+	function this.OnTimer_Proc()
+		--this.chat_img.gameObject:SetActive(false)
+		if this.chat_text.gameObject ~= nil then
+			this.chat_text.gameObject:SetActive(false)
+		end
+	end
+
+	--语音聊天模块
+	function this.SetSoundTextureState(state)
+		this.chat_sound.gameObject:SetActive(state)
+        if state==true then
+            ui_sound_mgr.SetAllAudioSourceMute(true)
+        else
+            ui_sound_mgr.SetAllAudioSourceMute(false)
+        end
+	end
+	
+	--互动功能
+	function this.Onbtn_PlayerIconClick()
+		Trace("Onbtn_PlayerIconClick"..tostring(this.viewSeat))
+		if this.viewSeat ~= 1 then
+			if not this.PlayerInfo then
+			    this.PlayerInfo = child(this.transform,"bg/head/personalInfo")
+			    addClickCallbackSelf(this.PlayerInfo.gameObject,this.Onbtn_PlayerInfoClick,this)
+				
+				-- 全局点击关闭
+				local boxCollider = componentGet(this.PlayerInfo.transform,"BoxCollider")
+				if boxCollider then
+					boxCollider.size = Vector3(2500,1500,1)
+				end
+			end
+			this.PlayerInfo.gameObject:SetActive(true)
+			
+			this.shisangshui_ui.InteractionView.actionTran = this.PlayerInfo
+			this.shisangshui_ui.InteractionView.logicSeat = this.logicSeat
+			this.shisangshui_ui.InteractionView:RegisterOnClick()
+			
+		end
+	end
+
+	function this.Onbtn_PlayerInfoClick(obj)	
+		-- Trace(this.usersdata)
+		-- this.openuserinfo(this.usersdata.uid)
+
+		-- this.Onbtn_PlayerIconClick()
+
+		-- Trace("Onbtn_PlayerInfoClick")
+		if this.PlayerInfo and this.PlayerInfo.gameObject then
+			this.PlayerInfo.gameObject:SetActive(false)
+		end
+	end
+	function this.hidePlayerInfoClick()
+		if this.PlayerInfo and this.PlayerInfo.gameObject then
+			this.PlayerInfo.gameObject:SetActive(false)
+		end
+	end
+
+	-- 播放互动表情
+	function this.playInteractiveExpressionAnimation(_iKind, _fromPos, _toPos)
+		
+		-- 换图
+		local prefabPath = data_center.GetAppConfDataTble().appPath.."/mj_common/effects/interactive_expression"
+	    local prefabObj = newNormalObjSync(prefabPath, typeof(GameObject))
+		if prefabObj then
+		    local animObj = newobject(prefabObj)
+		    animObj.transform.parent = this.transform
+
+		    local headPanel = child(this.transform, "bg/head/headPanel")
+		    if headPanel then
+		    	animObj.transform.parent = headPanel
+
+		    	-- 设置to相对坐标0
+		    	local curPos = headPanel.transform.localPosition
+				_toPos.x = _toPos.x -curPos.x
+				_toPos.y = _toPos.y -curPos.y
+
+			    local head = child(this.transform, "bg/head")
+			    if head then
+			    	-- 设置from相对坐标0
+			    	local curPos2 = head.transform.localPosition
+					_fromPos.x = _fromPos.x -curPos2.x -curPos.x
+					_fromPos.y = _fromPos.y -curPos2.y -curPos.y
+			    end
+		    end
+
+			local animIndex = 0
+			local animData = iEAnimTbl[_iKind]
+			-- this.InteractiveExSprite = subComponentGet(this.transform, "bg/InteractiveExSprite", typeof(UISprite))
+			local interactiveExSprite = componentGet(animObj, "UISprite")
+			interactiveExSprite.spriteName = animData.frameName..animIndex
+			interactiveExSprite:MakePixelPerfect()
+			interactiveExSprite.gameObject:SetActive(true)
+
+			local animSpriteObj = interactiveExSprite.gameObject
+			-- scale 
+			-- animSpriteObj.transform.localScale = Vector3.New(1.2, 1.2, 1)
+			-- rotation 
+			if _fromPos.x >_toPos.x then
+				-- flipX
+				animSpriteObj.transform.localRotation = Vector3.New(0, 180, 0)
+			else
+				animSpriteObj.transform.localRotation = Vector3.zero
+			end
+			-- move 
+			animSpriteObj.transform.localPosition = _fromPos
+
+			-- 播放帧动画
+			local function playAnimation()
+				local animationTimer = nil
+				animationTimer = Timer.New(function ()
+					-- Trace("InteractiveExSprite:"..animIndex)
+					-- Trace("InteractiveExSpriteFrame:"..animData.frameName..animIndex)
+		  	 		if animIndex <animData.frameCount then
+						animIndex = animIndex +1
+						interactiveExSprite.spriteName = animData.frameName..animIndex
+						interactiveExSprite:MakePixelPerfect()
+
+						animSpriteObj.transform.localScale = Vector3.New(1.35, 1.35, 1)
+					else
+						animationTimer:Stop()
+						-- interactiveExSprite.gameObject:SetActive(false)
+						-- interactiveExSprite = nil
+
+						-- 销毁动画对象
+						if animObj then
+							destroy(animObj)
+							animObj = nil
+						end
+					end
+			  	end, 0.1, -1)
+				animationTimer:Start()
+			end
+			-- 移到指定位置
+			_toPos.y = _toPos.y +36
+			if _fromPos.x >_toPos.x then
+				-- 泼水坐标修正
+				if _iKind ==5 then
+					_toPos.x = _toPos.x -23 -8
+					_toPos.y = _toPos.y +16 +8
+				end
+			else
+				-- 泼水坐标修正
+				if _iKind ==5 then
+					_toPos.x = _toPos.x +23 +8
+					_toPos.y = _toPos.y +16 +8
+				end
+			end
+
+			local isMoveEnd = false
+			-- local animTweener = animSpriteObj.transform:DOLocalJump(_toPos, 1,1, 0.5, true)
+			local animTweener = animSpriteObj.transform:DOLocalMove(_toPos, 0.3, true)
+			animTweener:SetEase(DG.Tweening.Ease.Linear):OnComplete(function()
+				playAnimation()
+				isMoveEnd = true
+			end)
+			animTweener:OnKill(function()
+				-- 销毁动画对象
+				if animObj and not isMoveEnd then
+					destroy(animObj)
+					animObj = nil
+				end
+			end)
+		end
+	end
+	
+	function this.Onbtn_PlayerInteraction(self,obj)
+		local k = string.sub(tostring(obj.name),7,8)
+		Trace("Onbtn_PlayerInteraction"..tostring(k).."------->p"..this.logicSeat)
+		this.hidePlayerInfoClick()
+		shisangshui_play_sys.ChatReq(4,tostring(k),"p"..this.logicSeat)
+	end
+
+	function this.ShowInteractinAnimation(viewSeat,content)
+		Trace("ShowInteractinAnimation:"..viewSeat..","..content)
+		
+		local iAnimKind = 1
+		if content == "1" then
+			iAnimKind = 1
+		elseif content == "2" then
+			iAnimKind = 2
+		elseif content =="3" then
+			iAnimKind = 3
+		elseif content == "4" then
+			iAnimKind = 4
+		elseif content == "5" then
+			iAnimKind = 5
+		end
+
+		local fromPlayer = this.shisangshui_ui.playerList[viewSeat]
+		if fromPlayer then
+			local fromPos = fromPlayer.transform.localPosition
+		    local head = child(fromPlayer.transform, "bg/head")
+		    if head then
+		    	-- 设置from相对坐标0
+		    	local curPos = head.transform.localPosition
+				fromPos.x = fromPos.x +curPos.x
+				fromPos.y = fromPos.y +curPos.y
+		    end
+			-- 计算相对坐标
+			local curPos = this.transform.localPosition
+			fromPos = Vector3.New(fromPos.x-curPos.x, fromPos.y-curPos.y, 0)
+			-- 播放动画
+			this.playInteractiveExpressionAnimation(iAnimKind, fromPos, Vector3.zero)
+		end
+
+		-- 播放音效
+		local sfxName = iESfxTbl[iAnimKind]
+		if sfxName then
+			ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/specialFace/"..sfxName)
+		end
+
+		-- this.Onbtn_PlayerIconClick()
+	end
+
+	FindChild()
+
+ 	return this
+end
+
+
+
+

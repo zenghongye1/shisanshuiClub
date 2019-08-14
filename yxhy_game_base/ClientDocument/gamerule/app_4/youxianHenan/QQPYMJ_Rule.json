@@ -1,0 +1,139 @@
+[ 
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+  [
+    {
+      "exData": [
+        4,
+        8,
+        12
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4局(房卡x1)",
+        "4局(房卡x1)",
+        "8局(房卡x2)"
+      ],
+      "type": 1,
+      "group": 22,
+      "itemHeight": -80,
+      "maxPerLine": 3,
+      "title": "局数:",
+      "id": "rounds"
+    }
+  ],
+  [
+    {
+      "exData": [
+        4,
+        3,
+        2
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4人",
+        "3人",
+        "2人"
+      ],
+      "type": 1,
+      "itemHeight": -80,
+      "group": 21,
+      "title": "人数:",
+      "id": "pnum"
+    }
+  ],
+  [
+    {
+      "multiterm": true,
+      "title": "玩法:",
+      "type": 0,
+      "group": 0,
+      "id": [
+        "wind",
+        "bSupportTing",
+		"bGangAddNoWin",
+		"hutype"
+      ],
+      "data": [
+        "带风牌",
+        "报听胡",
+		"荒庄不荒杠",
+		"可点炮胡"
+      ],
+      "selectIndex": [
+        1
+      ],
+	  "connecttype": [ 1 ],
+      "connect": [
+            {
+              "wind": {
+                "disable": [ 
+                ],
+                "enable": [
+                  {
+                    "bWindPu": 1,
+                    "bJiangPu": 1
+                  } 
+                ]
+              }
+            } 
+          ],
+          "Isconnect": [
+            {
+              "wind": {
+              "select": [ 
+                ]
+              }
+            } 
+          ],
+      "itemHeight": -80,
+      "maxPerLine":4
+    }
+  ],
+  [
+    {
+      "multiterm": true,
+      "title": "牌型:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -90,
+      "id": [
+        "bWindPu",
+        "bJiangPu",
+        "bYaojiuPu",
+        "bkaAdd",
+        "spadd",
+        "bDanDiaoAddScore",
+        "bMissHuAdd"
+      ],
+      "data": [
+        "风扑",
+        "将扑",
+        "幺九扑",
+        "卡张加分",
+        "七对加倍",
+        "单吊加倍",
+        "断门加分"
+      ],
+
+      "selectIndex": [
+        1,2,3,7
+      ], 
+      "maxPerLine":4
+    }
+  ]
+]

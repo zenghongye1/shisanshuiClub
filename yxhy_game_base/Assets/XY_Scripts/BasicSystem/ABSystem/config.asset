@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 1
+  m_Script: {fileID: 11500000, guid: afe5e151a2a6cfc4aa7bc78772347cfc, type: 3}
+  m_Name: config
+  m_EditorClassIdentifier: 
+  versionNum: 1.0.0
+  depInfoFileFormat: 0
+  filters:
+  - filterType: 0
+    valid: 1
+    path: Assets/Res_XYHY
+    filter: '*.prefab'
+    filterArray:
+    - '*.prefab'
+    - '*.renderTexture'
+  - filterType: 0
+    valid: 1
+    path: Assets/Res_XYHY
+    filter: '*.mp3'
+    filterArray:
+    - '*.mp3'
+    - '*.ogg'
+    - '*.wav'
+  - filterType: 0
+    valid: 1
+    path: Assets/Res_XYHY
+    filter: '*.mat'
+    filterArray:
+    - '*.mat'
+  - filterType: 1
+    valid: 1
+    path: Assets/Resources/Lua
+    filter: '*.lua'
+    filterArray:
+    - '*.lua'
+    - '*.bytes'
+  - filterType: 1
+    valid: 1
+    path: Assets/Resources/ProtobufDataConfig
+    filter: '*.bytes'
+    filterArray:
+    - '*.bytes'
+  - filterType: 0
+    valid: 1
+    path: Assets/Res_XYHY
+    filter: '*.prefab'
+    filterArray:
+    - '*.png'
+    - '*.ttf'
+    - '*.txt'
+  depVersionLst: []

@@ -1,0 +1,45 @@
+河南最新合并至35746版本
+
+1.开放配置json 
+\yxhy_game_base\ClientDocument\gamerule\youxianHenan 
+
+2.配置项
+mahjong_config_29.gameCfg.isHasFlower = false
+mahjong_config_15.ignoreEffect = {}
+mahjong_config_8.big_settlement_show
+mahjong_config_29.big_settlement_mustShow = 
+{
+	"selfdraw",
+	"gunwin",
+}
+
+3. 牌型特效图集 
+\yxhy_game_base\Assets\YX_app_4\XY_Atlases_New\MahjongEffectAltas 牌型播报图集
+\yxhy_game_base\Assets\Excels\ArtConfig.xlsx 牌型播报等粒子特效配置
+mahjong_effectMgr:PlayUIEffectById(id,parent,time) 特效调用接口
+
+3.5 游戏规则
+app_4/config/txt/rules/
+
+4.游戏配置
+\yxhy_game_base\Assets\Excels\GameConfig.xlsx 
+shareKey	roomRulesKey	roomRulesOtherKey	roomGamePlayKey
+分享规则显示	规则（战绩房间规则）	规则（战绩房间规则other）	玩法（战绩房间规则）
+PS：可参考前5款
+
+5.结算
+\yxhy_game_base\Assets\Excels\MahjongFanType.xlsx 牌型配置表
+留意一下小结算显示	胡牌： 庄底，漂分，  胡牌分+-N（胡牌方式、胡牌牌型*N），明杠分，暗杠分
+					未胡牌：庄底，跑分，胡牌分+-N，明杠分，暗杠分	
+
+6.特殊牌显示（包括UI和麻将子右上角标志）
+mahjong_ui:ShowSpecialCard(value,index,spriteName)
+
+7.每款游戏都要有一个mahjong_action_small_reward_
+
+8.其他
+\yxhy_game_base\Assets\Excels\MahjongConfig.xlsx 改用Excel配置表，逐渐淘汰mahjong_config
+河南为mode2、河北mode3
+mahjong_ui_henan和mahjong_player_ui_henan 可以用作参考代码
+缺少的UI图或者prefab需要从QQ工程移植过来
+检查战绩、个人信息最大牌型是否显示异常

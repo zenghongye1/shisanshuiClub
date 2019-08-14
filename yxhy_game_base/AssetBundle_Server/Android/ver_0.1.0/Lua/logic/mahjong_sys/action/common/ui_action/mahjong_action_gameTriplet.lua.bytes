@@ -1,0 +1,14 @@
+local base = require "logic.mahjong_sys.action.common.mahjong_action_base"
+local mahjong_action_gameTriplet = class("mahjong_action_gameTriplet", base)
+
+local mahjong_ui = mahjong_ui
+
+function mahjong_action_gameTriplet:Execute(tbl)
+	local operPlayViewSeat = self.gvblFun(tbl._src)
+	--if operPlayViewSeat ==1 then
+	mahjong_ui:HideOperTips()
+	--end
+	mahjong_effectMgr:PlayUIEffectByName("peng",mahjong_ui.playerList[operPlayViewSeat].operPos)
+end
+
+return mahjong_action_gameTriplet

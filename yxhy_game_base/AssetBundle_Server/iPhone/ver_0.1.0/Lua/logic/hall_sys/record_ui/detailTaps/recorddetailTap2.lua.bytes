@@ -1,0 +1,129 @@
+local base = require("logic.framework.ui.uibase.ui_childwindow")
+local Tab_class = class("recorddetailTap2",base)
+function Tab_class:ctor()
+	base.ctor(self)
+end
+
+function Tab_class:OnInit()
+	base.OnInit(self)
+end
+
+function Tab_class:OnOpen()
+	base.OnOpen(self)
+	Trace("Tab_b OnOpen")
+end
+
+function Tab_class:OnClose()
+	base.OnClose(self)
+	Trace("Tab_b OnClose")
+end
+
+function Tab_class:UpdateView(_data, _isTimer)
+
+	if not self.updateTimer then
+	    self.updateTimer = FrameTimer.New(function()
+	        self:UpdateView(_data, true)
+	        self.updateTimer = nil
+	      end,1,1)
+	    self.updateTimer:Start()
+	end
+	if not _isTimer then
+		local scrollViewGrid = child(self.gameObject.transform, "ScrollView/Grid")
+		if scrollViewGrid then
+		    for i = (scrollViewGrid.transform.childCount -1),0,-1 do
+		      GameObject.Destroy(scrollViewGrid.transform:GetChild(i).gameObject)
+		    end
+		end
+
+		return
+	end
+
+	if not _data then
+		return
+	end
+
+	local datatable = _data
+
+	local Label_blank = child(self.gameObject.transform, "Label_blank")
+	if Label_blank then
+		Label_blank.gameObject:SetActive(not datatable.accountc.rewards or table.getCount(datatable.accountc.rewards) <1)
+	end
+
+	if datatable.accountc.rewards==nil or table.getCount(datatable.accountc.rewards)==0 then
+		return
+	end
+	if datatable.aRankId==nil then
+		return
+	end
+
+	local scrollViewGrid = child(self.gameObject.transform, "ScrollView/Grid")
+	if not scrollViewGrid then
+		return
+	end
+	
+	local item_model = child(self.gameObject.transform, "ScrollView/item_model")
+	if not item_model then
+		return
+	end
+	local i = 1
+	for j=1,#datatable.aRankId do
+		local key=datatable.aRankId
+		local item = child(scrollViewGrid.gameObject.transform, "item_"..i)
+		if not item then
+			item = NGUITools.AddChild(scrollViewGrid.gameObject, item_model.gameObject)
+			-- item.transform.localScale={x=1,y=1,z=1}
+			item.name="item_"..i
+			item.gameObject:SetActive(true)
+			componentGet(scrollViewGrid.gameObject,"UIGrid"):Reposition()   
+		end
+		local lab_number=child(item.transform,"sp_number/lab_number")
+		componentGet(lab_number.gameObject,"UILabel").text =i
+
+		local lab_name=child(item.transform,"tex_photo/lab_name")
+		componentGet(lab_name.gameObject,"UILabel").text=datatable.accountc.rewards[key[j]].nickname
+
+		-- local lab_rounds=child(item.transform,"lab_rounds")
+		-- componentGet(lab_rounds.gameObject,"UILabel").text="对局数:"..datatable.accountc.curr_ju
+		if tonumber(datatable.uid)==tonumber(datatable.accountc.rewards[key[j]].uid) then
+			child(item.transform,"tex_photo/fangzhu").gameObject:SetActive(true)
+		else 
+			child(item.transform,"tex_photo/fangzhu").gameObject:SetActive(false)
+		end
+		local lab_win=child(item.transform,"tex_photo/lab_win")
+		local score = datatable.accountc.rewards[key[j]].score
+		local nWinNums = 0
+		if score ~= nil then
+			for i,v in ipairs(score) do
+				if v.nWinNums ~= nil then
+					nWinNums = v.nWinNums
+				end
+			end
+		end
+		componentGet(lab_win.gameObject,"UILabel").text="胜局:"..tostring(nWinNums)
+		-- local sp=child(item.transform,"number_grid/Sprite") 
+
+		local lab_gnumber=componentGet(child(item.transform,"lab_gnumber").gameObject,"UILabel")
+		local lab_bnumber=componentGet(child(item.transform,"lab_bnumber").gameObject,"UILabel")
+		local score = tonumber(datatable.accountc.rewards[key[j]].all_score)
+		print("score-----", score)
+		if score >=0 then
+			lab_gnumber.gameObject:SetActive(true)
+			lab_bnumber.gameObject:SetActive(false)  
+			lab_gnumber.text = "+"..score
+		else 
+			lab_bnumber.gameObject:SetActive(true)
+			lab_gnumber.gameObject:SetActive(false)
+			lab_bnumber.text = score
+		end 
+		local tex_photo=child(item.transform,"tex_photo") 
+		local imagetype=datatable.accountc.rewards[key[j]].img.type 
+		local imageurl=datatable.accountc.rewards[key[j]].img.url
+		hall_data.getuserimage(componentGet(tex_photo.gameObject,"UITexture"),imagetype,imageurl)
+
+		i = i+1
+	end
+	
+	componentGet(child(self.gameObject.transform, "ScrollView"), "UIScrollView"):ResetPosition()
+end
+
+return Tab_class

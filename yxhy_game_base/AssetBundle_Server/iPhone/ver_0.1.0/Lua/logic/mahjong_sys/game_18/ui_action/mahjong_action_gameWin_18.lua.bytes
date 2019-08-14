@@ -1,0 +1,47 @@
+
+----- 福州麻将 gameWin
+
+local base = require "logic/mahjong_sys/common/mahjong_action_base"
+local mahjong_action_gameWin_18 = class("mahjong_action_gameWin_18", base)
+
+function mahjong_action_gameWin_18:Execute(tbl)
+	mahjong_ui:HideOperTips()
+	local gvbln = player_seat_mgr.GetViewSeatByLogicSeatNum
+
+	local winner = tbl._para.stWinList[1].winner
+	local win_type = tbl._para.stWinList[1].winType
+	local win_viewSeat = gvbln(winner)
+
+	 if win_type == "huangpai" then
+ 		mahjong_ui:ShowHuang(function()
+
+ 			--Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.MAHJONG_HU_CARD)
+ 		end)
+ 	else
+ 		local typeName = "gunwin"
+ 		local soundName = "hu"
+ 		if win_type == "gunwin" then
+ 			typeName = "gunwin"
+ 			soundName = "hu"
+ 		elseif win_type == "robgangwin" then
+ 			typeName = "qiang"
+ 			soundName = "hu"
+ 		elseif win_type == "selfdraw" then
+ 			typeName = "selfdraw"
+ 			soundName = "zimo"
+ 		elseif win_type == "robgoldwin" then
+ 			typeName = "robgoldwin"
+ 			soundName = "qiangjin"
+ 		end
+
+ 		ui_sound_mgr.PlaySoundClip(mahjong_path_mgr.GetMjSoundPath(soundName))
+
+ 		mahjong_effectMgr:PlayUIEffectByName(typeName,mahjong_ui.playerList[win_viewSeat].operPos)
+
+ 			-- function()
+ 			-- 	--Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.MAHJONG_HU_CARD)
+ 			-- end)
+ 	end
+end
+
+return mahjong_action_gameWin_18

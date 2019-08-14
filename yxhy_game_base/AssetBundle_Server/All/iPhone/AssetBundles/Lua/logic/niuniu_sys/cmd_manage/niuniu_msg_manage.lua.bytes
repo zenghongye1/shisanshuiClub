@@ -1,0 +1,357 @@
+
+niuniu_msg_manage_instance = nil
+
+local niuniu_msg_manage = class("niuniu_msg_manage")
+
+function niuniu_msg_manage:ctor()
+	self.niuniu_ui_controller = require("logic.niuniu_sys.ui.niuniu_ui_controller"):create()
+	self.niuniu_scene_controller = require("logic.niuniu_sys.scene.niuniu_scene_controller"):create()
+	self.niuniu_data_manage = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance()
+	
+	self:Initialize()
+	Trace("=================niuniu_msg_manage:ctor================")
+end
+
+function niuniu_msg_manage:GetInstance()
+    if niuniu_msg_manage_instance == nil  then
+		niuniu_msg_manage_instance = require ("logic.niuniu_sys.cmd_manage.niuniu_msg_manage"):create()
+    end
+    return niuniu_msg_manage_instance
+end
+
+
+function niuniu_msg_manage:GetNiuNiuSceneControllerInstance()
+	if self.niuniu_scene_controller == nil then
+		logError("+++++++Error!!!!!!!!+++++++++".."get niuniu_scene_controller instance error!!!!!")
+	end
+	return self.niuniu_scene_controller
+end
+
+function niuniu_msg_manage:GetNiuNiuUiControllerInstance()
+	if self.niuniu_ui_controller == nil then
+		logError("+++++++Error!!!!!!!!+++++++++".."get niuniu_ui_controller instance error!!!!!")
+	end
+	return self.niuniu_ui_controller
+end
+
+function niuniu_msg_manage:OnPlayerEnter(tbl)
+	Trace("++++++++++++++OnPlayerEnter++++++++++++++="..tostring(tbl))
+	self.niuniu_data_manage.EnterData = tbl
+	slot(self.niuniu_ui_controller:OnPlayerEnter(tbl),self.niuniu_ui_controller)
+end
+
+function niuniu_msg_manage:OnAskChooseBanker(tbl)
+	self.niuniu_data_manage.AskChooseBankerData = tbl
+	slot(self.niuniu_ui_controller:OnAskChooseBanker(),self.niuniu_ui_controller)
+end
+
+function niuniu_msg_manage:OnBanker(tbl)
+	self.niuniu_data_manage.BankerData = tbl
+	slot(self.niuniu_ui_controller:OnBanker(),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:OnAskReady(tbl)
+	self.niuniu_data_manage.AskReadyData = tbl
+	slot(self.niuniu_ui_controller:OnAskReady(),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:OnPlayerReady(tbl)
+	
+	self.niuniu_data_manage.ReadyData = tbl
+	slot(self.niuniu_ui_controller:OnPlayerReady(),self.niuniu_ui_controller)
+	slot(self.niuniu_scene_controller:OnPlayerReady(),self.niuniu_scene_controller)
+end
+
+ function niuniu_msg_manage:OnGameStart(tbl)
+ 	self.niuniu_data_manage.GameStartData = tbl
+	slot(self.niuniu_ui_controller:OnGameStart(),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:OnAskMult(tbl)
+ 	self.niuniu_data_manage.OnAskMultData = tbl
+	slot(self.niuniu_ui_controller:OnAskMult(),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:OnMult(tbl)
+ 	self.niuniu_data_manage.OnMultData = tbl
+	slot(self.niuniu_ui_controller:OnMult(),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:OnAllMult(tbl)
+	self.niuniu_data_manage.OnAllMultData = tbl
+	slot(self.niuniu_ui_controller:OnAllMult(),self.niuniu_ui_controller)
+end
+
+--提示抢庄
+function niuniu_msg_manage:OnAskRobbanker(tbl)
+	self.niuniu_data_manage.AskRobbankerData = tbl
+	slot(self.niuniu_ui_controller:OnAskRobbanker(),self.niuniu_ui_controller)
+end
+
+--抢庄倍数通知
+function niuniu_msg_manage:OnRobbanker(tbl)
+	self.niuniu_data_manage.OnRobbankerData = tbl
+	slot(self.niuniu_ui_controller:OnRobbanker(),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:OnGameDeal(tbl)
+ 	self.niuniu_data_manage.DealData = tbl
+	slot(self.niuniu_ui_controller:OnGameDeal(tbl),self.niuniu_ui_controller)
+	slot(self.niuniu_scene_controller:OnGameDeal(tbl),self.niuniu_scene_controller)
+end
+
+
+--提示亮牌
+function niuniu_msg_manage:OnAskOpenCard(tbl)
+	self.niuniu_data_manage.OnAskOpenCardData = tbl
+	slot(self.niuniu_ui_controller:OnAskOpenCard(),self.niuniu_ui_controller)
+	slot(self.niuniu_scene_controller:OnAskOpenCard(),self.niuniu_scene_controller)
+end
+
+--某人已经亮牌
+function niuniu_msg_manage:OnOpenCard(tbl)
+	self.niuniu_data_manage.OnOpenCardData = tbl
+	slot(self.niuniu_ui_controller:OnOpenCard(),self.niuniu_ui_controller)
+	slot(self.niuniu_scene_controller:OnOpenCard(),self.niuniu_scene_controller)
+end
+
+ function niuniu_msg_manage:OnCompareResult(tbl)
+	self.niuniu_data_manage.CompareResultData = tbl
+	slot(self.niuniu_ui_controller:OnCompareResult(),self.niuniu_ui_controller)
+	slot(self.niuniu_scene_controller:OnCompareResult(tbl),self.niuniu_scene_controller)
+end
+
+function niuniu_msg_manage:OnGameRewards(tbl)	
+	self.niuniu_data_manage.SmallRewardData = tbl
+	slot(self.niuniu_ui_controller:OnGameRewards(tbl),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:OnGameEnd(tbl)
+	self.niuniu_data_manage.GameEndData = tbl
+	slot(self.niuniu_ui_controller:OnGameEnd(),self.niuniu_ui_controller)
+	slot(self.niuniu_scene_controller:OnGameEnd(),self.niuniu_scene_controller)
+end
+
+ function niuniu_msg_manage:OnSyncBegin(tbl)
+	slot(self.niuniu_ui_controller:OnSyncBegin(tbl),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:OnSyncTable(tbl)
+	self.niuniu_data_manage.OnSyncTableData = tbl
+	slot(self.niuniu_ui_controller:OnSyncTable(),self.niuniu_ui_controller)
+	slot(self.niuniu_scene_controller:OnSyncTable(),self.niuniu_scene_controller)
+
+end
+
+function niuniu_msg_manage:OnSyncEnd(tbl)
+	slot(self.niuniu_ui_controller:OnSyncEnd(tbl),self.niuniu_ui_controller)
+end
+ function niuniu_msg_manage:OnUserLeave(tbl)
+	slot(self.niuniu_ui_controller:OnLeaveEnd(tbl),self.niuniu_ui_controller)	
+end
+
+ function niuniu_msg_manage:OnPointsRefresh(tbl)
+	slot(self.niuniu_ui_controller:OnPointsRefresh(tbl),self.niuniu_ui_controller)
+end
+
+
+
+ function niuniu_msg_manage:OnPlayerOffline(tbl)
+	self.niuniu_data_manage.offlineData = tbl
+	slot(self.niuniu_ui_controller:OnPlayerOffline(),self.niuniu_ui_controller)
+end
+
+
+
+ function niuniu_msg_manage:OnPlayerChat(tbl)
+	slot(self.niuniu_ui_controller:OnPlayerChat(tbl),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:OnVoteStart(tbl)
+	
+	slot(self.niuniu_ui_controller:OnVoteStart(tbl),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:OnVoteDraw(tbl)
+	slot(self.niuniu_ui_controller:OnVoteDraw(tbl),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:OnVoteEnd(tbl)
+	slot(self.niuniu_ui_controller:OnVoteEnd(tbl),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:RoomSumScore(tbl)
+	slot(self.niuniu_ui_controller:RoomSumScore(tbl),self.niuniu_ui_controller)
+end
+ 
+ function niuniu_msg_manage:OnSpecialCardType(tbl)
+	slot(self.niuniu_ui_controller:OnSpecialCardType(tbl),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:OnReadCard(tbl)
+
+	slot(self.niuniu_ui_controller:ShowSpecialCardAnimation(tbl),self.niuniu_ui_controller)
+end
+
+ function niuniu_msg_manage:RecommondCard(tbl)
+	slot(self.niuniu_ui_controller:RecommondCard(tbl),self.niuniu_ui_controller)
+end
+
+function niuniu_msg_manage:EarlySettlement(tbl)
+	slot(self.niuniu_ui_controller:EarlySettlement(tbl),self.niuniu_ui_controller)
+end
+	
+function niuniu_msg_manage:FreezeUser(tbl)
+	slot(self.niuniu_ui_controller:FreezeUser(tbl),self.niuniu_ui_controller)
+end
+	
+function niuniu_msg_manage:FreezeOwner(tbl)
+	slot(self.niuniu_ui_controller:FreezeOwner(tbl),self.niuniu_ui_controller)
+end
+
+function niuniu_msg_manage:MouseBinDown(position)
+		slot(self.niuniu_scene_controller:MouseBinDown(position),self.niuniu_scene_controller)
+end
+
+function niuniu_msg_manage:ShowLargeResult(tbl)
+	slot(self.niuniu_ui_controller:ShowLargeResult(tbl),self.niuniu_ui_controller)
+end
+
+function niuniu_msg_manage:OnDragAction(tbl)
+	slot(self.niuniu_scene_controller:OnDragAction(tbl),self.niuniu_scene_controller)
+end
+
+function niuniu_msg_manage:OnGetLastCardPosition(position)
+	slot(self.niuniu_ui_controller:OnGetLastCardPosition(position),self.niuniu_ui_controller)
+end
+
+function niuniu_msg_manage:SetFinishState(tbl)
+	slot(self.niuniu_ui_controller:SetFinishState(tbl),self.niuniu_ui_controller)
+end
+
+--[[--
+ * @Description: 更换桌布  
+ ]]
+function niuniu_msg_manage:OnChangeDesk(tbl)
+    self.niuniu_scene_controller:ChangeDeskCloth()
+end
+
+--手指离开桌面
+function niuniu_msg_manage:OnFingerUpAction(tbl)
+	slot(self.niuniu_scene_controller:OnFingerUpAction(tbl),self.niuniu_scene_controller)
+end
+
+function niuniu_msg_manage:Initialize()
+	Notifier.regist(cmdName.GAME_SOCKET_ENTER, slot(self.OnPlayerEnter,self))--玩家进入
+	Notifier.regist(cmd_niuniu.ASK_CHOOSEBANKER,slot(self.OnAskChooseBanker,self))--选庄(固定庄家)
+	Notifier.regist(cmdName.GAME_SOCKET_BANKER,slot(self.OnBanker,self)) --定庄
+	Notifier.regist(cmd_niuniu.ASK_ROBBANKER,slot(self.OnAskRobbanker,self))--提示抢庄
+	Notifier.regist(cmd_niuniu.ROBBANKER,slot(self.OnRobbanker,self)) --抢庄倍数通知
+	Notifier.regist(cmdName.GAME_SOCKET_ASK_READY, slot(self.OnAskReady,self))--请求准备
+	Notifier.regist(cmdName.GAME_SOCKET_READY, slot(self.OnPlayerReady,self))--玩家准备
+	Notifier.regist(cmdName.GAME_SOCKET_GAMESTART, slot(self.OnGameStart,self))--游戏开始
+	Notifier.regist(cmd_niuniu.ASK_OPENCARD,slot(self.OnAskOpenCard,self)) 	--提示亮牌
+	Notifier.regist(cmd_niuniu.OPENCARD,slot(self.OnOpenCard,self)) --某人已经亮牌
+	Notifier.regist(cmdName.GAME_SOCKET_GAME_DEAL, slot(self.OnGameDeal,self))--发牌
+
+	Notifier.regist(cmd_shisanshui.COMPARE_START, slot(self.OnCompareStart,self))  --比牌开始
+	Notifier.regist(cmd_shisanshui.COMPARE_RESULT, slot(self.OnCompareResult,self)) --比牌结果
+	Notifier.regist(cmd_shisanshui.COMPARE_END, slot(self.OnCompareEnd,self)) -- 比牌结束
+	Notifier.regist(cmdName.GAME_SOCKET_SMALL_SETTLEMENT, slot(self.OnGameRewards,self))--结算
+	Notifier.regist(cmdName.GAME_SOCKET_GAMEEND, slot(self.OnGameEnd,self))--游戏结束
+	Notifier.regist(cmdName.GAME_SOCKET_SYNC_BEGIN, slot(self.OnSyncBegin,self))--重连同步开始
+	Notifier.regist(cmdName.GAME_SOCKET_SYNC_TABLE, slot(self.OnSyncTable,self))--重连同步表
+	Notifier.regist(cmdName.GAME_SOCKET_SYNC_END, slot(self.OnSyncEnd,self))--重连同步结束
+	Notifier.regist(cmdName.GAME_SOCKET_PLAYER_LEAVE, slot(self.OnUserLeave,self))--游戏结束离开通知。
+	Notifier.regist(cmd_shisanshui.FuZhouSSS_ALLMULT,  slot(self.OnAllMult,self))  --选择倍数通知(所有人的选择倍数)
+	Notifier.regist(cmdName.F1_POINTS_REFRESH, slot(self.OnPointsRefresh,self))--玩家金币更新
+	Notifier.regist(cmdName.GAME_SOCKET_OFFLINE, slot(self.OnPlayerOffline,self))--用户掉线
+	Notifier.regist(cmd_shisanshui.ShootingPlayerList, slot(self.ShootingPlayerList,self))
+	Notifier.regist(cmdName.GAME_SOCKET_CHAT, slot(self.OnPlayerChat,self))--用户聊天
+
+	Notifier.regist(cmdName.GAME_NIT_VOTE_DRAW,  slot(self.OnVoteDraw,self))		--请求和局/投票
+	Notifier.regist(cmdName.GAME_VOTE_DRAW_START, slot(self. OnVoteStart,self))		--请求和局开始
+	Notifier.regist(cmdName.GAME_VOTE_DRAW_END,  slot(self.OnVoteEnd,self))		--请求和局结束	
+	Notifier.regist(cmd_shisanshui.ROOM_SUM_SCORE,  slot(self.RoomSumScore,self))		--重入更新积分
+	Notifier.regist(cmd_shisanshui.SpecialCardType, slot(self.OnSpecialCardType,self)) -- 在特殊排型上显一个张特殊牌型的图标
+	Notifier.regist(cmd_shisanshui.ReadCard, slot(self.OnReadCard,self)) -- 理牌
+	Notifier.regist(cmd_shisanshui.FuZhouSSS_ASKMULT, slot(self.OnAskMult,self)) --等待闲家选择倍数 
+	Notifier.regist(cmd_shisanshui.FuZhouSSS_MULT,  slot(self.OnMult,self))  -- 选择倍数通知(回复自己选择倍数)
+	Notifier.regist(cmd_shisanshui.Card_RECOMMEND,  slot(self.RecommondCard,self))		--推荐牌
+	
+	Notifier.regist(cmdName.MSG_EARLY_SETTLEMENT,slot(self.EarlySettlement,self)) -- 管理员强制提前进行游戏结算
+	Notifier.regist(cmdName.MSG_FREEZE_USER,slot(self.FreezeUser,self)) --冻结帐号
+	Notifier.regist(cmdName.MSG_FREEZE_OWNER,slot(self.FreezeOwner,self)) --未开局管理员封房主号
+	
+	InputManager.AddLock()
+	Notifier.regist(cmdName.MSG_MOUSE_BTN_DOWN,slot(self.MouseBinDown,self))--鼠标事件
+	Notifier.regist(cmdName.GAME_SOCKET_BIG_SETTLEMENT, slot(self.ShowLargeResult,self))	-- socket大结算
+	
+	Notifier.regist(cmd_niuniu.ONDRAGACTION,slot(self.OnDragAction,self)) --拖动效果
+	Notifier.regist(cmd_niuniu.FingerUP, slot(self.OnFingerUpAction),self) --手指离开屏幕
+	Notifier.regist(cmd_niuniu.GETLASTCARDPOSITION,slot(self.OnGetLastCardPosition,self)) --获取最后一张牌的坐标
+	Notifier.regist(cmd_niuniu.SetFinishState,slot(self.SetFinishState,self)) --庄家开牌后显示开牌标志
+	Notifier.regist(cmdName.MSG_CHANGE_DESK,slot(self.OnChangeDesk, self)) --更换桌布
+	
+end
+
+function niuniu_msg_manage:Uninitialize()
+	Notifier.remove(cmdName.GAME_SOCKET_ENTER,  slot(self.OnPlayerEnter,self))--玩家进入
+	Notifier.remove(cmd_niuniu.ASK_CHOOSEBANKER,slot(self.OnAskChooseBanker,self))--选庄(固定庄家)
+	Notifier.remove(cmdName.GAME_SOCKET_BANKER,slot(self.OnBanker,self)) --定庄
+	Notifier.remove(cmd_niuniu.ASK_ROBBANKER,slot(self.OnAskRobbanker,self))--提示抢庄
+	Notifier.remove(cmd_niuniu.ROBBANKER,slot(self.OnRobbanker,self)) --抢庄倍数通知
+	Notifier.remove(cmdName.GAME_SOCKET_READY, slot(self.OnPlayerReady,self))--玩家准备
+	Notifier.remove(cmdName.GAME_SOCKET_GAMESTART, slot(self.OnGameStart,self))--游戏开始
+	Notifier.remove(cmd_niuniu.ASK_OPENCARD,slot(self.OnAskOpenCard,self)) 	--提示亮牌
+	Notifier.remove(cmd_niuniu.OPENCARD,slot(self.OnOpenCard,self)) --某人已经亮牌
+	Notifier.remove(cmdName.GAME_SOCKET_GAME_DEAL, slot(self.OnGameDeal,self))--发牌
+	Notifier.remove(cmd_shisanshui.COMPARE_START, slot(self.OnCompareStart,self))  --比牌开始
+	Notifier.remove(cmd_shisanshui.COMPARE_RESULT, slot(self.OnCompareResult,self)) --比牌结果
+	Notifier.remove(cmd_shisanshui.COMPARE_END, slot(self.OnCompareEnd,self)) -- 比牌结束
+	Notifier.remove(cmdName.GAME_SOCKET_SMALL_SETTLEMENT, slot(self.OnGameRewards,self))--结算
+	Notifier.remove(cmdName.GAME_SOCKET_GAMEEND, slot(self.OnGameEnd,self))--游戏结束
+	Notifier.remove(cmdName.GAME_SOCKET_SYNC_BEGIN, slot(self.OnSyncBegin,self))--重连同步开始
+	Notifier.remove(cmdName.GAME_SOCKET_SYNC_TABLE, slot(self.OnSyncTable,self))--重连同步表
+	Notifier.remove(cmdName.GAME_SOCKET_PLAYER_LEAVE, slot(self.OnUserLeave,self))--游戏结束离开通知。
+	Notifier.remove(cmd_shisanshui.FuZhouSSS_ALLMULT,  slot(self.OnAllMult,self))  --选择倍数通知(所有人的选择倍数)
+	Notifier.remove(cmdName.GAME_SOCKET_ASK_READY, slot(self.OnAskReady,self))--请求准备
+	Notifier.remove(cmdName.GAME_SOCKET_SYNC_END, slot(self.OnSyncEnd,self))--重连同步结束
+	Notifier.remove(cmdName.GAME_SOCKET_OFFLINE, slot(self.OnPlayerOffline,self))--用户掉线
+	Notifier.remove(cmd_shisanshui.ShootingPlayerList, slot(self.ShootingPlayerList,self))
+	Notifier.remove(cmdName.GAME_SOCKET_CHAT, slot(self.OnPlayerChat,self))--用户聊天
+	Notifier.remove(cmdName.F1_POINTS_REFRESH, slot(self.OnPointsRefresh,self))--玩家金币更新
+	Notifier.remove(cmdName.GAME_NIT_VOTE_DRAW,  slot(self.OnVoteDraw,self))		--请求和局/投票
+	Notifier.remove(cmdName.GAME_VOTE_DRAW_START, slot(self. OnVoteStart,self))		--请求和局开始
+	Notifier.remove(cmdName.GAME_VOTE_DRAW_END,  slot(self.OnVoteEnd,self))		--请求和局结束	
+	Notifier.remove(cmd_shisanshui.ROOM_SUM_SCORE,  slot(self.RoomSumScore,self))		--重入更新积分
+	Notifier.remove(cmd_shisanshui.SpecialCardType, slot(self.OnSpecialCardType,self)) -- 在特殊排型上显一个张特殊牌型的图标
+	Notifier.remove(cmd_shisanshui.ReadCard, slot(self.OnReadCard,self)) -- 理牌
+	Notifier.remove(cmd_shisanshui.FuZhouSSS_ASKMULT, slot(self.OnAskMult,self)) --等待闲家选择倍数 
+	Notifier.remove(cmd_shisanshui.FuZhouSSS_MULT,  slot(self.OnMult,self))  -- 选择倍数通知(回复自己选择倍数)
+	Notifier.remove(cmd_shisanshui.Card_RECOMMEND,  slot(self.RecommondCard,self))		--推荐牌
+	Notifier.remove(cmdName.MSG_EARLY_SETTLEMENT,slot(self.EarlySettlement,self)) -- 管理员强制提前进行游戏结算
+	Notifier.remove(cmdName.MSG_FREEZE_USER,slot(self.FreezeUser,self)) --冻结帐号
+	Notifier.remove(cmdName.MSG_FREEZE_OWNER,slot(self.FreezeOwner,self)) --未开局管理员封房主号
+	
+	InputManager.ReleaseLock()
+	Notifier.remove(cmdName.MSG_MOUSE_BTN_DOWN,slot(self.MouseBinDown,self))--鼠标事件
+	Notifier.remove(cmdName.GAME_SOCKET_BIG_SETTLEMENT, slot(self.ShowLargeResult,self))	-- socket大结算
+	
+	Notifier.remove(cmd_niuniu.ONDRAGACTION,slot(self.OnDragAction,self)) --拖动效果
+	Notifier.remove(cmd_niuniu.FingerUP, slot(self.OnFingerUpAction),self) --手指离开屏幕
+	Notifier.remove(cmd_niuniu.GETLASTCARDPOSITION,slot(self.OnGetLastCardPosition,self)) --获取最后一张牌的坐标
+	Notifier.remove(cmd_niuniu.SetFinishState,slot(self.SetFinishState,self)) --庄家开牌后显示开牌标志
+	Notifier.remove(cmdName.MSG_CHANGE_DESK,slot(self.OnChangeDesk, self)) --更换桌布
+	
+	self.niuniu_ui_controller = nil
+	self.niuniu_scene_controller = nil
+	
+	
+	room_usersdata_center.RemoveAll()
+	UI_Manager:Instance():CloseUiForms("poker_largeResult_ui",true)
+	self.niuniu_data_manage:DestoryInstance()
+	niuniu_msg_manage_instance = nil
+end
+
+return niuniu_msg_manage

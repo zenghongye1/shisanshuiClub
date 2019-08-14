@@ -1,0 +1,250 @@
+local base = require "logic/framework/ui/uibase/ui_view_base"
+local OperTipsView = class("OperTipsView", base)
+local operatorcachedata = operatorcachedata
+local addClickCallbackSelf = addClickCallbackSelf
+local mahjong_play_sys = mahjong_play_sys
+local MahjongOperTipsEnum = MahjongOperTipsEnum
+
+
+function OperTipsView:ctor(go)
+	self.operNameTable = 
+	{
+		["hu"] 				 = {MahjongOperTipsEnum.Hu, OperTipsView.OnHuClick},
+		["ting"] 			 = {MahjongOperTipsEnum.Ting, OperTipsView.OnTingClick},
+		["tingJinKan"] 		 = {MahjongOperTipsEnum.TingJinKan, OperTipsView.OnTingJinKanClick},
+		["tingYouJin"] 		 = {MahjongOperTipsEnum.TingYouJin, OperTipsView.OnTingYouJinClick},
+		["tingDouJin"] 		 = {MahjongOperTipsEnum.TingDouJin, OperTipsView.OnTingDouJinClick},
+		["tingThrJin"] 		 = {MahjongOperTipsEnum.TingThrJin, OperTipsView.OnTingThrJinClick},
+		["gang"] 			 = {MahjongOperTipsEnum.Quadruplet, OperTipsView.OnGangClick},
+		["peng"] 			 = {MahjongOperTipsEnum.Triplet, OperTipsView.OnPengClick},
+		["chi"] 			 = {MahjongOperTipsEnum.Collect, OperTipsView.OnChiClick},
+		["guo"] 			 = {MahjongOperTipsEnum.GiveUp, OperTipsView.OnGuoClick},
+		["xiao"] 			 = {MahjongOperTipsEnum.Xiao, OperTipsView.OnXiaoClick},
+		["niuBiJiao"]		 = {MahjongOperTipsEnum.NiuBiJiao, OperTipsView.OnNiuBiJiaoClick},   
+		["qiang"]			 = {MahjongOperTipsEnum.Qiang, OperTipsView.OnQiangClick},
+		["N_ZA_FLAG"]		 = {MahjongOperTipsEnum.N_ZA_FLAG, OperTipsView.OnZaClick},
+		["N_ZUAN_FLAG"]		 = {MahjongOperTipsEnum.N_ZUAN_FLAG, OperTipsView.OnZuanClick},
+		["N_BIAN_FLAG"]		 = {MahjongOperTipsEnum.N_BIAN_FLAG, OperTipsView.OnBianClick},	
+		["N_ZAGANG_FLAG"]	 = {MahjongOperTipsEnum.N_ZAGANG_FLAG, OperTipsView.OnZagangClick},
+	}
+
+
+	base.ctor(self, go)
+
+end
+
+function OperTipsView:InitView()
+	self.itemGoMap = {}
+	self.operTipEffect = nil
+
+	for k, tab in pairs(self.operNameTable) do
+		local btnGo = self:GetGameObject("Grid/" .. k)
+		if btnGo then
+			btnGo:SetActive(false)
+			addClickCallbackSelf(
+				btnGo, 
+				function ()
+					tab[2]()
+					self:Hide()
+				end,
+				self)
+			self.itemGoMap[tab[1]] = btnGo
+		else
+			logWarning(k.." btn is not exist")
+		end
+	end
+	self:SetActive(false)
+end
+
+function OperTipsView:Show()
+	local operTipDataList = operatorcachedata.GetOperTipsList() 
+	if #operTipDataList == 0 then
+		return
+	end 
+	local operEnumList = {}
+	for i = 1, #operTipDataList do
+		operEnumList[i] = operTipDataList[i].operType
+	end
+	table.sort(operEnumList, function(a,b) return a > b end)
+
+	for i = 1, #operEnumList do
+		local go = self.itemGoMap[operEnumList[i]]
+		go.transform.localPosition = Vector3(-130*(#operTipDataList-i),0,0)
+		go:SetActive(true)
+	end
+
+
+	local effName 
+	local enum = operEnumList[1]
+	if enum == MahjongOperTipsEnum.Hu then
+		effName = "hu"
+	else
+		effName = "chi"
+	end
+
+	self.operTipEffect = EffectMgr.PlayEffect(mahjong_path_mgr.GetEffPath("Effect_Anniu",mahjong_path_enum.mjCommon),1,-1)
+	self.operTipEffect.transform:SetParent(self.itemGoMap[enum].transform,false)
+	if self.operTipEffect and self.sortingOrder and self.m_subPanelCount then
+		local topLayerIndex = self.sortingOrder +self.m_subPanelCount +1
+		Utils.SetEffectSortLayer(self.operTipEffect, topLayerIndex)
+	end
+
+	self:SetActive(true)
+end
+
+function OperTipsView:Hide()
+	if self.isActive == false then
+		return
+	end
+	self:SetActive(false)
+	self:HideEff()
+	for k, go in pairs(self.itemGoMap) do
+		go:SetActive(false)
+	end
+end
+
+function OperTipsView:HideEff()
+	if self.operTipEffect ~=nil then
+		EffectMgr.StopEffect(self.operTipEffect)
+	end
+end
+ 
+---- callbacks -----
+function OperTipsView:OnHuClick()
+	local tbl = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.Hu)
+	mahjong_play_sys.HuPaiReq(tbl.nCard or tbl.card)
+end
+
+function OperTipsView:OnTingClick() 
+	local tbl = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.Ting)  
+	Notifier.dispatchCmd(cmdName.MAHJONG_TING_CARD, tbl)
+end
+
+function OperTipsView:OnXiaoClick()
+    local tbl = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.Xiao) 
+	Notifier.dispatchCmd(cmdName.MAHJONG_TING_CARD, tbl)
+end
+
+function OperTipsView:OnNiuBiJiaoClick()
+    local tbl = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.NiuBiJiao) 
+	Notifier.dispatchCmd(cmdName.MAHJONG_TING_CARD, tbl)
+end
+
+function OperTipsView:OnTingJinKanClick()
+	local tbl = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.TingJinKan)
+	Notifier.dispatchCmd(cmdName.MAHJONG_TING_CARD, tbl)
+end
+
+function OperTipsView:OnTingYouJinClick()
+	local tbl = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.TingYouJin)
+	Notifier.dispatchCmd(cmdName.MAHJONG_TING_CARD, tbl)
+end
+
+function OperTipsView:OnTingDouJinClick()
+	local tbl = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.TingDouJin)
+	Notifier.dispatchCmd(cmdName.MAHJONG_TING_CARD, tbl)
+end
+
+function OperTipsView:OnTingThrJinClick()
+	local tbl = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.TingThrJin)
+	Notifier.dispatchCmd(cmdName.MAHJONG_TING_CARD, tbl)
+end
+
+function OperTipsView:OnGangClick()
+	Trace("Onbtn_gangClick")
+	local cardCanQuadruplet = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.Quadruplet)
+	if #cardCanQuadruplet ~= 1 and type(cardCanQuadruplet[1]) ~= "number" then
+		mahjong_ui.cardShowView:ShowGang(cardCanQuadruplet)
+	else
+		-- 风杠
+		if #cardCanQuadruplet == 4 and type(cardCanQuadruplet[1]) == "number" then
+			mahjong_play_sys.QuadrupletReq(cardCanQuadruplet)
+		else
+			local cardValues = cardCanQuadruplet[1]
+			if type(cardValue) == "number" then
+		      cardValues = {cardValues,cardValues,cardValues,cardValues}
+		   	end
+		  	mahjong_play_sys.QuadrupletReq(cardValues)
+		end
+	end
+
+end
+
+function OperTipsView:OnPengClick()
+	--Trace("Onbtn_pengClick")
+	mahjong_play_sys.TripletReq()
+end
+
+--±ß
+function OperTipsView:OnBianClick()
+	Trace("Onbtn_OnBianClick")
+	local cardCanN_BIAN_FLAG = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.N_BIAN_FLAG)
+	if #cardCanN_BIAN_FLAG == 1 or type(cardCanN_BIAN_FLAG[1]) == "number" then
+		mahjong_play_sys.BianReq(cardCanN_BIAN_FLAG[1])
+	else
+		mahjong_ui.cardShowView:ShowChi(cardCanN_BIAN_FLAG)
+	end
+end
+
+--×ê
+function OperTipsView:OnZuanClick()
+	Trace("Onbtn_OnBianClick")
+	local cardCanN_ZUAN_FLAG = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.N_ZUAN_FLAG)
+	if #cardCanN_ZUAN_FLAG == 1 or type(cardCanN_ZUAN_FLAG[1]) == "number" then
+		mahjong_play_sys.ZuanReq(cardCanN_ZUAN_FLAG[1])
+	else
+		mahjong_ui.cardShowView:ShowChi(cardCanN_ZUAN_FLAG)
+	end
+end
+
+--ÔÒ
+function OperTipsView:OnZaClick()
+	Trace("Onbtn_OnZaClick")
+	local cardCanN_ZA_FLAG = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.N_ZA_FLAG)
+	if #cardCanN_ZA_FLAG == 1 or type(cardCanN_ZA_FLAG[1]) == "number" then
+		mahjong_play_sys.ZaReq(cardCanN_ZA_FLAG[1])
+	else
+		mahjong_ui.cardShowView:ShowGang(cardCanN_ZA_FLAG)
+	end
+end
+
+--ÔÒ¸Ü
+function OperTipsView:OnZagangClick()
+	Trace("Onbtn_OnZagangClick")
+	local cardCanN_ZAGANG_FLAG = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.N_ZAGANG_FLAG)
+	if #cardCanN_ZAGANG_FLAG == 1 or type(cardCanN_ZAGANG_FLAG[1]) == "number" then
+		mahjong_play_sys.ZagangReq(cardCanN_ZAGANG_FLAG[1])
+	else
+		mahjong_ui.cardShowView:ShowGang(cardCanN_ZAGANG_FLAG)
+	end
+end
+
+
+function OperTipsView:OnQiangClick()
+	Trace("Onbtn_qiangClick")
+	local tbl = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.Qiang)
+	mahjong_play_sys.HuPaiReq(tbl.nCard)
+end
+
+function OperTipsView:OnChiClick()
+	Trace("Onbtn_chiClick")
+	local cardCanCollect = operatorcachedata.GetOpTipsTblByType(MahjongOperTipsEnum.Collect)
+	if #cardCanCollect == 1 then
+		mahjong_play_sys.CollectReq(cardCanCollect[1])
+	else
+		mahjong_ui.cardShowView:ShowChi(cardCanCollect)
+	end
+end
+
+function OperTipsView:OnGuoClick()
+	Trace("Onbtn_guoClick")
+	mahjong_play_sys.GiveUp()
+  	Notifier.dispatchCmd(cmdName.MSG_ON_GUO_CLICK, nil)
+end
+
+function OperTipsView:SetGuoBtnActive(value)
+	local btnGo = self:GetGameObject("Grid/guo")
+	btnGo:SetActive(value)
+end
+
+return OperTipsView

@@ -1,0 +1,148 @@
+﻿[
+
+  [
+    {
+      "exData": [
+        1
+      ],
+      "title": "玩法:",
+      "id": "bsupportke",
+      "data": [
+        "打课"
+      ],
+      "selectIndex": [
+        1
+      ],
+      
+      "itemHeight":-80, 
+	  "itemWidth": 232,
+       "type": 1, 
+       "group":37
+    }
+  ],
+  [
+     {
+      "exData": [
+        4,
+        3,
+        2
+      ],
+      "itemHeight": -80,
+	  "itemWidth": 232,
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4人",
+        "3人",
+        "2人"
+      ],
+      "title": "人数:",
+      "id": "pnum", 
+       "type": 1, 
+       "group":33,
+	"connecttype": [2,1 ],
+      "connect": [
+        {
+          "2": [
+            { "rounds": ["打课(房卡x2)" ] }
+          ],
+          "3": [
+            { "rounds":["打课(房卡x3)" ] }
+          ],
+          "4": [
+            { "rounds":["打课(房卡x4)" ] }
+          ]
+        }
+      ],
+      "Isconnect": [
+        {
+          "2": { 
+          },
+          "3": { 
+          },
+          "4": { 
+          }
+        }
+      ],
+      "iosconnect": [
+        {
+          "2": [
+            { "rounds": [ "打课(x2)" ]  }
+          ],
+          "3": [ 
+            { "rounds": [ "打课(x3)" ] }
+          ],
+          "4": [
+           { "rounds": ["打课(x4)" ]  }
+          ]
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "exData": [
+        0
+      ],  
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "打课(房卡x4)"
+      ],
+      "itemHeight": -80,
+      "iosdata": [
+        "打课(x4)" 
+      ], 
+       "type": 1, 
+       "group":34,
+      "title": "局数:",
+      "id": "rounds"
+    }
+  ],
+  [
+    {
+      "multiterm": true,
+      "selectIndex": [
+        1,
+        2
+      ],
+      "itemHeight": -80,
+      "itemWidth": 330,
+	  "maxPerLine": 2,
+      "data": [
+        "单金不能平胡",
+        "双金及以上要游金",
+		"清一色"
+      ],
+      "title": "牌型:",
+      "type": 0,
+      "group": 0,
+      "id": [
+        "nonegold",
+        "ntwogold",
+		"nOneColor"
+      ]
+    }
+  ],
+  [ 
+    {
+      "multiterm": true,
+      "selectIndex": [
+        
+      ], 
+      "itemHeight": -160,
+	  "itemWidth": 232,
+      "data": [
+        "承包"
+      ],
+      "title": "特殊:", 
+       "type":0, 
+       "group":0,
+      "id": [
+        "bSupportCB"
+      ] 
+    } 
+  ] 
+]

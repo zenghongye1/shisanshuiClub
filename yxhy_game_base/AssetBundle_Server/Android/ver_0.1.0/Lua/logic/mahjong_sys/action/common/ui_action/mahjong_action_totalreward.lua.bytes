@@ -1,0 +1,10 @@
+local base = require "logic.mahjong_sys.action.common.mahjong_action_base"
+local mahjong_action_totalreward = class("mahjong_action_totalreward", base)
+
+local mahjong_ui = mahjong_ui
+
+function mahjong_action_totalreward:Execute(tbl)
+	Trace(GetTblData(tbl))
+end
+
+return mahjong_action_totalreward

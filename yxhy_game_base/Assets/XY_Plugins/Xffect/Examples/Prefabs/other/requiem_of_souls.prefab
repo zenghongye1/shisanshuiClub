@@ -1,0 +1,435 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 400000}
+  - 114: {fileID: 11400000}
+  m_Layer: 0
+  m_Name: requiem_of_souls
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &100002
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 400002}
+  - 114: {fileID: 11400002}
+  m_Layer: 0
+  m_Name: souls
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &400000
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 100000}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 77.72352}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children:
+  - {fileID: 400002}
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+--- !u!4 &400002
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 100002}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 400000}
+  m_RootOrder: 0
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31e31838b0476f14ea97697da6957b42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LifeTime: -1
+  IgnoreTimeScale: 0
+  EditView: 0
+  Scale: 1
+--- !u!114 &11400002
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 100002}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eaa492ec72a57543b3ace7c81409998, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  VersionIdentifier1: 222
+  ClientTransform: {fileID: 400002}
+  SyncClient: 0
+  Material: {fileID: 2100000, guid: 1e420a7c1573b01498d3eef12441ee6a, type: 2}
+  RenderType: 1
+  StartTime: 0
+  MaxFps: 60
+  DebugColor:
+    r: 1
+    g: 1
+    b: 1
+    a: 1
+  Depth: 0
+  SpriteType: 0
+  OriPoint: 0
+  SpriteWidth: 1
+  SpriteHeight: 1
+  SpriteUVStretch: 0
+  RandomOriScale: 0
+  RandomOriRot: 0
+  OriRotationMin: 0
+  OriRotationMax: 0
+  RotAffectorEnable: 0
+  RotateType: 0
+  DeltaRot: 0
+  RotateCurve:
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  OriScaleXMin: 1
+  OriScaleXMax: 1
+  OriScaleYMin: 1
+  OriScaleYMax: 1
+  ScaleAffectorEnable: 0
+  ScaleType: 0
+  DeltaScaleX: 0
+  DeltaScaleY: 0
+  ScaleXCurve:
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  ScaleYCurve:
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  UseSameScaleCurve: 0
+  ColorAffectorEnable: 1
+  ColorAffectType: 2
+  ColorGradualTimeLength: 1
+  ColorGradualType: 0
+  Color1:
+    r: 0.67910445
+    g: 0.106426805
+    b: 0.106426805
+    a: 0
+  Color2:
+    r: 0.6784314
+    g: 0.105882354
+    b: 0.105882354
+    a: 0.44705883
+  Color3:
+    r: 0.6784314
+    g: 0.105882354
+    b: 0.105882354
+    a: 1
+  Color4:
+    r: 0.6784314
+    g: 0.105882354
+    b: 0.105882354
+    a: 0.4627451
+  Color5:
+    r: 0.6784314
+    g: 0.105882354
+    b: 0.105882354
+    a: 0
+  ColorChangeType: 1
+  ColorParam:
+    Colors:
+    - t: 0
+      Color:
+        r: 0.67910445
+        g: 0.106426805
+        b: 0.106426805
+        a: 0
+    - t: 0.25
+      Color:
+        r: 0.6784314
+        g: 0.105882354
+        b: 0.105882354
+        a: 0.44705883
+    - t: 0.5
+      Color:
+        r: 0.6784314
+        g: 0.105882354
+        b: 0.105882354
+        a: 1
+    - t: 0.75
+      Color:
+        r: 0.6784314
+        g: 0.105882354
+        b: 0.105882354
+        a: 0.4627451
+    - t: 1
+      Color:
+        r: 0.6784314
+        g: 0.105882354
+        b: 0.105882354
+        a: 0
+  ColorGradualCurve:
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  RibbonWidth: 4
+  MaxRibbonElements: 20
+  RibbonLen: 40
+  TailDistance: 0
+  StretchType: 0
+  FaceToObject: 0
+  FaceObject: {fileID: 0}
+  UseRandomRibbon: 0
+  RibbonWidthMin: 3
+  RibbonWidthMax: 3.5
+  RibbonLenMin: 20
+  RibbonLenMax: 40
+  ConeSize: {x: 0, y: 0}
+  ConeAngle: 0
+  ConeSegment: 4
+  UseConeAngleChange: 0
+  ConeDeltaAngle:
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  CMesh: {fileID: 0}
+  EmitType: 2
+  BoxSize: {x: 5, y: 5, z: 5}
+  EmitPoint: {x: 0, y: 0, z: 0}
+  Radius: 4
+  CircleDir: {x: 0, y: 1, z: 0}
+  EmitUniform: 0
+  LineLengthLeft: -1
+  LineLengthRight: 1
+  MaxENodes: 12
+  IsNodeLifeLoop: 0
+  NodeLifeMin: 1.3
+  NodeLifeMax: 1.3
+  EmitWay: 0
+  EmitterCurve:
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  DiffDistance: 0.1
+  EmitMesh: {fileID: 0}
+  EmitMeshType: 0
+  ChanceToEmit: 100
+  EmitDuration: 1000
+  EmitRate: 10
+  EmitLoop: -1
+  EmitDelay: 0
+  DirType: 2
+  DirCenter: {fileID: 400002}
+  OriVelocityAxis: {x: 0, y: 1, z: 0}
+  AngleAroundAxis: 0
+  OriSpeed: 0
+  AlwaysSyncRotation: 0
+  IsRandomSpeed: 1
+  SpeedMin: 50
+  SpeedMax: 80
+  JetAffectorEnable: 1
+  JetMagType: 1
+  JetMag: 0
+  JetCurve:
+    m_Curve:
+    - time: 0
+      value: -0.43890667
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 0.66278774
+      value: -0.43890667
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 0.731441
+      value: -518.3241
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  VortexAffectorEnable: 0
+  VortexMagType: 0
+  VortexMag: 60
+  VortexCurve:
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  VortexDirection: {x: 0, y: 1, z: 0}
+  VortexInheritRotation: 1
+  VortexObj: {fileID: 400002}
+  IsRandomVortexDir: 0
+  IsVortexAccelerate: 0
+  VortexAttenuation: 0
+  UseVortexMaxDistance: 0
+  VortexMaxDistance: 0
+  UVRotAffectorEnable: 0
+  RandomUVRotateSpeed: 0
+  UVRotXSpeed: 0
+  UVRotYSpeed: 0
+  UVRotXSpeedMax: 0
+  UVRotYSpeedMax: 0
+  GravityAffectorEnable: 1
+  GravityAftType: 1
+  GravityMagType: 1
+  GravityMag: 120
+  GravityCurve:
+    m_Curve:
+    - time: 0.0027343652
+      value: 91.515
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 0.62076044
+      value: 98.94575
+      inSlope: 12.023356
+      outSlope: 4910.5776
+      tangentMode: 21
+    - time: 0.6522811
+      value: 253.73042
+      inSlope: 4910.5776
+      outSlope: 0
+      tangentMode: 21
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  GravityDirection: {x: 0, y: 1, z: 0}
+  GravityObject: {fileID: 0}
+  IsGravityAccelerate: 0
+  AirAffectorEnable: 0
+  AirObject: {fileID: 400002}
+  AirMagType: 0
+  AirMagnitude: 0
+  AirMagCurve:
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  AirDirection: {x: 0, y: 0, z: 0}
+  AirAttenuation: 0
+  AirUseMaxDistance: 0
+  AirMaxDistance: 0
+  AirEnableSpread: 0
+  AirSpread: 0
+  AirInheritVelocity: 0
+  AirInheritRotation: 0
+  BombAffectorEnable: 0
+  BombObject: {fileID: 0}
+  BombType: 1
+  BombDecayType: 0
+  BombMagType: 1
+  BombMagnitude: 1
+  BombMagCurve:
+    m_Curve:
+    - time: 0
+      value: 0.9953661
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 0.5083333
+      value: 0.9953661
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 0.625
+      value: -0.004633963
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  BombAxis: {x: 0, y: 0, z: 0}
+  BombDecay: 1
+  TurbulenceAffectorEnable: 1
+  TurbulenceObject: {fileID: 400002}
+  TurbulenceMagType: 1
+  TurbulenceMagnitude: 12
+  TurbulenceMagCurve:
+    m_Curve:
+    - time: 0.0025067623
+      value: 34.278156
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 0.48713076
+      value: 22.497192
+      inSlope: -37.71977
+      outSlope: -37.71977
+      tangentMode: 0
+    - time: 0.5966508
+      value: 0.060887337
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+  TurbulenceAttenuation: 0
+  TurbulenceUseMaxDistance: 0
+  TurbulenceMaxDistance: 0
+  DragAffectorEnable: 0
+  DragObj: {fileID: 400002}
+  DragUseDir: 0
+  DragDir: {x: 0, y: 1, z: 0}
+  DragMag: 10
+  DragUseMaxDist: 0
+  DragMaxDist: 50
+  DragAtten: 0
+  UVAffectorEnable: 0
+  UVType: 0
+  OriTopLeftUV: {x: 0, y: 0}
+  OriUVDimensions: {x: 1, y: 1}
+  Cols: 1
+  Rows: 1
+  LoopCircles: -1
+  UVTime: 1
+  EanPath: 6e6f6e65
+  EanIndex: 0
+  RandomStartFrame: 0
+  UseCollisionDetection: 0
+  ParticleRadius: 1
+  CollisionType: 0
+  CollisionAutoDestroy: 1
+  EventReceiver: {fileID: 0}
+  EventHandleFunctionName: 4f6e5265717569656d4f66536f756c73436f6c6c6973696f6e
+  CollisionGoal: {fileID: 0}
+  ColliisionPosRange: 1
+  CollisionLayer: {}
+  AvailableNodeCount: 12
+  LastClientPos: {x: 0, y: 0, z: 77.72352}
+  MyCamera: {fileID: 0}
+  Owner: {fileID: 11400000}
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 100000}
+  m_IsPrefabParent: 1

@@ -1,0 +1,164 @@
+--[[--
+ * @Description: 发牌下来时判断特殊牌型
+ * @Author:      zhy
+ * @FileName:    prepare_special.lua
+ * @DateTime:    2017-07-05
+ ]]
+
+--require "logic/shisangshui_sys/place_card/place_card"
+require "logic/shisangshui_sys/lib/lib_sp_card_logic"
+require "logic/shisangshui_sys/common/array"
+require "logic/shisangshui_sys/card_define"
+
+local base = require("logic.framework.ui.uibase.ui_window")
+local prepare_special = class("prepare_special",base)
+
+function prepare_special:ctor()
+	base.ctor(self)
+	--计时间进度条
+	--self.timeSpt = nil
+	--计时间Lbl
+	self.timeLbl = nil
+	--描述文字
+	self.descLbl = nil
+	--最大等待时间
+	self.timeSecond = 10
+	--所有牌
+	self.my_cards = nil
+
+	self.cardTranTbl = {}
+	--特殊牌型
+	self.card_type = nil
+
+	self.recommendCards = nil
+end
+
+function prepare_special:OnInit()
+	self:InitView()
+end
+
+function prepare_special:OnOpen( ... )
+	local cards = {}
+	local nSpecialType = nil
+	local dun = nil
+	local recCards = {}
+	if self.args == nil or #self.args < 3 then
+		Trace("特殊牌型参数传的错。请检查参数个数")
+	end
+	cards = self.args[1]
+	nSpecialType = self.args[2]
+	dun = self.args[3]
+	recCards = self.args[4]
+	
+	self.card_type = nSpecialType
+	cards = Array.CardSort(cards, nSpecialType)
+	self.timeSecond = os.time() + 5
+	self.recommendCards = recCards
+	Trace("---------cards------"..tostring(cards).."  dun: "..tostring(dun))
+	self.my_cards = nil
+	self.my_cards = cards
+	for i, v in pairs(self.cardTranTbl) do
+		if v ~= nil then
+			GameObject.DestroyImmediate(v.gameObject)
+		end
+	end
+	self.cardTranTbl = {}
+	self:LoadAllCard(self.my_cards, nSpecialType, dun)
+end
+
+function prepare_special:OnClose()
+	for i, v in pairs(self.cardTranTbl) do
+		if v ~= nil then
+			GameObject.DestroyImmediate(v.gameObject)
+		end
+	end
+	self.my_cards = nil
+	self.cardTranTbl = {}
+end
+
+function prepare_special:PlayOpenAmination()
+	--打开动画重写
+end
+
+function prepare_special:InitView()
+	--self.timeSpt = componentGet(child(self.transform, "ready/timeSpt"), "UISprite")
+	self.timeLbl = componentGet(child(self.transform, "panel/ready/timeLbl"), "UILabel")
+	self.descLbl = componentGet(child(self.transform, "panel/message/descLbl"), "UILabel")
+	self.cardGrid = child(self.transform, "panel/cardGrid")
+	self.btn_confirm = child(self.transform, "panel/message/confirmbtn")
+	if self.btn_confirm ~= nil then
+		addClickCallbackSelf(self.btn_confirm.gameObject, self.ConfirmClick, self)
+	end
+	self.cancelbtn = child(self.transform, "panel/message/cancelbtn")
+	if self.cancelbtn ~= nil then
+		addClickCallbackSelf(self.cancelbtn.gameObject, self.CancelClick, self)
+	end
+end
+
+function prepare_special:LoadAllCard(cards, nSpecialType, dun)
+	if self.cardGrid == nil then
+		Trace("cardGrid == nil")
+		return
+	end
+
+	for i, v in ipairs(cards) do
+		local cardObj = newNormalUI(data_center.GetResPokerCommPath().."/card/"..tostring(v), self.cardGrid)
+		self.cardTranTbl[i] = cardObj
+		componentGet(child(self.cardTranTbl[i].transform, "bg"),"UISprite").depth = i * 2 + 3
+		componentGet(child(self.cardTranTbl[i].transform, "num"),"UISprite").depth = i * 2 + 5
+		componentGet(child(self.cardTranTbl[i].transform, "color1"),"UISprite").depth = i * 2 + 5
+		componentGet(child(self.cardTranTbl[i].transform, "color2"),"UISprite").depth = i * 2 + 5
+		if room_data.GetSssRoomDataInfo().isChip == true and v == 40 then
+			child(self.cardTranTbl[i].transform,"ma").gameObject:SetActive(true)
+			componentGet(child(self.cardTranTbl[i].transform, "ma"),"UISprite").depth = i * 2 + 4
+		end
+	end
+	local grid =  componentGet(self.cardGrid,"UIGrid")
+	if grid ~= nil then
+		grid:Reposition()
+	end
+	self:SpecialCard(cards, nSpecialType, dun)
+end
+
+function prepare_special:SpecialCard(cards, nSpecialType, dun)
+	local dunNum = GStars_Special_Score[nSpecialType]
+	self.descLbl.text = "出现特殊牌型"..tostring(GStars_Special_Type_Name[nSpecialType]).."，预计赢取每家"..tostring(dunNum).."水，是否按特殊牌型出牌？"
+end
+
+----------------------------------按扭事件注册END-------------------------------
+
+---------------------------点击事件-------------------------
+function prepare_special:ConfirmClick(obj)
+	shisangshui_play_sys.ChooseCardTypeReq(1)
+--	this.Hide()
+	UI_Manager:Instance():CloseUiForms("prepare_special")
+	UI_Manager:Instance():CloseUiForms("place_card")
+end
+
+function prepare_special:CancelClick(obj)
+	UI_Manager:Instance():ShowUiForms("place_card",UiCloseType.UiCloseType_CloseNothing,nil,self.my_cards,self.card_type)
+	UI_Manager:Instance():CloseUiForms("prepare_special")
+end
+
+function prepare_special:ReShow()
+	this.transform.gameObject:SetActive(true)
+end
+---------------------------点击事件END-------------------------
+
+function prepare_special:Update()
+	local timeEnd = room_data.GetPlaceCardTime()
+	local curTime = os.time()
+	local leftTime = timeEnd - curTime
+	if leftTime <= 0 and curTime > self.timeSecond then
+		UI_Manager:Instance():CloseUiForms("prepare_special")
+		return
+	end
+	if math.floor(leftTime) < 0 then
+		leftTime = 0
+	end
+	
+	self.timeLbl.text = tostring(math.floor(leftTime))
+end
+
+return prepare_special
+

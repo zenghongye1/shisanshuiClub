@@ -1,0 +1,57 @@
+--region *.lua
+--Date
+--此文件由[BabeLua]插件自动生成
+
+
+
+--endregion 
+quanzhoumj_room_ui=MJRoom_UI.New()
+local this=quanzhoumj_room_ui 
+this.name="QZ"
+ 
+--[[
+初始化UI，读取持久化
+]] 
+ 
+function this.Init()  
+    if PlayerPrefs.HasKey(this.name) and  PlayerPrefs.GetString(this.name)~=nil then
+        local str=PlayerPrefs.GetString(this.name)  
+        local t=ParseJsonStr(str)
+        for k,v in pairs(t) do 
+            this.paneltable[k]=v
+        end
+    end
+    if this.paneltable==nil or table.getCount(this.paneltable)==0 then
+        local str = FileReader.ReadFile(global_define.appConfig.qzmj_path) 
+ 	    local roomConfData = nil
+ 	    if nil ~= str and "" ~= str then
+		    roomConfData = ParseJsonStr(str)
+	    end
+        room_data.ReadInfo(roomConfData,this)    
+    end  
+    if room_data.GetRoomCard()[this.name]~=nil then
+        this:ChangeRoomCard(room_data.GetRoomCard()[this.name])
+    end
+    quanzhoumj_room_ui.UI_Pos=openroom_main_ui.UI_Pos
+    quanzhoumj_room_ui:Show() 
+    openroom_main_ui.RegisterCreateHandle(this.OnCreateBtnClick) 
+end
+
+--[[
+每次新建一个开房界面脚本必须注册到main里面
+
+]]
+
+function this.OnCreateBtnClick() 
+    local tables=quanzhoumj_room_ui:GetSelect()  
+    local confData={}  
+    confData = tables
+    confData.gid = ENUM_GAME_TYPE.TYPE_QUANZHOU_MJ		
+    room_data.SetQzmjRoomDataInfo(tables) 
+    table.foreach(confData,print)
+    confData.bsupportju = confData.bsupportke == 1 and 0 or 1
+    roomdata_center.gameRuleStr = room_data.GetQZShareString()    
+    join_room_ctrl.CreateRoom(confData)   
+    local str= json.encode(this.paneltable)
+    PlayerPrefs.SetString(this.name,str)
+end

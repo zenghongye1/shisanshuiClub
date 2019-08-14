@@ -1,0 +1,226 @@
+--region *.lua
+--Date
+--此文件由[BabeLua]插件自动生成
+
+
+
+--endregion
+announcement_ui =ui_base.New()
+local this = announcement_ui
+this.eid={}
+this.currentindex=1 
+this.page=0
+
+local nomailBgGo = nil
+local btn_delete = nil
+
+function this.Show()
+	if this.gameObject==nil then
+		require ("logic/hall_sys/announcement_ui/announcement_ui")
+		this.gameObject=newNormalUI("Prefabs/UI/Hall/announcement_ui")
+	else
+		this.gameObject:SetActive(true)
+	end
+    this.addlistener()
+end
+function this.Start() 
+    this:RegistUSRelation()
+end
+
+function this.OnDestroy()
+    this:UnRegistUSRelation()
+end
+function this.addlistener()
+    local btn_close=child(this.transform,"panel_announcement/btn_close")
+    if btn_close~=nil then
+        addClickCallbackSelf(btn_close.gameObject,this.Hide,this)
+    end 
+    this.WrapContent_record=componentGet(child(this.transform,"panel_announcement/Panel_Left/sv_email/toggle_grid"),"UIWrapContent")
+    if this.WrapContent_record ~= nil then
+   		this.WrapContent_record.onInitializeItem = this.OnUpdateItem_emailrecord
+   	end
+  --  this.item=child(this.WrapContent_record.transform.parent,"item")
+   -- this.itemheight=componentGet(child(this.item.transform,"Background"),"UISprite").height   
+    btn_delete=child(this.transform,"panel_announcement/Panel_Right/btn_delete")
+    if btn_delete~=nil then
+        addClickCallbackSelf(btn_delete.gameObject,this.delete,this)
+    end
+
+    nomailBgGo = child(this.transform, "panel_announcement/Panel_Right/nomailBg").gameObject
+    nomailBgGo:SetActive(false)
+end
+
+function  this.Hide()
+    ui_sound_mgr.PlaySoundClip("common/audio_button_click")
+    if not IsNil(this.gameObject) then 
+		GameObject.Destroy(this.gameObject)
+        this.gameObject=nil
+        this.emailrecord=nil
+	end
+end
+this.emailrecord={}
+function this.delete(obj1,obj2) 
+    Trace(this.currentindex)
+    if this.currentindex==nil or this.emailrecord[this.currentindex]==nil then
+        return
+    end    
+    http_request_interface.delEmail(this.emailrecord[this.currentindex].eid,function(code,m,str)
+        table.remove(this.emailrecord,this.currentindex)
+        local lab_content=child(this.transform,"panel_announcement/Panel_Right/sp_background/lab_details") 
+        componentGet(lab_content.gameObject,"UILabel").text=""
+        for i=this.WrapContent_record.transform.childCount,1,-1 do
+             this.WrapContent_record.transform:GetChild(i-1).gameObject:SetActive(false)
+        end
+        if table.getCount(this.emailrecord)<this.currentindex and this.currentindex>0 then
+            this.currentindex=this.currentindex-1
+        end
+        this.UpdateEmailRecordSimpleData(this.emailrecord,1)
+        --this.WrapContent_record:WrapContent()
+       -- currentindex=nil
+        
+    end)
+    
+end
+
+
+function this.UpdateEmailRecordSimpleData(data,code) 
+	this.emailrecord =data  
+	this.maxCount = table.getCount(this.emailrecord) 
+    this.InitPanelRecord(this.maxCount,code)  
+end
+
+
+
+function this.InitPanelRecord(count,code) 
+	if code==1 then  
+		this.WrapContent_record.minIndex = -count+1
+		this.WrapContent_record.maxIndex = 0 
+     --   if this.WrapContent_record.transform.childCount >=8  then
+	--	    return
+	 --   end 
+    end 
+	Trace("InitPanelRecord") 
+	if count >=0 and count <=8 then
+        for i=0 ,this.WrapContent_record.transform.childCount-1 do  
+              this.WrapContent_record.transform:GetChild(i).gameObject:SetActive(false) 
+              this.WrapContent_record.transform:GetChild(i).name=i+1
+        end
+	    for i=0, count-1 do
+			local go =this.InitItem(this.emailrecord[i+1],i,code)  
+            this.OnUpdateItem_emailrecord(go.gameObject,nil,-i)
+		end 
+	elseif count >8 then
+		for a=0,7 do
+			this.InitItem(this.emailrecord[a+1],a,code)
+         	this.WrapContent_record.enabled = code==1 
+		end 
+	end  
+    checkRead()
+    this.CheckShowNoMail(count)
+end
+
+function this.CheckShowNoMail(count)
+    local show = count == 0
+    btn_delete.gameObject:SetActive(not show)
+    nomailBgGo:SetActive(show)
+    if show then
+        this.ShowFirstItemWithoutClick(this.WrapContent_record.transform:GetChild(0))
+    end
+end
+
+function this.ShowFirstItemWithoutClick(tr)
+    local redpoint = child(tr,"sp_red")
+    redpoint.gameObject:SetActive(false)
+    tr.gameObject:SetActive(true)
+    tr.localPosition = Vector3.zero
+    subComponentGet(tr, "lab_name", typeof(UILabel)).text = ""
+    subComponentGet(tr, "lab_NOname", typeof(UILabel)).text = ""
+    componentGet(tr.gameObject,"UIToggle").value=false  
+    child(tr, "Checkmark").gameObject:SetActive(false)
+    componentGet(tr.gameObject,"UIToggle").enabled = false
+    UIEventListener.Get(tr.gameObject).onClick = nil
+end
+
+function this.InitItem(data,i,code)  
+    local tmpItem
+	if code ==1 then  
+        tmpItem=child(this.WrapContent_record.transform,tostring(i+1))
+        local height=componentGet(child(tmpItem.transform,"Background").gameObject,"UISprite").height
+        tmpItem.gameObject:SetActive(true)
+        tmpItem.transform.localPosition = Vector3.New(0,-i*(88),0)
+	  --  tmpItem = NGUITools.AddChild(this.WrapContent_record.gameObject,this.item.gameObject)
+	--	tmpItem.transform.localPosition = Vector3.New(0,-i*this.itemheight,0)
+		--tmpItem.gameObject:SetActive(true) 
+ 	end 
+    return tmpItem
+end
+ 
+function this.OnUpdateItem_emailrecord(go,index,realindex) 
+    local rindext=1-realindex   
+    local redpoint=child(go.transform,"sp_red")
+    redpoint.gameObject:SetActive(this.emailrecord[rindext].status==0) 
+    componentGet(go.gameObject,"UIToggle").enabled = true
+    
+    if go~=nil then
+        local lab_name=child(go.transform,"lab_name")   
+        local lab_noname=child(go.transform,"lab_NOname")
+        componentGet(lab_name.gameObject,"UILabel").text=this.emailrecord[rindext].title 
+        componentGet(lab_noname.gameObject,"UILabel").text=this.emailrecord[rindext].title 
+        go.name=rindext  
+        addClickCallbackSelf(go.gameObject,this.toggleclick,this) 
+    end
+    if rindext~=this.currentindex then
+        componentGet(go.gameObject,"UIToggle").value=false  
+    else
+        componentGet(go.gameObject,"UIToggle").value=true 
+        local redpoint=child(go.transform,"sp_red")
+        redpoint.gameObject:SetActive(false)
+        local lab_content=child(this.transform,"panel_announcement/Panel_Right/sp_background/lab_details") 
+        componentGet(lab_content.gameObject,"UILabel").text=this.emailrecord[rindext].content
+    end 
+    if rindext==this.maxCount and this.maxCount>=8 then  
+        http_request_interface.getEmails(this.page+1,function (code,m,str) 
+            local s=string.gsub(str,"\\/","/")  
+            local t=ParseJsonStr(s) 
+            if t.ret==0 then 
+                local count=table.getCount(this.emailrecord)
+                for i=1,table.getCount(t.data) do
+                    this.emailrecord[i+count]=t.data[i]
+                end
+                this.maxCount=table.getCount(this.emailrecord)
+                this.WrapContent_record.minIndex = -this.maxCount+1
+           --     this.UpdateEmailRecordSimpleData(this.emailrecord,1)
+                this.page=this.page+1
+           end
+        end) 
+    end
+end
+function this.toggleclick(obj1,obj2) 
+    this.currentindex=tonumber(obj2.name)
+    local lab_content=child(this.transform,"panel_announcement/Panel_Right/sp_background/lab_details") 
+    componentGet(lab_content.gameObject,"UILabel").text=this.emailrecord[tonumber(obj2.name)].content
+    this.emailrecord[tonumber(obj2.name)].status = 1
+    local redpoint=child(obj2.transform,"sp_red") 
+    redpoint.gameObject:SetActive(false) 
+    checkRead()
+    http_request_interface.readEmail(this.emailrecord[tonumber(obj2.name)].eid,function(code,m,str)Trace(str) end)   
+end 
+function checkRead()
+    local isshow=false
+    local emailPanel=child(this.transform,"panel_announcement/Panel_Left/sv_email/toggle_grid")
+    for i=0,emailPanel.transform.childCount-1,1 do
+        Trace(emailPanel.transform.childCount.."emailPanel.transform.childCount")
+        local redpoint=child(emailPanel.transform:GetChild(i),"sp_red")
+        if  emailPanel.transform:GetChild(i).gameObject.activeSelf then
+            Trace(emailPanel.transform:GetChild(i).name.."emailPanel.transform:GetChild(i).name")
+            Trace(redpoint.name.."redpoint.name")
+            if redpoint.gameObject.activeSelf  then  
+               isshow=true 
+               Trace(tostring( isshow).."isshow")
+            end
+        end 
+    end 
+    
+    local email= child(hall_ui.transform, "Panel_TopRight/sv_bottomright/Grid_dowm/btn_mail")
+    child(email.transform,"sp_redpoint").gameObject:SetActive(isshow)
+end

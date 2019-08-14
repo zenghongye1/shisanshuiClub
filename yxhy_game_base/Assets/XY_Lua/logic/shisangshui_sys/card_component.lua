@@ -1,0 +1,86 @@
+
+card_component = {}
+
+function card_component.create()
+	require "logic/shisangshui_sys/mode_comp_base"
+	local this = mode_comp_base.create()
+	this.Class = card_component
+	this.name = "card_component"
+	
+	this.cardvalue = nil;
+	this.gameObject = nil;
+	
+	local isFront = false;
+	this.EventOnClick = nil;
+	local meshFilter = nil;
+	local meshRenderer = nil
+	local originalMat = nil
+	
+	
+	this.base_init = this.Initialize
+	
+	function this:Initialize()
+		this.base_init()
+	end
+	
+	function CreateObj()
+		local resCardObj = newNormalObjSync("Prefas/Scene/shisangshui/PokerCard",typeof(GameObject))
+		this.gameObject = newobject(resCardObj)
+		meshFilter = this.gameObject:GetComponentInChildren(typeof(UnityEngine.MeshFilter))
+		 meshRenderer = this.gameObject:GetComponentInChildren(typeof(UnityEngine.MeshRenderer))
+		 originalMat = meshRenderer.sharedMaterial
+	end
+	
+	function this:SetMesh(value)
+		this.cardvalue = value
+		if this.gameObject ~= nil and meshFilter ~= nil then
+		local comp_resMgr = mode_manager.GetCurrentMode():GetComponent("resMgr_component") --加载资源
+		local index = poker3D_dictionary.Get3DPokerMeshIndex(this.cardvalue)
+		meshFilter.mesh = resMgr_component:GetCardMesh(index)
+	
+		end
+	end
+	
+	    --显示
+    function this:Show(front,isAnim)
+        if front~=nil then
+            isFront = front
+        end
+        if(this.gameObject~=nil) then
+            this.gameObject:SetActive(true)
+            if isFront then
+                if isAnim~=nil and isAnim then
+                    this.gameObject.transform:DOLocalRotate(Vector3(0,0,0), 0.3, DG.Tweening.RotateMode.Fast)
+                else
+                    this.gameObject.transform.localEulerAngles = Vector3(0, 0, 0)
+                end
+            else
+                if isAnim~=nil and isAnim then
+                    this.gameObject.transform:DOLocalRotate(Vector3(0,0,180), 0.3, DG.Tweening.RotateMode.Fast)
+                else
+                    this.gameObject.transform.localEulerAngles = Vector3(0, 0, 180)
+                end
+            end
+        end
+    end
+	
+	   --隐藏
+    function this:Hide()
+        if(this.gameObject ~= nil) then
+            this.gameObject:SetActive(false)
+        end
+    end
+	
+	function this:Uninitialize()
+		this.base_unInit()
+	end
+	
+	 --Trace("-----------创建麻将对象")
+    CreateObj()
+
+	return this
+end
+
+
+
+

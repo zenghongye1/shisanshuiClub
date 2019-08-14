@@ -1,0 +1,162 @@
+local base = require "logic/framework/ui/uibase/ui_view_base"
+local InteractionView = class("InteractionView", base)
+local addClickCallbackSelf = addClickCallbackSelf
+
+local FaceIDTbl = {
+	"10001",
+	"10002",
+	"10003",
+	"10004",
+	"10005",
+}
+
+function InteractionView:ctor(go,callback,tbl,gid)
+
+	-- @todo  单个player为基准
+	self.hideCallback = callback
+	self.logicSeat = 0
+	self.posTbl = tbl
+	self.actionTran = nil
+	base.ctor(self,go)
+end
+
+--初始化位置
+function InteractionView:InitViewByConfig()	
+	local playerTrans = self.transform
+	if playerTrans ~= nil then
+		local actionTran = child(playerTrans,"bg/head/personalInfo")
+		actionTran.localPosition = Vector3(self.posTbl.x,self.posTbl.y,self.posTbl.z)
+	end
+end
+
+
+
+--添加按键点击事件
+function InteractionView:RegisterOnClick()
+	if self.actionTran == nil then
+		logError("self.actionTran == nil")
+		return
+	end
+	local playerInteractionTran = child(self.actionTran,"btn/ScrollView/interfaceGrid")
+	local actionNum = playerInteractionTran.childCount
+	-- for k = 1, actionNum do
+	-- 	self.PlayerInteraction = child(playerInteractionTran,"Sprite"..tostring(k))		
+	-- 	if (self.PlayerInteraction ~= nil) then
+	-- 		addClickCallbackSelf(self.PlayerInteraction.gameObject,self.Onbtn_PlayerInteraction,self)
+	-- 	end
+	-- end
+
+	--获取互动表情价格配置
+	if not InteractionView.priceTbl then
+		-- http_request_interface.getPaidface(function( dataTbl )
+		-- 	Trace("getPaidface------"..GetTblData(dataTbl))
+		-- 	InteractionView.priceTbl = dataTbl.msg
+
+			for k = 1, actionNum do
+				local playerInteraction = child(playerInteractionTran,"Sprite"..tostring(k))		
+				if (playerInteraction ~= nil) then
+					addClickCallbackSelf(playerInteraction.gameObject,self.Onbtn_PlayerInteraction,self)
+
+					--free icon
+					local freeIconName = "freeIcon"
+					local freeIcon = child(playerInteraction.transform, freeIconName)
+					if not freeIcon then
+						local prefabPath = data_center.GetAppPath().."/ui_prefab/free_icon"
+					    local prefabObj = newNormalObjSync(prefabPath, typeof(GameObject))
+						if prefabObj ~= nil then
+					    	local freeIconObj = newobject(prefabObj)
+					    	freeIconObj.name = freeIconName
+							freeIconObj.transform.parent = playerInteraction.transform
+							freeIconObj.transform.localPosition = Vector3(12,-38,0)
+							freeIconObj.transform.localScale = Vector3.New(1,1,1)
+							freeIconObj:SetActive(true)
+						end
+					else
+						-- destroy(freeIcon.gameObject)
+					end
+				end
+			end
+		-- end)
+	end
+end
+
+function InteractionView:Onbtn_PlayerInteraction(obj)
+	local k = string.sub(tostring(obj.name),7,8)
+	local logicSeat = self.logicSeat
+	Trace("Onbtn_PlayerInteraction"..tostring(k).."------->p"..logicSeat)
+	-- self:hidePlayerInfoClick()
+	--if game_scene.getCurSceneType() == scene_type.FUJIANSHISANGSHUI then
+	if roomdata_center.gid == ENUM_GAME_TYPE.TYPE_SHISHANSHUI or roomdata_center.gid == ENUM_GAME_TYPE.TYPE_PINGTAN_SSS then
+		shisangshui_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	-- elseif game_scene.getCurSceneType() == scene_type.NIUNIU then
+	elseif roomdata_center.gid == ENUM_GAME_TYPE.TYPE_NIUNIU then
+		niuniu_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	-- elseif game_scene.getCurSceneType() == scene_type.HENANMAHJONG then
+	elseif GameUtil.CheckGameIdIsMahjong(roomdata_center.gid) then
+		mahjong_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	elseif  roomdata_center.gid == ENUM_GAME_TYPE.TYPE_SANGONG then
+		sangong_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	else
+		yingsanzhang_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	end
+
+
+	--钻石是否充足
+	-- self.money = self.money or data_center.GetLoginUserInfo().card
+	-- if self.money <1 then
+	-- 	local content = "您的账户\"钻石\"不足，无法继续\n发送互动表情，是否充值钻石?"
+	-- 	local yesBtn = MessageBox.GetBtnInfo("是", "button_03", function()
+	-- 			-- Trace("充值钻石..")
+	-- 			UI_Manager:Instance():ShowUiForms("shop_ui")
+	-- 		end)
+	-- 	local noBtn = MessageBox.GetBtnInfo("否","button_05", function() end)
+	-- 	MessageBox.Show(content, {yesBtn, noBtn}, nil)
+		
+	-- 	self:hidePlayerInfoClick()
+	-- 	return
+	-- else
+	-- 	self.money = self.money -1
+	-- end
+	--延时关闭
+	if self.hideTime then
+		self.hideTime:Stop()
+		self.hideTime = nil
+	end
+	self.hideTime = FrameTimer.New(function()
+		self:hidePlayerInfoClick()
+		self.hideTime = nil
+	end,30,1)
+	self.hideTime:Start()
+	-- --开始发送表情
+	-- local faceID = FaceIDTbl[tonumber(k)]
+	-- if faceID then
+	-- 	http_request_interface.sendPaidface(function(dataTbl)
+	-- 		-- Trace("sendPaidface------ "..faceID)
+	-- 		if dataTbl.ret ~=0 then
+	-- 			self:hidePlayerInfoClick()
+	-- 			UI_Manager:Instance():FastTip("互动表情发送未成功!")
+	-- 			return
+	-- 		end
+
+	-- 		if roomdata_center.gid == ENUM_GAME_TYPE.TYPE_SHISHANSHUI or roomdata_center.gid == ENUM_GAME_TYPE.TYPE_PINGTAN_SSS then
+	-- 			shisangshui_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	-- 		elseif roomdata_center.gid == ENUM_GAME_TYPE.TYPE_NIUNIU then
+	-- 			niuniu_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	-- 		elseif GameUtil.CheckGameIdIsMahjong(roomdata_center.gid) then
+	-- 			mahjong_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	-- 		elseif  roomdata_center.gid == ENUM_GAME_TYPE.TYPE_SANGONG then
+	-- 			sangong_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	-- 		else
+	-- 			yingsanzhang_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	-- 		end
+	-- 	end, faceID)
+	-- end
+end
+
+function InteractionView:hidePlayerInfoClick()
+	if self.actionTran and self.actionTran.gameObject then
+		self.actionTran.gameObject:SetActive(false)
+	end
+end
+
+return InteractionView

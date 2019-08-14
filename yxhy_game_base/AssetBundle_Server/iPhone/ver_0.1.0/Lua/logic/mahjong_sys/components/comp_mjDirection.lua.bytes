@@ -1,0 +1,68 @@
+local comp_mjDirection = class("comp_mjDirection")
+
+function comp_mjDirection:ctor()
+	self.tr = nil
+	self.darkDirGoList = {}
+	self.lightDirGoList = {}
+	self.lightItemGoList = {}
+
+	-- 1  : 东南西北
+	-- 2  ：南西北东
+	-- 3  ：西北东南
+	-- 4  ：北东南西
+	self.direction = 1
+	self.curLightItemGo = nil
+end
+
+
+function comp_mjDirection:Init(tr )
+	self.tr = tr
+	for i = 1, 4 do
+		local dir = child(tr, "dark_dir/direction_0" .. i)
+		dir.gameObject:SetActive(false)
+		table.insert(self.darkDirGoList , dir.gameObject)
+	end
+
+	for i = 1, 4 do
+		local dir = child(tr, "light_dir/direction_" .. i)
+		dir.gameObject:SetActive(false)
+		table.insert(self.lightDirGoList , dir.gameObject)
+	end
+
+end
+
+
+function comp_mjDirection:InitLightItems()
+	for i = 1, 4 do
+		local go = child(self.lightDirGoList[self.direction].transform, "direction_0" .. i).gameObject
+		go:SetActive(false)
+		self.lightItemGoList[i] = go
+	end
+end
+
+function comp_mjDirection:ShowObjByDirection(direction)
+	for i = 1, 4 do
+		self.darkDirGoList[i]:SetActive(direction == i)
+		self.lightDirGoList[i]:SetActive(direction == i)
+	end
+end
+
+
+
+function comp_mjDirection:SetDirection(logicSeat)
+	self.direction = logicSeat
+	self:SetLightItem(-1)
+	self:ShowObjByDirection(self.direction)
+	self:InitLightItems()
+end
+
+
+
+
+function comp_mjDirection:SetLightItem(index)
+	for i = 1, #self.lightItemGoList do
+		self.lightItemGoList[i]:SetActive(i == index)
+	end
+end
+
+return comp_mjDirection

@@ -1,0 +1,125 @@
+local base = require "logic/mahjong_sys/common/ui/ui_view_base"
+local reward_title_view = class("reward_title_view", base)
+
+
+local resultToIconNameMap = 
+{
+	[1] = "xjs_30",	--胜利
+	[2] = "xjs_29", --失败
+	[3] = "xjs_31", --荒庄
+
+	
+	[4] = "xjs_4", --平胡
+	[5] = "xjs_24", --臭庄
+
+	[0] = "xjs_5", --自摸
+	[38] = "xjs_6", --游金	
+	[39] = "xjs_8", --双游
+	[40] = "xjs_7", --三游
+	[42] = "xjs_3", --三金倒
+	[41] = "xjs_9", --八张花
+}
+
+
+function reward_title_view:InitView()
+	base.InitView(self)
+	self.titleWinBgGo = self:GetGameObject("titleWinBg")
+	self.titleLoseBgGo = self:GetGameObject("titleLoseBg")
+	self.titleIcon = self:GetComponent("titleIcon", typeof(UISprite))
+
+	self.titleGridObj = self:GetGameObject("titleGrid")
+	self.titleGrid = self:GetComponent("titleGrid",typeof(UITable))
+	self.titleIconEx = self:GetComponent("titleGrid/titleIcon",typeof(UISprite))
+end
+
+-- res 1 胡 2 失败 3  荒庄  ...
+function reward_title_view:SetResult(res)
+	local iconName = resultToIconNameMap[res]
+	if self.titleIcon ~= nil and iconName ~= nil then
+		self.titleIcon.spriteName = iconName
+	end
+	self.titleWinBgGo:SetActive(res == 1)
+	self.titleLoseBgGo:SetActive(res ~= 1)
+end
+
+function reward_title_view:SetResultEx(winType,hu_type)
+
+
+	if winType == "huangpai" then
+		hu_type = 5
+	elseif winType == "gunwin" or winType == "robgangwin" then
+		hu_type = 4
+	end
+
+	local res = hu_type
+
+	if res ==2 or res ==3 or res == 5 then
+		self.titleWinBgGo:SetActive(false)
+		self.titleLoseBgGo:SetActive(true)
+	else
+		self.titleWinBgGo:SetActive(true)
+		self.titleLoseBgGo:SetActive(false)
+	end
+	local iconName = resultToIconNameMap[res]
+	self.titleIconEx.spriteName = iconName
+	self.titleIconEx:MakePixelPerfect()
+	self:RecoverTitle()
+	
+	if res ==2 then
+
+	elseif res ==0 then
+		self:GetNumList(2)
+	elseif res ==38 then
+		self:GetNumList(4)
+	elseif res ==39 then
+		self:GetNumList(8)
+	elseif res ==40 then
+		self:GetNumList(16)
+	elseif res ==42 then
+		self:GetNumList(4)
+	elseif res ==41 then
+		self:GetNumList(4)
+	else
+	end
+	self.titleGrid:Reposition()
+end
+
+function reward_title_view:GetNumList(num)
+	local tbl = {}
+	while num >0 do
+		local n = num%10
+		table.insert(tbl,n)
+		num = math.floor(num/10)
+	end
+
+	local count = self.titleGrid.transform.childCount
+	local tblCount = #tbl
+	for i=2,count do
+		local tran = self.titleGridObj.transform:GetChild(i-1)
+		if tblCount == 0 then
+			tran.gameObject:SetActive(false)
+		else
+			if i<=tblCount+2 then
+				tran.gameObject:SetActive(true)
+				local tIndex = i -2 ;
+				if tIndex > 0 then
+					local tNumSprite = componentGet(tran,"UISprite")
+					tNumSprite.spriteName = "xjs_1"..tostring(tbl[tblCount-tIndex+1])
+					tNumSprite:MakePixelPerfect()
+				end
+			else
+				tran.gameObject:SetActive(false)
+			end					
+		end
+	end
+end
+
+function reward_title_view:RecoverTitle()	
+	local count = self.titleGrid.transform.childCount
+	for i=2,count do
+		local tran = self.titleGridObj.transform:GetChild(i-1)
+		tran.gameObject:SetActive(false)		
+	end
+end
+
+return reward_title_view

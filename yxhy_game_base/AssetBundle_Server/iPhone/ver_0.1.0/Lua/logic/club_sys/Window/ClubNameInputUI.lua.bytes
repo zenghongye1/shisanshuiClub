@@ -1,0 +1,67 @@
+local base = require("logic.framework.ui.uibase.ui_window")
+local ClubNameInputUI = class("ClubNameInputUI", base)
+local addClickCallbackSelf = addClickCallbackSelf
+local UIManager = UI_Manager:Instance() 
+
+function ClubNameInputUI:OnInit()
+	self.titleLabel = self:GetComponent("panel/titleLabel", typeof(UILabel))
+	self.yesBtnGo = self:GetGameObject("panel/buttonY")
+	addClickCallbackSelf(self.yesBtnGo, self.OnBtnYesClick, self)
+	self.noBtnGo = self:GetGameObject("panel/buttonN")
+	addClickCallbackSelf(self.noBtnGo, self.OnBtnCloseClick, self)
+	self.closeBtnGo = self:GetGameObject("panel/closeBtn")
+	addClickCallbackSelf(self.closeBtnGo, self.OnBtnCloseClick, self)
+	self.yesBtnLabel = self:GetComponent("panel/buttonY/Label", typeof(UILabel))
+
+	self.inputLabel = self:GetComponent("panel/Label", typeof(UIInput))
+
+	EventDelegate.Add(self.inputLabel.onSubmit, EventDelegate.Callback(function() self:OnDeclarationEdit() end))
+
+end
+
+function ClubNameInputUI:OnOpen(type, value, callback, target)
+	if value ~= "" then
+		self.inputLabel.value = value
+	end
+	self.callback = callback
+	self.target = target
+	self.type = type
+	self:UpdateType()
+end
+
+function ClubNameInputUI:OnClose()
+	self.inputLabel.value = ""
+	self.callback = nil
+	self.target = nil
+end
+
+
+function ClubNameInputUI:UpdateType()
+	if self.type == 1 then
+		self.titleLabel.text = "设置俱乐部名称"
+		self.yesBtnLabel.text = "确定"
+	else
+		self.titleLabel.text = "更改俱乐部名称"
+		self.yesBtnLabel.text = "更改"
+	end
+end
+
+function ClubNameInputUI:OnBtnYesClick()
+	if self.callback ~= nil then
+		self.callback(self.target, self.inputLabel.value)
+	end
+	UIManager:CloseUiForms("ClubNameInputUI")
+end
+
+function ClubNameInputUI:OnBtnCloseClick()
+	UIManager:CloseUiForms("ClubNameInputUI")
+end
+
+
+function ClubNameInputUI:OnDeclarationEdit()
+	self.inputLabel.value = string.gsub(self.inputLabel.value, "\n", "")
+end
+
+
+
+return ClubNameInputUI

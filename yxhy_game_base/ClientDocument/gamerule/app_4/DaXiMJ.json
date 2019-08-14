@@ -1,0 +1,101 @@
+﻿[
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+  [
+    {
+      "exData": [
+        1
+      ],
+      "title": "玩法:",
+      "id": "bsupportke",
+      "data": [
+        "打课"
+      ],
+      "selectIndex": [
+        1
+      ],
+      
+      "itemHeight":-80, 
+	  "itemWidth": 232,
+       "type": 1, 
+       "group":37
+    }
+  ],
+  [
+     {
+      "exData": [
+        4,
+        3,
+        2
+      ],
+      "itemHeight": -80,
+	  "itemWidth": 232,
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4人",
+        "3人",
+        "2人"
+      ],
+      "title": "人数:",
+      "id": "pnum", 
+       "type": 1, 
+       "group":33
+    }
+  ],
+  [
+    {
+      "exData": [
+        0
+      ],  
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "打课(房卡x4)"
+      ],
+      "itemHeight": -80,
+       "type": 1, 
+       "group":34,
+      "title": "局数:",
+      "id": "rounds"
+    }
+  ],
+  [
+    {
+      "multiterm": true,
+      "selectIndex": [
+        1,
+        2,
+		3
+      ],
+      "itemHeight": -80,
+      "itemWidth": 330,
+	  "maxPerLine": 2,
+      "data": [
+        "单金不能平胡",
+        "三金及以上要游金",
+		"3水以上可以平胡"
+      ],
+      "title": "牌型:",
+      "type": 0,
+      "group": 0,
+      "id": [
+        "nonegold",
+        "bMustYouJinBySanGold",
+		"bGunWinSanShui"
+      ]
+    }
+  ]
+]

@@ -1,0 +1,6 @@
+local free_pattern = class("free_pattern",require("logic.niuniu_sys.pattern"))
+
+function free_pattern:ctor()
+end
+
+return free_pattern

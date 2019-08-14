@@ -1,0 +1,976 @@
+table_component = {}
+
+function table_component.create()
+	require "logic/shisangshui_sys/mode_comp_base"
+	require "logic/hall_sys/openroom/room_data"
+	local this = mode_comp_base.create()
+	this.Class = table_component
+	this.name = "table_component"
+	this.PlayerList = {} 	--玩家列表
+	this.PlayerTransformList = {}
+	this.tableCenter = nil
+	this.cardTranPool = {}	
+	this.gun = nil
+	this.CardModelTrans = {}
+	this.ShootAnimationTabel = {}
+	this.compareCoroutine = nil
+
+	local pokerObj = nil
+	local codeMaterial =nil
+
+	this.resMgrComponet = resMgr_component.create()
+	this.resMgrComponet.LoadCardMesh()
+	this.shisanshui_ui = UI_Manager:Instance():GetUiFormsInShowList("shisanshui_ui")
+	this.roomNumComp = nil
+	this.pokerPool = require("logic.niuniu_sys.other.pokercard_pool"):create()
+ 	this.base_init = this.Initialize
+ 	this.base_uninit = this.Uninitialize
+	function this:Initialize()
+		this.base_init()
+		
+		this.Init()
+	end
+
+	function this:Uninitialize()
+		this.base_uninit()
+	end
+	
+	function this.Init()
+		pokerObj = child(this.tableCenter.transform, "Poker_Animaiton").gameObject
+		
+	end
+
+	--[[--
+	 * @Description: 洗牌
+	 ]]
+	function this.WashCard(callback)
+		coroutine.start(function()
+			ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/xipai")   --洗牌音效
+			if not IsNil(pokerObj) then
+				this.tableCenter:SetActive(true)
+			--	pokerObj:SetActive(true)		
+			--	coroutine.wait(1.2)
+			--	pokerObj:SetActive(false)
+				this.PlayHeGuanAnimationByClipName("xipai")
+				coroutine.wait(2.5)
+			
+				this.tableCenter:SetActive(false)
+			end
+			if callback ~= nil then
+				callback()
+				callback = nil
+			end
+		end)		
+	end
+
+	--[[--
+	 * @Description: 初始化手牌  
+	 ]]
+	function this.InitCardPool(callback)
+		if this.cardTranPool == nil or #this.cardTranPool < 1 then
+			for i = 1, #this.PlayerList * 13 do 
+				local cardPrefab =  newNormalObjSync(data_center.GetResPokerCommPath().. "/small_card/"..tostring(2), typeof(GameObject))
+				local cardTran =  newobject(cardPrefab).transform
+				cardTran.parent = this.tableCenter.transform
+			--	cardTran.localPosition = Vector3(0, -i/20, 0)
+				cardTran.localPosition = Vector3(0, -1-(-i*0.1), 0)
+				cardTran.localEulerAngles = Vector3(0, 0, 180)
+				table.insert(this.cardTranPool, cardTran)
+			end
+		end
+		this.DealAnimation(callback)
+	end
+
+	--发牌动作
+	function  this.DealAnimation(callback)
+	--	local count = 1
+		local count = #this.cardTranPool
+		this.ResetDeal()
+		
+		coroutine.start(function ()	
+			this.PlayHeGuanAnimationByClipName("daiji1")							
+			this.ShowDeal()
+			coroutine.wait(0.5)
+			ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/fapai")  ----发牌音效
+		--	for i =1, #this.cardTranPool / #this.PlayerList do
+			for i =1, 13 do
+				for j ,Player in ipairs(this.PlayerList) do				
+					--需要边移动边旋转
+					local tmpTran = Player.playerObj.transform
+					this.cardTranPool[count]:DOMove(tmpTran.position, 0.3, false)
+					this.cardTranPool[count]:DOScale(Vector3(1.3,1.3,1.3),0.3)
+					local toRotate = this.cardTranPool[count].localRotation + Vector3(0, i*50, 0)
+					this.cardTranPool[count]:DOBlendableLocalRotateBy(toRotate, i*0.05, DG.Tweening.RotateMode.Fast)
+				--	count = count + 1
+					count = count - 1
+				end
+				coroutine.wait(0.01)
+			end
+
+			coroutine.wait(0.5)
+		--	this.PlayHeGuanAnimationByClipName("daiji1")
+			this.ResetDeal()
+			if callback ~= nil then 
+				callback()
+				callback = nil			
+			end
+
+			for i, player in pairs(this.PlayerList) do
+				local data = {}
+				data.viewSeat = player.viewSeat
+				data.state = true
+				data.position = Utils.WorldPosToScreenPos(player.playerObj.transform.position)
+				Notifier.dispatchCmd(cmd_shisanshui.ReadCard, data)
+			end
+		end)
+	end
+
+	--初始化开局人数，创建开局人数列表
+	function this.InitPlayerTransForm()
+		this.gun = GameObject.Find("qiang")
+		this.gun:SetActive(false)
+	
+		this.tableCenter = GameObject.Find("tableCenter")
+		if this.tableCenter == nil then 
+			Trace("tableCenter is nil Error")
+		end
+		pokerObj = child(this.tableCenter.transform, "Poker_Animaiton").gameObject
+		if #this.PlayerList > 0 then 
+			Trace("===InitPlayerTransFormError"..tostring(#this.PlayerList)) --
+			return 
+		end
+		local PlayerTransformList = {}
+		this.currentTable = {}
+		local nPlayerNum = room_data.GetSssRoomDataInfo().people_num
+		this.currentTable = poker_table_coordinate.poker_table[nPlayerNum]
+		for i = 1, 6 do
+			local playerGameObject = GameObject.Find("Player_"..tostring(i))
+			playerGameObject:SetActive(false)
+			for j,viewSeat in ipairs(this.currentTable) do
+				if i == viewSeat then
+					local player = player_component.create()
+					player.viewSeat = j
+				--	logError("playerViewSeat:"..tostring(player.viewSeat))
+					player.resMgrComponet = this.resMgrComponet
+					player.playerObj = playerGameObject
+					player.pokerPool = this.pokerPool
+					player:InitCard()
+					table.insert(this.PlayerList,player)
+				end
+			end
+			
+		end
+	
+		this.InitResidueCard()
+		this.SetRoomNum()
+		this.HeGuan()
+		this.ChangeDeskCloth()
+		this.PlayHeGuanAnimationByClipName("daiji1")
+	end
+	function this.SetRoomNum()
+		local trans = GameObject.Find("TableAnchor/roomNum").transform
+		this.roomNumComp = require("logic/mahjong_sys/components/base/comp_mjRoomNum"):create(trans)
+		this.roomNumComp:SetRoomNum(roomdata_center.roomnumber,data_center.GetResPokerCommPath())
+		local configData = room_data.GetSssRoomDataInfo()
+
+		if configData.add_ghost == 1 then
+		--	"大小鬼")
+			local tips2 = GameObject.Find("TableAnchor/roomInfo/tip2").transform
+			this.roomNumComp:SetSpImgByTransform(tips2,"daxiaogui",data_center.GetResPokerCommPath(),237,84)
+		end
+		local tips1 = GameObject.Find("TableAnchor/roomInfo/tip1").transform
+		if configData.isChip == true or configData.isChip == 1 then
+		--	,"有马牌")
+			this.roomNumComp:SetSpImgByTransform(tips1,"youma",data_center.GetResPokerCommPath(),163,84)
+		else
+		--	"无马牌")
+			this.roomNumComp:SetSpImgByTransform(tips1,"wuma",data_center.GetResPokerCommPath(),163,84)
+		end
+	end
+
+	--[[--
+	 * @Description: 获取玩家  
+	 ]]
+	function this.GetPlayer(index)
+		return this.PlayerList[index]
+	end
+
+	--[[--
+	 * @Description: 初始化牌形  
+	 ]]
+	function this.InitCard(callback)		
+		this.InitCardPool(function()
+			this.tableCenter:SetActive(false)
+			if this.PlayerList ~= nil then				
+				for i, player in pairs(this.PlayerList) do
+					player.playerObj:SetActive(true)																									  
+					player:shuffle()	 --摆牌
+				end
+			end
+			
+			coroutine.start(function()
+				coroutine.wait(0.8)
+				if callback ~= nil then
+					callback()	
+					callback = nil
+					this.tableCenter:SetActive(false)
+				end	
+			end)
+		end)			
+	end
+
+	--[[--
+	 * @Description: 摆牌ok处理   
+	 ]]
+	function this.ChooseOKCard(tbl)
+		Trace("============摆牌ok处理============="..tostring(tbl._src))
+	--	local logicSeat = player_seat_mgr.GetLogicSeatByStr(tbl._src)
+		local viewSeat = player_seat_mgr.GetViewSeatByLogicSeat(tbl._src) --查找当前座位号
+		
+		if this.PlayerList ~= nil then
+			for i, player in pairs(this.PlayerList) do
+				Trace("viewSeat-----------------------------------"..tostring(viewSeat))
+				Trace("player.viewSeat-----------------------------------"..tostring(player.viewSeat))
+				if tostring(viewSeat) == tostring(player.viewSeat) then
+					if viewSeat == 1 then
+						Trace("11111"..GetTblData(tbl))
+					--	place_card.Hide()
+						UI_Manager:Instance():CloseUiForms("place_card")
+						
+					--	player:SetSelfCardMesh(tbl["_para"]["cards"])
+						player:SetCardMesh(tbl["_para"]["cards"])
+						player.playerObj:SetActive(true)
+						player.ShowAllCard(180)
+					--	player:SetCardMesh(tbl["_para"]["cards"])
+						if tbl["_para"]["nSpecialType"] ~= nil and tbl["_para"]["nSpecialType"] > 0 then
+							local data = {}
+							data.SpecialType = tbl["_para"]["nSpecialType"]
+							data.position = Utils.WorldPosToScreenPos(player.playerObj.transform.position)
+							Notifier.dispatchCmd(cmd_shisanshui.SpecialChoose_Show,data)
+						end				
+					else
+						--logError("other"..viewSeat)
+						player.ShowAllCard(180)
+						player.playerObj:SetActive(true)								
+					end
+						local data = {}
+						data.viewSeat = player.viewSeat
+						data.state = false
+						data.position = Utils.WorldPosToScreenPos(player.playerObj.transform.position)
+						Notifier.dispatchCmd(cmd_shisanshui.ReadCard, data)
+					break
+				end
+			end
+		end	
+	this.PlayHeGuanAnimationByClipName("daiji2")	
+	end
+
+
+	--[[--
+	 * @Description: 牌形比较处理 
+	 ]]
+	function this.CardCompareHandler()
+		local scoreData = {}    --积分数据表
+ 
+		local firstSort = {}    --第一次排序表
+		local secondSort = {}   --第二次排序表
+		local threeSort = {}    --第三次排序表
+		local sortIndex = nil
+		local special_card_count = 0
+		local isSpecialCard = false
+		local roomMasterViewSeat = player_seat_mgr.GetViewSeatByLogicSeatNum(1)--找到房主的坐位号
+	
+		local isSpecialCardForRoomMaster = false
+		
+		
+		for i,v in ipairs(this.PlayerList) do
+			sortIndex = v.compareResult["nOpenFirst"]
+			table.insert(firstSort, sortIndex)
+			sortIndex = v.compareResult["nOpenSecond"]
+			table.insert(secondSort, sortIndex)
+			sortIndex = v.compareResult["nOpenThird"]
+			table.insert(threeSort, sortIndex)
+			
+			if v.compareResult["nSpecialType"] > 0 then
+				special_card_count = special_card_count + 1 --统计拥有特殊牌型的人数
+			end
+			
+			if v.viewSeat == roomMasterViewSeat then
+				
+				if v.compareResult["nSpecialType"] > 0 then
+					isSpecialCardForRoomMaster = true
+				end
+			end
+			
+		end
+		table.sort(firstSort)
+		table.sort(secondSort)
+		table.sort(threeSort)
+			
+		--判断是不是坐庄家特殊牌型，如是庄家是特殊牌型，则不进行比牌
+		local roomInfo = room_data.GetSssRoomDataInfo()
+		sessionData = player_data.GetSessionData()
+		if roomInfo.isZhuang == true and isSpecialCardForRoomMaster == true then
+			--总分
+			local myPlayer = this.GetPlayer(1)
+			local totallScore = myPlayer.compareResult["nTotallScore"]
+		
+			scoreData.index = 4
+			scoreData.totallScore = totallScore
+			Notifier.dispatchCmd(cmd_shisanshui.Three_Group_Compare_result ,scoreData)
+		
+			if compareFinshCallback ~= nil then
+				compareFinshCallback()
+				compareFinshCallback = nil
+			end
+			--播放打枪动画
+			this.PlayGunAnim(function()  end)
+			return
+		end
+		
+		--如果牌局里面，只有一个人没有特殊牌型，那么不需要比牌，直接进入特殊排型展示
+		local peopleNum = room_data.GetSssRoomDataInfo().people_num
+		if tonumber(special_card_count) < tonumber(peopleNum)-1 then
+			for i ,Player in ipairs(this.PlayerList) do
+				if tonumber(Player.compareResult["nSpecialType"]) < 1 then    	--检查是不是特殊牌型,特殊牌型不翻牌
+					if(Player.viewSeat == 1) then
+						local groupScreenPos = Player:GetCardGroupScreenPos()
+						Notifier.dispatchCmd(cmd_shisanshui.FuZhouSSS_SetScore,groupScreenPos)	--通知ui界面显示初始零分
+					end
+				end
+			end		
+		for j,k in ipairs(firstSort) do
+			for i ,Player in ipairs(this.PlayerList) do
+				if tonumber(Player.compareResult["nOpenFirst"]) == tonumber(k) then
+					if tonumber(Player.compareResult["nSpecialType"]) < 1 then    	--检查是不是特殊牌型,特殊牌型不翻牌
+						--[[if(Player.viewSeat == 1) then
+							local groupScreenPos = Player:GetCardGroupScreenPos()
+							Notifier.dispatchCmd(cmd_shisanshui.FuZhouSSS_SetScore,groupScreenPos)	--通知ui界面显示初始零分
+						end--]]
+						Player:PlayerGroupCard("Group1")
+						local cards = Player:showFirstCardByType() 					--这里在通知UI界面显示相应排型
+						Notifier.dispatchCmd(cmd_shisanshui.ShowPokerCard,cards)
+												
+						if card_data_manage.stCompareScores ~= nil then
+							for i,v in pairs(card_data_manage.stCompareScores) do
+								local chairId = v.toChairid
+								local viewSeatId = player_seat_mgr.GetViewSeatByLogicSeatNum(chairId)
+								if tonumber(viewSeatId) == Player.viewSeat then
+									if(v.nSpecialScore == 0)then
+										scoreData.index = 1
+										scoreData.totallScore = v.nFirstScore
+										Notifier.dispatchCmd(cmd_shisanshui.Group_Compare_result, scoreData)
+									end
+									break
+								end
+							end
+						end										
+						coroutine.wait(0.75)
+						break
+					else
+						if Player.viewSeat == 1 then
+							isSpecialCard = true
+						end					
+					end
+				end
+			end
+		end
+		--[[
+		--这里增加一个事件，通知UI更新第一墩的积分数据
+		if isSpecialCard == false then
+			scoreData.index = 1
+			scoreData.totallScore = 0			
+			Notifier.dispatchCmd(cmd_shisanshui.Group_Compare_result, scoreData)
+		end
+		]]
+		
+		for j,k in ipairs(secondSort) do
+			for i ,Player in ipairs(this.PlayerList) do
+				if tonumber(Player.compareResult["nOpenSecond"]) == tonumber(k) then
+					if tonumber(Player.compareResult["nSpecialType"]) < 1 then 	--检查是不是特殊牌型,特殊牌型不翻牌
+						Player:PlayerGroupCard("Group2")
+						local cards = Player:showSecondCardByType() 			--这里在通知UI界面显示相应排型
+						Notifier.dispatchCmd(cmd_shisanshui.ShowPokerCard, cards)
+											
+						if card_data_manage.stCompareScores ~= nil then
+							for i,v in pairs(card_data_manage.stCompareScores) do
+								local chairId = v.toChairid
+								local viewSeatId = player_seat_mgr.GetViewSeatByLogicSeatNum(chairId)
+								if tonumber(viewSeatId) == Player.viewSeat then
+									if(v.nSpecialScore == 0)then
+										scoreData.index = 2
+										scoreData.totallScore = v.nSecondScore
+										Notifier.dispatchCmd(cmd_shisanshui.Group_Compare_result, scoreData)
+									end
+									break
+								end
+							end
+						end					
+						coroutine.wait(0.75)
+						break
+					end
+				end
+			end
+		end
+		
+		--[[
+		--这里增加一个事件，通知UI更新第二墩的积分数据
+		if isSpecialCard == false then
+			scoreData.index = 2
+			scoreData.totallScore = 0
+			Notifier.dispatchCmd(cmd_shisanshui.Group_Compare_result , scoreData)
+		end
+]]
+		
+		for j,k in ipairs(threeSort) do
+			for i ,Player in ipairs(this.PlayerList) do
+				if tonumber(Player.compareResult["nOpenThird"]) == tonumber(k) then
+					if tonumber(Player.compareResult["nSpecialType"]) < 1 then --检查是不是特殊牌型,特殊牌型不翻牌
+						Player:PlayerGroupCard("Group3")
+						local cards = Player:showThreeCardByType() ----这里在通知UI界面显示相应排型
+						Notifier.dispatchCmd(cmd_shisanshui.ShowPokerCard,cards)
+						
+						if card_data_manage.stCompareScores ~= nil then
+							for i,v in pairs(card_data_manage.stCompareScores) do
+								local chairId = v.toChairid
+								local viewSeatId = player_seat_mgr.GetViewSeatByLogicSeatNum(chairId)
+								if tonumber(viewSeatId) == Player.viewSeat then
+									if(v.nSpecialScore == 0)then
+										scoreData.index = 3
+										scoreData.totallScore = v.nThirdScore
+										Notifier.dispatchCmd(cmd_shisanshui.Group_Compare_result, scoreData)
+									end
+									break
+								end
+							end
+						end									
+						coroutine.wait(0.75)
+						break
+					end
+				end
+			end
+		end
+--[[		
+		--这里增加一个事件，通知UI更新第三墩的积分数据
+		if isSpecialCard == false then
+			scoreData.index = 3
+			scoreData.totallScore = 0
+			Notifier.dispatchCmd(cmd_shisanshui.Group_Compare_result , scoreData)
+		end
+]]			
+			
+			--总分
+			local myPlayer = this.GetPlayer(1)
+			local totallScore = myPlayer.compareResult["nTotallScore"]
+			
+			scoreData.index = 4
+			scoreData.totallScore = totallScore
+			Notifier.dispatchCmd(cmd_shisanshui.Group_Compare_result ,scoreData)
+			
+			if compareFinshCallback ~= nil then
+				compareFinshCallback()
+				compareFinshCallback = nil
+			end		
+		else 
+				--总分
+			local myPlayer = this.GetPlayer(1)
+			local totallScore = myPlayer.compareResult["nTotallScore"]
+			
+			scoreData.index = 4
+			scoreData.totallScore = totallScore
+			Notifier.dispatchCmd(cmd_shisanshui.Group_Compare_result ,scoreData)
+		end
+		
+		--摆牌结束，通知UI播入打枪动画跟特殊牌型动画
+		--Notifier.dispatchCmd(cmd_shisanshui.ShootingPlayerList,this.PlayerList)
+		--播放打枪动画
+		this.PlayGunAnim()
+		
+		--播放特殊牌形动画		
+	end
+	
+	--设置剩余牌
+	function this.SetLeftCardValue(cards)
+		local count = table.nums(cards)
+		if cards ~= nil and count > 0 and count < 3 then
+			local newCardList = {}
+			local cacheCards = this.pokerPool:GetCard(2,cards)
+			for i,card in ipairs(cacheCards) do
+				card.transform.localPosition = this.residueCardTransform[i].transform.position
+				card.transform.localScale = this.residueCardTransform[i].transform.localScale
+				card.transform.localRotation = this.residueCardTransform[i].transform.localRotation
+				card.transform.parent = this.residueCardTransform[i].transform.parent
+				card.gameObject:SetActive(true)
+				table.insert(newCardList,card)
+			end
+			this.pokerPool:Recycle(this.residueCardTransform)
+			this.residueCardTransform = {}
+			this.residueCardTransform = newCardList
+		else
+			logError("剩余牌出错："..tostring(count))
+		end
+	end
+	
+	function this.InitResidueCard()
+		this.residueCardTransform = {} --剩余牌
+		for i = 1,2,1 do
+			local obj = GameObject.Find("leftCard/"..tostring(i))
+			
+			table.insert(this.residueCardTransform,obj)
+		end
+	end
+
+	--[[--
+	 * @Description: 比牌开始  
+	 ]]
+	function this.CompareStart(compareFinshCallback)
+		this.PlayHeGuanAnimationByClipName("daiji3")
+		Trace("CompareStart......................")
+		for i ,Player in pairs(this.PlayerList) do
+			Player:SetCardMesh() --设置牌的值
+			--为特殊牌型显示一个展示图标
+			if Player.compareResult["nSpecialType"] ~= nil then
+				if tonumber(Player.compareResult["nSpecialType"]) > 0 then
+					if(Player["viewSeat"] ~= 1) then
+						local data = {}
+						data.viewSeat = Player.viewSeat
+						data.position = Utils.WorldPosToScreenPos(Player.playerObj.transform.position)
+						Notifier.dispatchCmd(cmd_shisanshui.SpecialCardType, data)
+					end
+				end		
+			end
+		end
+		this.compareCoroutine = coroutine.start(function ()
+			for i, player in pairs(this.PlayerList) do
+				if player.viewSeat == 1 then
+					player.ShowAllCard(180)
+					if tonumber(player.compareResult["nSpecialType"]) > 0 then
+						Notifier.dispatchCmd(cmd_shisanshui.IsShowSelfSpecial,true)
+					end
+				end
+			end
+			coroutine.wait(0.3)  ---------展示剩余牌时间
+			this.CardCompareHandler()
+		end)
+	end
+
+
+	function this.sortPlayerList(sortKey)
+		local test = true;
+		table.sort(this.PlayerList, function (player1,player2)
+			local firstType1 = player1.compareResult[sortKey]
+			local firstType2 = player2.compareResult[sortKey]			
+			--Trace("firstType1"..tostring(firstType1).."secondType"..tostring(firstType2))
+			if firstType1 < firstType2 then
+				return true
+			elseif firstType1 == firstType2 then
+				--牌形相同，再做进一步判断，暂时返回true
+				--Trace("++++++++++++the same Group ++++++++++"..tostring(sortKey))
+				--[[
+				if test == true then
+					test = false
+					return test
+				else
+					test =true
+					return test
+				end
+				]]
+				return false
+			else
+				return false
+			end	
+		end)
+		return this.PlayerList
+	end
+
+
+	--进入下一局重置所有的动作
+	function this.ReSetAll()
+		Trace("重置所有比牌动作")
+		this.ResetPlayerList()
+		this.ClearnAllShoot()
+		this.ResetLeftCard()
+	end
+	
+	function this.ResetLeftCard()
+		--[[local leftCard = GameObject.Find("leftCard")
+		if leftCard ~=nil then
+			for i=1,2 do
+				local leftCardtran = child(leftCard.transform,"card"..tostring(i))
+				leftCardtran.gameObject:SetActive(false)
+				leftCardtran.localEulerAngles = Vector3(0,180,180)
+			end
+		end
+		this.shisanshui_ui:SetLeftCardNums(nil)  ----重置lbl为false	--]]
+		
+		for i,v in ipairs(this.residueCardTransform) do
+			v.transform.gameObject:SetActive(false)
+			v.transform.localEulerAngles = Vector3(0,180,180)
+		end
+	end
+	
+	function this.ClearnAllShoot()
+		Trace("删除所有的子弹孔")
+		if this.ShootAnimationTabel ~= nil and #this.ShootAnimationTabel > 0 then
+			for i,v in pairs(this.ShootAnimationTabel) do
+				if not IsNil(v) then
+					v.gameObject:SetActive(false)
+					GameObject.Destroy(v.gameObject)
+				end
+			end
+		end
+	end
+
+	--重置发牌动作
+	function this.ResetDeal()
+		this.tableCenter:SetActive(true)
+		for i = 1, #this.cardTranPool do
+			this.cardTranPool[i].transform.parent = this.tableCenter.transform
+			this.cardTranPool[i].transform.localPosition = Vector3(0,i/20,0)
+			this.cardTranPool[i].transform.localEulerAngles = Vector3(0,0,180)
+			this.cardTranPool[i].gameObject:SetActive(false)
+		end
+	end
+	
+	function this.ShowDeal()
+		for i = 1, #this.cardTranPool do
+			this.cardTranPool[i].gameObject:SetActive(true)
+			this.cardTranPool[i].gameObject.transform.localScale = Vector3(0.4,0.4,0.4)
+		end
+	end
+
+	--重置发牌动作
+	function this.ResetPlayerList()
+		for i ,Player in pairs(this.PlayerList) do
+			Player:PlayerReset()
+		end
+	end
+	
+	
+	
+	--播放打枪动画及以后流程
+	function this.PlayGunAnim(CallBack)				
+		local animator =  componentGet(this.gun.transform,"Animator")
+		if this.gun ~= nil and animator ~=nil then	
+			local isPlayed = false
+			
+			coroutine.wait(1)
+			coroutine.start(function()
+				for i,v in ipairs(this.PlayerList) do
+					--if v.compareResult["stShoots"] ~= nil then
+						local pos = this.shisanshui_ui:GetAllShootPos(v["viewSeat"])
+						v["headPos"] = pos
+						
+						local shootList = v.compareResult["stShoots"]--找出每个人的打枪列表
+						if shootList ~= nil and #shootList > 0 then
+							if isPlayed == false then
+								Trace("打枪全屏动画")
+								animations_sys.PlayAnimation(this.shisanshui_ui.transform, data_center.GetResRootPath().."/effects/shisanshui_shoot_kuang", "bomb box", 100, 100, false,nil,1401)
+								--ui_sound_mgr.PlaySoundClip("audio/daqiang")  ---打枪
+								ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/dub/daqiang_nv")  ---打枪提示
+								isPlayed = true
+								coroutine.wait(1)
+								ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/daqiangzhunbei")  ---打枪准备
+								coroutine.wait(0.4)
+							end
+						
+							for j,k in ipairs(shootList) do
+								local shootTargetViewSeat = player_seat_mgr.GetViewSeatByLogicSeatNum(k)
+								local shootTargeObj = nil
+								shootTargeObj = this.GetPlayer(shootTargetViewSeat).playerObj
+
+								if shootTargeObj ~= nil then
+									animator.transform.parent.localPosition = v.playerObj.transform.localPosition
+									animator.transform.parent:LookAt(shootTargeObj.transform)   --把枪指向要打的人的对象
+									
+								    --for i =1 ,3 do --打枪三次
+									local screenPos =  Utils.WorldPosToScreenPos(shootTargeObj.transform.position)  
+									screenPos.z = 0
+									if this.gun.gameObject.activeSelf == false then
+										this.gun:SetActive(true)
+									end
+									animator:SetBool("gun_fire", true)
+									ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/daqiang")  --枪声
+									coroutine.wait(0.25)
+									local shootAnimationObj_one = animations_sys.PlayAnimationByScreenPosition(this.shisanshui_ui.transform, screenPos.x + tonumber(math.random(-50,50)),screenPos.y + tonumber(math.random(-40,40)),data_center.GetResRootPath().."/effects/shisanshui_shoot" ,"Shoot2", 100, 100,false, nil, tonumber(math.random(1400,1500)),false)
+									table.insert(this.ShootAnimationTabel,shootAnimationObj_one)
+									ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/daqiang")  --枪声
+									coroutine.wait(0.25)
+									local shootAnimationObj_two = animations_sys.PlayAnimationByScreenPosition(this.shisanshui_ui.transform, screenPos.x + tonumber(math.random(-40,40)),screenPos.y + tonumber(math.random(-40,40)),data_center.GetResRootPath().."/effects/shisanshui_shoot", "Shoot2", 100, 100,false, nil, tonumber(math.random(1400,1500)),false)
+									table.insert(this.ShootAnimationTabel,shootAnimationObj_two)
+									ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/daqiang")  --枪声
+									coroutine.wait(0.25)
+									local shootAnimationObj_three = animations_sys.PlayAnimationByScreenPosition(this.shisanshui_ui.transform, screenPos.x + tonumber(math.random(-40,40)),screenPos.y + tonumber(math.random(-40,40)),data_center.GetResRootPath().."/effects/shisanshui_shoot", "Shoot2", 100, 100, false,nil,tonumber(math.random(1400,1500)),false)
+									table.insert(this.ShootAnimationTabel,shootAnimationObj_three)
+									--打枪分数变动
+									local isZhuang = room_data.GetSssRoomDataInfo().isZhuang
+									if v["viewSeat"] == 1 then
+										if (isZhuang ~= true) then
+											local CompareScorestbl = card_data_manage.stCompareScores
+											for s,t in ipairs(CompareScorestbl) do
+												if(t.toChairid == k) then	
+													Notifier.dispatchCmd(cmd_shisanshui.Shoot_Compare_result, t)
+												end
+											end
+										end
+									elseif shootTargetViewSeat == 1 then
+										if (isZhuang ~= true) then
+											local CompareScorestbl = card_data_manage.stCompareScores
+											for s,t in ipairs(CompareScorestbl) do
+												local shooter = player_seat_mgr.GetViewSeatByLogicSeatNum(t.toChairid)
+												if(t.nShoot == -1 and shooter == v["viewSeat"]) then
+													Notifier.dispatchCmd(cmd_shisanshui.Shoot_Compare_result, t)
+												end
+											end
+										end
+									end
+									
+									animator:SetBool("gun_fire", false)
+									this.gun:SetActive(false)
+									coroutine.wait(0.5)
+								end
+							end
+						end
+					--end
+				end
+				
+				----打枪后开马
+				local isSelfSpecial = 0
+				local isOtherSpecial = true
+				local codeExist = false
+				for i,Player in ipairs(this.PlayerList) do		--马牌算分
+					if card_data_manage.stCompareScores ~= nil and Player.viewSeat == 1 then
+						if(Player["viewSeat"] == 1 and Player.compareResult["nSpecialType"] ~= 0) then
+							isSelfSpecial = 1
+						end
+						for i,v in pairs(card_data_manage.stCompareScores) do
+							if (v.nSpCompare == 0) then
+								isOtherSpecial = false
+							end
+						end
+					end
+				end
+				
+				for i ,Player in ipairs(this.PlayerList) do		--寻找马牌
+					local codeTran = nil
+					for t=1,3 do
+						codeTran = Player:GetCodeCardTran("Group"..tostring(t))
+						if codeTran ~= nil then
+							Trace("码牌z"..codeTran.localEulerAngles.z)
+							break
+						end
+					end
+					if codeTran ~= nil then
+						if(codeTran.localEulerAngles.z <10 and codeTran.localEulerAngles.z >-10) then
+							Trace("码牌展示处理")
+							this.SetCodeCardEffect(codeTran)
+							if(isSelfSpecial ~= 1) then
+								codeExist = true
+								codeTran:DOLocalMove(Vector3(codeTran.localPosition.x,codeTran.localPosition.y,codeTran.localPosition.z+1.66),0.3,false)
+								coroutine.wait(0.4)
+								codeTran:DOLocalMove(Vector3(codeTran.localPosition.x,codeTran.localPosition.y,codeTran.localPosition.z-1.66),0.3,false)--3.35-1.69 =1.66
+							end
+						end
+					end
+				end
+				for i,Player in ipairs(this.PlayerList) do		--马牌算分
+					if card_data_manage.stCompareScores ~= nil and Player.viewSeat == 1 then
+						--logError(GetTblData(card_data_manage.stCompareScores))
+						local codeScore = {}
+						
+						codeScore[1] = 0 
+						codeScore[2] = 0
+						codeScore[3] = 0
+						
+						--[[if(Player["viewSeat"] == 1 and Player.compareResult["nSpecialType"] ~= 0) then
+							isSelfSpecial = 1
+						end--]]
+						for i,v in pairs(card_data_manage.stCompareScores) do
+							if (v.nHasCode ~= 0	) then
+								if (v.nSpCompare == 0) then
+									codeScore[1] = codeScore[1] + v.stSoreChange[1][3] - v.stSoreChange[1][2]
+									codeScore[2] = codeScore[2] + v.stSoreChange[2][3] - v.stSoreChange[2][2]
+									codeScore[3] = codeScore[3] + v.stSoreChange[3][3] - v.stSoreChange[3][2]
+								end
+							end
+							--[[if (v.nSpCompare ~= 0) then
+								isOtherSpecial = true
+							end--]]
+						end
+						if isSelfSpecial ~=1 then
+							if (codeExist == true) then
+								if (isOtherSpecial == false) then
+									Notifier.dispatchCmd(cmd_shisanshui.Code__Compare_result,codeScore)
+								end
+								coroutine.wait(0.7)
+							end
+						end
+					end													
+				end
+			
+				for i, v in ipairs(this.PlayerList) do
+					if v.compareResult["nSpecialType"] ~= nil  and v.compareResult["nSpecialType"] ~= 0 then
+						Trace("打枪完成, 开始特殊牌型展示")
+					--	special_card_show.Show(v.compareResult["stCards"], v.compareResult["nSpecialType"], v.viewSeat,1.8)
+					--	UI_Manager:Instance():CloseUiForms("special_card_show")
+					--	coroutine.wait(0.2)
+						UI_Manager:Instance():ShowUiForms("special_card_show",nil,nil,v.compareResult["stCards"], v.compareResult["nSpecialType"], v.viewSeat,1.8)
+						coroutine.wait(2)
+					end
+				end
+		
+				if card_data_manage.allShootChairId ~= 0 then
+					Trace("播放全垒打动画")
+					local allShooterViewSeat = player_seat_mgr.GetViewSeatByLogicSeatNum(card_data_manage.allShootChairId)
+					local screenPos = this.PlayerList[allShooterViewSeat].headPos  
+					animations_sys.PlayAnimation(this.shisanshui_ui.transform,data_center.GetResRootPath().."/effects/daqiang_quanleida","homer",100,100,false,nil,2401)
+					ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/dub/quanleida_nv")  ---全垒打
+					coroutine.wait(1.2)
+					ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/dub/hongzhaji")  ---全垒打轰炸机全程
+					animations_sys.PlayAnimationByScreenPosition(this.shisanshui_ui.transform,screenPos.x,screenPos.y-25,data_center.GetResRootPath().."/effects/daqiang_hongzhaji","quanleida01",100,100,false,nil,3200,true)
+					coroutine.wait(1.8)
+					animations_sys.PlayAnimation(this.shisanshui_ui.transform,data_center.GetResRootPath().."/effects/daqiang_hongzhaji","quanleida02",100,100,false,nil,3201)
+					coroutine.wait(1)
+					for i,v in ipairs(this.PlayerList) do 
+						local CompareScorestbl = card_data_manage.stCompareScores
+						if tonumber(v.viewSeat) ~= allShooterViewSeat then  --viewSeat不是全垒打则锁定投弹，并若viewseat是自己则更新分数 
+							local shootTargeObj = nil
+							shootTargeObj = this.GetPlayer(v.viewSeat).playerObj
+							local screenPos =  Utils.WorldPosToScreenPos(shootTargeObj.transform.position)
+							screenPos.z = 0
+							animations_sys.PlayAnimationByScreenPosition(this.shisanshui_ui.transform,screenPos.x+20,screenPos.y+220,data_center.GetResRootPath().."/effects/daqiang_paodan","zhadan",100,100,false,nil,3100,true)
+							coroutine.wait(0.1)
+							for s,t in ipairs(CompareScorestbl) do
+								local shooted = player_seat_mgr.GetViewSeatByLogicSeatNum(t.toChairid)
+								if tonumber(v.viewSeat) == 1 and shooted == allShooterViewSeat then  --viewseat是自己，并是被全垒打的枪分
+									t.selfAllShoot = false
+									Notifier.dispatchCmd(cmd_shisanshui.AllShoot_Compare_result,t)
+								end			
+							end
+						elseif allShooterViewSeat == 1 then		--判断全垒打的人是自己，更新分数
+							CompareScorestbl.selfAllShoot = true
+							Notifier.dispatchCmd(cmd_shisanshui.AllShoot_Compare_result,CompareScorestbl)
+						end
+					end
+					coroutine.wait(2)
+				end
+				
+		
+				shisangshui_play_sys.CompareFinish()--告诉服务器				
+				Trace("====================开始结算=======================")
+				
+				--结算动画处理
+				local totalPoints = {}
+				for i,player in ipairs(this.PlayerList) do
+					local points = player.compareResult["nTotallScore"]
+					table.insert(totalPoints,points)
+					this.shisanshui_ui:ShowPlayerTotalPoints(player.viewSeat,points)
+				end
+				table.sort(totalPoints)
+				local maxTotalPoint =  totalPoints[#totalPoints]
+				if maxTotalPoint ~= nil then
+					for i,player in ipairs(this.PlayerList) do
+						if tonumber(maxTotalPoint) == tonumber(player.compareResult["nTotallScore"]) then
+							this.shisanshui_ui:SetPlayerLightFrame(player.viewSeat)
+							coroutine.wait(1)
+							this.shisanshui_ui:DisablePlayerLightFrame()
+							--	coroutine.wait(0.1)
+							break
+						end
+					end
+				end
+				
+				if CallBack ~= nil then
+					CallBack()
+					CallBack = nil
+				end
+				Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmd_shisanshui.COMPARE_RESULT)--比牌结束
+			end)
+		end
+	end
+	
+	function this.SetCodeCardEffect(tran)
+		if room_data.GetSssRoomDataInfo().isChip then	
+			local dipai = child(tran,"dipai")
+		
+			local meshRender = componentGet(dipai.transform, "MeshRenderer")
+			local originMatInfo = {}
+			originMatInfo.meshRender = meshRender
+			originMatInfo.sharedMaterial = meshRender.sharedMaterial
+			codeMaterial = originMatInfo
+			--table.insert(codeMaterial, originMatInfo)				
+			if meshRender ~= nil then
+				local highLightMatTbl = this.resMgrComponet.GetHighLightMat()
+				LuaHelper.AddMatToMeshRenderer(meshRender, highLightMatTbl.mat1, highLightMatTbl.mat2)					 
+			end
+		end
+		
+	end
+	
+	function this.CancelCodeCardEffect(codeMaterial)
+		--for i,v in pairs(codeMaterial) do
+			--Trace("v.meshRender.transform---------------------"..v.meshRender.transform.name)
+			if codeMaterial.meshRender ~= nil then
+				--v.meshRender.sharedMaterial = v.sharedMaterial
+				LuaHelper.AddMatToMeshRenderer(codeMaterial.meshRender, codeMaterial.sharedMaterial, nil)	
+			end
+		--end
+	end
+	
+	function this.HeGuan()
+		this.heguan = GameObject.Find("TableAnchor/heguan")
+		
+		if this.heguan == nil then
+			logError("找不到荷官对象")
+			return
+		end
+		this.heguanAnimation = componentGet(this.heguan.transform,"Animator")
+		if this.heguanAnimation == nil then
+			logError("找不到动画组件")
+		end
+	end
+	
+	--翻牌
+	function this.OpenCard(state)
+		for i, player in pairs(this.PlayerList) do
+			if player.viewSeat == 1 then
+				if state then
+					player.ShowAllCard(0)
+				else
+					player.ShowAllCard(180)
+				end
+			end
+		end
+	end
+	
+	--[[
+	播放荷官动画
+	动画名称有：  daiji1	daiji2	fapai	
+	wrapMode:	  WrapMode.Default  WrapMode.Once WrapMode.Loop WrapMode.ClampForever
+]]
+function this.PlayHeGuanAnimationByClipName(clipName,wrapMode)
+	if this.heguanAnimation ~= nil and clipName ~= nil then
+		if wrapMode == nil then
+		--	wrapMode = UnityEngine.WrapMode.Once
+		end
+	--	self.heguanAnimation.enabled = true
+	--	self.heguanAnimation.wrapMode = wrapMode
+	--	self.heguanAnimation:Play(clipName,UnityEngine.PlayMode.StopAll)
+		this.heguanAnimation:CrossFade(clipName,0.1)
+		
+	end
+	
+end
+
+function this.ChangeDeskCloth()
+	if this.poker_chaneg_desk == nil then
+		local poker_table = GameObject.Find("poker_table/poker_table01")
+		if poker_table ~= nil then
+			this.poker_chaneg_desk = require("logic.poker_sys.poker_change_desk"):create(poker_table,this.roomNumComp)
+		end
+	end
+	this.poker_chaneg_desk:ChangeDeskCloth()
+end
+	
+	return this
+end

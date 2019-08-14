@@ -1,0 +1,6 @@
+---- 福清麻将小结算
+
+local base = require "logic/mahjong_sys/game_18/ui_action/mahjong_action_small_reward_18"
+local mahjong_action_small_reward_65 = class("mahjong_action_small_reward_65", base)
+
+return mahjong_action_small_reward_65

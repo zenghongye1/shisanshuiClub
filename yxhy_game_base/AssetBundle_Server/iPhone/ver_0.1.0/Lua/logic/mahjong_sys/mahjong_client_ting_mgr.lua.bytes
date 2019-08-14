@@ -1,0 +1,201 @@
+local mahjong_client_ting_mgr = class("mahjong_client_ting_mgr")
+local libFanClass = require ("logic.fanlib.lib_fan_counter")
+
+function mahjong_client_ting_mgr:ctor()
+	self.libFan = nil
+	-- self.compPlayerMgr = mode_manager.GetCurrentMode():GetComponent("comp_playerMgr")
+	self.supportClientTing = false
+	UpdateBeat:Add(slot(self.UpdateTing, self))
+end
+
+function mahjong_client_ting_mgr:GetPlayerMgr()
+	if self.comp_playerMgr == nil then
+		self.compPlayerMgr = mode_manager.GetCurrentMode():GetComponent("comp_playerMgr")
+	end
+	return self.compPlayerMgr
+end
+
+function mahjong_client_ting_mgr:SetClientTing(value)
+	self.supportClientTing = value
+	if self.supportClientTing and self.libFan == nil then
+		self.libFan = libFanClass:create(self:GetGameCfg())
+	else
+		self.libFan = nil
+	end
+end
+
+function mahjong_client_ting_mgr:Dispose()
+	UpdateBeat:Remove(slot(self.UpdateTing, self))
+	self.libFan = nil
+end
+
+function mahjong_client_ting_mgr:ClientCheckTing()
+	if not self.supportClientTing  then
+		return
+	end
+    self.check = false;
+    -- if self.canCheckTing == false then
+    local info = self:GetGameInfo()
+    self.libFan:checkTing( info ,slot(self.OnCheckTing, self), roomdata_center.tingVersion)
+        -- self.canCheckTing = true
+    -- end
+end
+
+
+function mahjong_client_ting_mgr:OnCheckTing(res, version)
+    -- self.canCheckTing = false
+    if res == 1 and version == roomdata_center.tingVersion then
+        self.check = true
+    else
+        self.check = false
+    end
+end
+
+function mahjong_client_ting_mgr:UpdateTing()
+    if self.check then
+        self.check = false;
+        local tingInfo = self.libFan:getTingInfo()
+        local tingTab = ParseJsonStr(tingInfo)
+        --logError(GetTblData(tingTab))
+        local tab = {}
+        tab._para = {}
+        tab._para.stTingCards = tingTab
+        -- self:OnTing(tab)
+        Notifier.dispatchCmd(cmdName.MAHJONG_HU_TIPS_CARD, tab)
+    end
+end
+
+function mahjong_client_ting_mgr:GetGameCfg()
+    local cfg = {}
+    cfg.halfQYS = roomdata_center.gamesetting.bSupportHalfColor and 1 or 0
+    cfg.allQYS = roomdata_center.gamesetting.bSupportOneColor and 1 or 0
+    cfg.goldDragon = roomdata_center.gamesetting.bSupportGoldDragon and 1 or 0
+    return cfg
+end
+
+function mahjong_client_ting_mgr:GetGameInfo()
+    local tableInfo = {}
+    tableInfo.chair = roomdata_center.chairid
+    tableInfo.turn = roomdata_center.chairid
+    -- 自己手牌
+    tableInfo.tHand = self:GetSelfHandCards()
+    -- 自己手牌数量
+    tableInfo.byHandCount = 17
+
+    tableInfo.laiziCard = roomdata_center.specialCard[1]
+
+    tableInfo.tSet = self:GetPlayerMgr():GetPlayer(1):GetOperDatas()
+    tableInfo.bySetCount = tableInfo.tSet and #tableInfo.tSet or 0
+    local giveTab, countTab = self:GetAllGiveCards()
+    tableInfo.tGive = giveTab
+    tableInfo.byGiveCount = countTab
+    tableInfo.byFlowerCount = roomdata_center.GetAllFlowerCardsCount()
+    tableInfo.byTilesLeft = roomdata_center.leftCard
+    tableInfo.byDoFirstGive = countTab
+    tableInfo.laizi = self:GetJinCount(tableInfo.tHand)
+    tableInfo.flower = #roomdata_center.GetFlowerCards(1)
+    tableInfo.dealer = player_seat_mgr.GetLogicSeatNumByViewSeat(roomdata_center.zhuang_viewSeat)
+    tableInfo.nNSNum = self:GetLeftCards(tableInfo.tGive)
+    tableInfo.tLast = self:GetPlayerMgr():GetPlayer(1):GetLastCard()
+    return tableInfo
+end
+
+function mahjong_client_ting_mgr:GetJinCount(list)
+    local count = 0
+    for i = 1, #list do
+        if list[i] == roomdata_center.specialCard[1] then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+function mahjong_client_ting_mgr:GetLeftCards(tGive    )
+    local cardMap = {}
+    for i = 1, 37 do
+        cardMap[i] = 4
+    end
+    self:UpdateCardMap(cardMap, tGive)
+    for i = 1, roomdata_center.MaxPlayer() do
+        local set = self:GetPlayerMgr():GetPlayer(i):GetOperDatas()
+        self:UpdateCardMapBySet(cardMap, set)
+    end
+    return cardMap
+end
+
+function mahjong_client_ting_mgr:UpdateCardMapBySet(map, set)
+    if set == nil then
+        return
+    end
+    for i = 1, #set do
+        local tab = set[i]
+        if tab[1] == 16 then
+            self:UpdateCardMapNum(map, tab[2], 1)
+            self:UpdateCardMapNum(map, tab[2] + 1, 1)
+            self:UpdateCardMapNum(map, tab[2] + 2, 1)
+        elseif tab[1] == 17 then
+            self:UpdateCardMapNum(map, tab[2], 3)
+        elseif tab[1] == 18 or tab == 20 then
+            self:UpdateCardMapNum(map, tab[2], 4)
+        elseif tab[1] == 19 then
+            self:UpdateCardMapNum(map, tab[2], 4)
+        end
+    end
+end
+
+function mahjong_client_ting_mgr:UpdateCardMapNum(map, value, count)
+    if map[value] == nil or value == 0 then
+        return
+    end
+    count = count or 1
+    map[value] = map[value] - count
+    if map[value] < 0 then
+        logError("card < 0", value)
+        map[value] = 0
+    end
+end
+
+function mahjong_client_ting_mgr:UpdateCardMap(map, twoDTable)
+    if twoDTable == nil then
+        return
+    end
+    for i = 1, #twoDTable do
+        if twoDTable[i] ~= nil then
+            for j = 1, #twoDTable[i] do
+                self:UpdateCardMapNum(map, twoDTable[i][j])
+                -- logError(twoDTable[i][j], map[twoDTable[i][j]])
+                -- map[twoDTable[i][j]] = map[twoDTable[i][j]] - 1
+                -- if map[twoDTable[i][j]] < 0 then
+                --     logError("card < 0", twoDTable[i][j])
+                --     map[twoDTable[i][j]] = 0
+                -- end
+            end
+        end
+    end 
+end
+
+function mahjong_client_ting_mgr:GetSelfHandCards()
+    local player = self:GetPlayerMgr():GetPlayer(1)
+    local cards = {}
+    for i = 1, #player.handCardList do
+        table.insert(cards, player.handCardList[i].paiValue)
+    end
+    return cards
+end
+
+function mahjong_client_ting_mgr:GetAllGiveCards()
+    local giveCards = {}
+    local giveCount = {}
+    for i = 1,  roomdata_center.MaxPlayer() do
+        local logicSeat = player_seat_mgr.GetLogicSeatNumByViewSeat(i)
+        local outcards = self:GetPlayerMgr():GetPlayer(i):GetOutCardNums()
+        giveCards[logicSeat] = outcards
+        giveCount[logicSeat] = #outcards
+    end
+    for i = roomdata_center.MaxPlayer() + 1, 4 do
+        giveCards[i] = nil
+        giveCount[i] = 0
+    end
+    return giveCards, giveCount
+end
+return mahjong_client_ting_mgr

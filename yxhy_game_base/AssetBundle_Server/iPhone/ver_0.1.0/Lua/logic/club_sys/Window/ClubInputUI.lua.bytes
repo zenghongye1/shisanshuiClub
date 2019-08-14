@@ -1,0 +1,136 @@
+local base = require("logic.framework.ui.uibase.ui_window")
+local inputClass = require("logic/hall_sys/CommonInput/CommonInput")
+local helpViewClass = require("logic/club_sys/View/HelpView")
+local ClubInputUI = class("ClubInputUI", base)
+local addClickCallbackSelf = addClickCallbackSelf
+local ClubInputUIEnum = ClubInputUIEnum
+local UIManager = UI_Manager:Instance() 
+
+local TitleNameMap = 
+{
+	[1] = "Title_19",
+	[2] = "Title_18",
+}
+
+local BtnNameMap = 
+{
+	[1] = "申请加入",
+	[2] = "确 定",
+}
+
+local HelpContentMap = 
+{
+	[1] = {"", "前往加入"},
+	[2] = {"申请获得代理商邀请码", "咨询"},
+}
+
+function ClubInputUI:ctor()
+	base.ctor(self)
+	HelpContentMap[1][1] = LanguageMgr.GetWord(10080)
+	self.inputView = nil
+	self.helpView = nil
+	self.titleSp = nil
+	self.model = model_manager:GetModel("ClubModel")
+	self.type = ClubInputUIEnum.InputClubID
+end
+
+function ClubInputUI:OnInit()
+	self.closeBtnGo = self:GetGameObject("panel/Panel_Top/btn_close")
+	addClickCallbackSelf(self.closeBtnGo, self.OnBtnCloseClick, self)
+
+	self.titleSp = self:GetComponent("panel/Panel_Top/Title", typeof(UISprite))
+
+	local numberGridGo = self:GetGameObject("panel/Panel_Middle/gird_number")
+	local inputGridGo = self:GetGameObject("panel/Panel_Middle/grid_input")
+	self.inputView = inputClass:create(inputGridGo, numberGridGo, slot(self.OnSureBtnClick, self))
+	self.inputView:InitView()
+
+	local helpGo = self:GetGameObject("panel/helpView")
+	self.helpView = helpViewClass:create(helpGo)
+
+	self.sureBtnLabel = self:GetComponent("panel/Panel_Middle/grid_input/11/Label", typeof(UILabel))
+end
+
+function ClubInputUI:OnClose()
+	self.inputView:ClearNumList()
+end
+
+function ClubInputUI:OnOpen(uitype)
+	self.type = uitype
+	self:RefreshUI()
+end
+
+function ClubInputUI:OnBtnCloseClick()
+	UIManager:CloseUiForms("ClubInputUI")
+end
+
+
+function ClubInputUI:OnSureBtnClick()
+	if not self:CheckCodeValide() then
+		return 
+	end
+	if self.type == ClubInputUIEnum.InputClubID then
+		self:OnInputID()
+	else
+		self:OnInputCode()
+	end
+	-- UIManager:CloseUiForms("ClubInputUI")
+end
+
+function ClubInputUI:RefreshUI()
+	self.titleSp.spriteName = TitleNameMap[self.type]
+	self.titleSp:MakePixelPerfect()
+	self.sureBtnLabel.text = BtnNameMap[self.type]
+
+	if self.type == ClubInputUIEnum.InputClubID then
+		self.helpView:SetInfo(HelpContentMap[self.type][1], HelpContentMap[self.type][2], self.IDHelpCallback, self)
+	else
+		self.helpView:SetInfo(HelpContentMap[self.type][1], HelpContentMap[self.type][2], self.CodeHelpCallback, self)
+	end
+end
+
+
+function ClubInputUI:CheckCodeValide()
+	local count = #self.inputView:GetNumList()
+	if count < 6 then
+		if self.type == ClubInputUIEnum.InputClubID then
+			UIManager:FastTip(LanguageMgr.GetWord(10041))
+		else
+			UIManager:FastTip(LanguageMgr.GetWord(10031))
+		end
+		return false
+	end
+	return true
+end
+
+-- 点击回调
+function ClubInputUI:OnInputID()
+	local shid = table.concat(self.inputView:GetNumList())
+	self.model:ReqApplyClub(shid)
+end
+
+function ClubInputUI:OnInputCode()
+	local id = table.concat(self.inputView:GetNumList())
+	self.model:ReqBindAgent(id)
+end
+
+function ClubInputUI:IDHelpCallback()
+	UIManager:CloseUiForms("ClubInputUI")
+	UIManager:ShowUiForms("ClubSelectUI")
+end
+
+function ClubInputUI:CodeHelpCallback()
+	UIManager:CloseUiForms("ClubInputUI")
+	UIManager:ShowUiForms("ClubAgentGetUI")
+end
+
+function ClubInputUI:OnRefreshDepth()
+
+  local uiEffect = child(self.gameObject.transform, "panel/Panel_Top/Title/Effect_youxifenxiang")
+  if uiEffect and self.sortingOrder then
+    local topLayerIndex = self.sortingOrder +self.m_subPanelCount +1
+    Utils.SetEffectSortLayer(uiEffect.gameObject, topLayerIndex)
+  end
+end
+
+return ClubInputUI

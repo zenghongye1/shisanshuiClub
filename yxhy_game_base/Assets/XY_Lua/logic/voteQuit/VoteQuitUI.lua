@@ -1,0 +1,151 @@
+local base = require("logic.framework.ui.uibase.ui_window")
+local VoteQuitUI = class("VoteQuitUI", base)
+local UIManager = UI_Manager:Instance()
+
+function VoteQuitUI:OnInit()
+	self.m_UiLayer = UILayerEnum.UILayerEnum_Top
+	self.itemList = {}
+	self.textureList = {}
+	self.agreeLabelList = {}
+	self.closeBtnGo = self:GetGameObject("panel/btn_close")
+	self.btnYesGo = self:GetGameObject("panel/btn1")
+	self.btnNoGo = self:GetGameObject("panel/btn2")
+	self.contentLabel = self:GetComponent("panel/contentLabel", typeof(UILabel))
+	self.timeLabel = self:GetComponent("panel/time/time", typeof(UILabel))
+	self.grid = self:GetComponent("panel/Grid", typeof(UIGrid))
+	for i = 1, 6 do
+		local go = self:GetGameObject("panel/Grid/item" .. i)
+		go:SetActive(false)
+		local tex = self:GetComponent("panel/Grid/item" .. i .. "/Texture", typeof(UITexture))
+		local lbl = self:GetComponent("panel/Grid/item" .. i .. "/Label", typeof(UILabel))
+		self.itemList[i] = go 
+		self.textureList[i] = tex
+		self.agreeLabelList[i] = lbl
+		lbl.text = ""
+	end
+	self.title_sp = self:GetComponent("panel/Panel_Top/Title", typeof(UISprite))
+
+	addClickCallback(self.closeBtnGo, self.OnCloseClick, self)
+	addClickCallback(self.btnYesGo, self.OnYesClick, self)
+	addClickCallback(self.btnNoGo, self.OnNoClick, self)
+end
+
+function VoteQuitUI:OnOpen(name, boolCallback, time,isVoteStart)
+	self:RegistEvent()
+	self.playerName = name
+	self.callback = boolCallback
+	self:StartTimer(time or 30)
+	self.currentTime = time or 30
+	if isVoteStart then
+		self.contentLabel.text = "[a06e0e]" .. name .. "[-]申请开始游戏\n您是否同意？"
+		self.title_sp.spriteName = "Title_66"
+	else
+		self.contentLabel.text = "[a06e0e]" .. name .. "[-]想要解散房间\n您是否同意解散？"
+		self.title_sp.spriteName = "Title_09"
+	end
+	self.timeLabel.text = tostring(self.currentTime)
+	self:UpdateItems()
+end
+
+function VoteQuitUI:RegistEvent()
+	Notifier.regist(GameEvent.OnAddVote, self.OnAddVote, self)
+end
+
+function VoteQuitUI:RemoveEvent()
+	Notifier.remove(GameEvent.OnAddVote, self.OnAddVote, self)
+end
+
+function VoteQuitUI:OnAddVote(value, viewSeat)
+	--local seat = player_seat_mgr.GetLogicSeatNumByViewSeat(viewSeat)
+	if self.agreeLabelList[viewSeat] ~= nil then
+		self.agreeLabelList[viewSeat].text = value and "同意" or "拒绝"
+	else
+		logError("VoteQuitUI", viewSeat)
+	end
+end
+
+function VoteQuitUI:OnClose()
+	self:RemoveEvent()
+	self:HideAll()
+end
+
+function VoteQuitUI:UpdateItems()
+	local players = self:GetAllPlayerData()
+	for i,v in pairs(players) do
+		if v then
+			self.itemList[i]:SetActive(true)
+			HeadImageHelper.SetImage(self.textureList[i],2,players[i].headurl)
+		end
+	end
+	self.grid:Reposition()
+end
+
+function VoteQuitUI:HideAll()
+	for i = 1, #self.itemList do
+		self.itemList[i]:SetActive(false)
+		self.agreeLabelList[i].text = ""
+		self.textureList[i].mainTexture = nil
+	end
+end
+
+
+function VoteQuitUI:GetAllPlayerData()
+	local userList={}
+	for i=1,roomdata_center.maxplayernum
+	do
+	   	local user= room_usersdata_center.GetUserByViewSeat(i)
+	   	if user then
+	   		userList[i] = user
+	   	end
+    end
+    return userList
+end
+
+
+function VoteQuitUI:StartTimer(time)
+	self:StopTimer()
+	self.timer = Timer.New(slot(self.OnTimeChange, self), 1, time)
+	self.timer:Start()
+end
+
+function VoteQuitUI:StopTimer()
+	if self.timer ~= nil then
+		self.timer:Stop()
+		self.timer = nil
+	end
+end
+
+
+function VoteQuitUI:OnCloseClick()
+	ui_sound_mgr.PlayCloseClick()
+	if self.callback ~= nil then
+		self.callback(false)
+	end
+	UIManager:CloseUiForms("VoteQuitUI")
+end
+
+function VoteQuitUI:OnYesClick()
+	if self.callback ~= nil then
+		self.callback(true)
+	end
+	UIManager:CloseUiForms("VoteQuitUI")
+end
+
+function VoteQuitUI:OnNoClick()
+	if self.callback ~= nil then
+		self.callback(false)
+	end
+	UIManager:CloseUiForms("VoteQuitUI")
+end
+
+function VoteQuitUI:OnTimeChange( )
+	self.timeLabel.text = self.currentTime
+	self.currentTime = self.currentTime - 1
+	if self.currentTime < 0 then
+		self.currentTime = 0
+	end
+end
+
+
+
+return VoteQuitUI

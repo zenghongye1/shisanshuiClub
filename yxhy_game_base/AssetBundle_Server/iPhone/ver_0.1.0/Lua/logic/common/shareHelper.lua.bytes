@@ -1,0 +1,54 @@
+shareHelper = {}
+
+--[[--
+ * @Description: 
+ * platform		1 微信，2 QQ，
+ * shareType	0 微信/QQ好友，1朋友圈/空间，2微信收藏
+ * contentType	1文本，2图片，3声音，4视频，5网页
+ * title		"福建人自己的棋牌游戏"
+ * filePath		""
+ * url			
+ * description 	"有闲你就来！福建本地的麻将游戏，最真实的在线十三水！就在有闲棋牌！"
+ ]]
+
+function shareHelper.doShare(platform,shareType,contentType,title,filePath,url,description)
+	Trace("-----------shareHelper.doShare--------------")
+	local platform = platform or data_center.GetPlatform()
+	if platform == LoginType.WXLOGIN then
+		YX_APIManage.Instance:WeiXinShare(shareType,contentType,title,filePath,url,description,function (msg)
+			Trace("onWeiXinShareCallBack------"..GetTblData(msg))
+			local msg = string.gsub(msg, "\\/", "/")
+			local retStr = ParseJsonStr(msg)
+			if tonumber(retStr["errCode"]) == 0 then
+				http_request_interface.ShareDone(function (msg)
+					-- body
+				end)
+			end
+		end)
+	elseif platform == LoginType.QQLOGIN then
+		if contentType == 5 then
+			filePath = global_define.appConfig.qzoneShareIcon
+		end
+		YX_APIManage.Instance:QQShare(shareType,contentType,title,filePath,url,description,function (msg)
+			Trace("onQQShareCallBack------"..GetTblData(msg))
+			local msg = string.gsub(msg, "\\/", "/")
+			local retStr = ParseJsonStr(msg)
+			if tonumber(retStr["result"]) == 0 then
+				http_request_interface.ShareDone(function (msg)
+					-- body
+				end)
+			end
+		end)
+	elseif 	platform == LoginType.YOUKE then		--游客开启微信分享
+		YX_APIManage.Instance:WeiXinShare(shareType,contentType,title,filePath,url,description,function (msg)
+			Trace("onWeiXinShareCallBack------"..GetTblData(msg))
+			local msg = string.gsub(msg, "\\/", "/")
+			local retStr = ParseJsonStr(msg)
+			if tonumber(retStr["errCode"]) == 0 then
+				http_request_interface.ShareDone(function (msg)
+					-- body
+				end)
+			end
+		end)
+	end
+end

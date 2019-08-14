@@ -1,0 +1,122 @@
+local base = require "logic/framework/ui/uibase/ui_view_base"
+local MoreBtnsView = class("MoreBtnsView", base)
+local addClickCallbackSelf = addClickCallbackSelf
+function MoreBtnsView:ctor(go, callback, comp)
+
+	-- @todo  如果需要 做成完全配置
+	self.btnsMap = 
+	{					-- function  enable
+		["gameplay"] 	= {self.OnGamePlayClick, true},			--玩法
+		["rule"] 		= {self.OnRuleClick, true},				--规则
+		["result"] 		= {self.OnResultClick, true},			--战绩
+		["setting"] 	= {self.OnSettingClick, true},			--设置
+		["machine"] 	= {self.OnMachineClick, false},			--托管
+		["gps"]			= {self.OnGpsClick, true}
+	}
+	self.hideCallback = callback
+	self.relateBtn = comp
+	base.ctor(self, go)
+end
+
+function MoreBtnsView:InitView()
+	self.btnGoList = {}
+	self.bgRt = self:GetComponent("bgBlack", typeof(UISprite))
+	self.checkList = {self.bgRt, self.relateBtn }
+	for k, tab in pairs(self.btnsMap) do
+		local go = self:GetGameObject(k)
+		if go ~= nil then
+			addClickCallbackSelf(go, 
+				function()
+					tab[1]()
+					if self.hideCallback ~= nil then
+						self.hideCallback()
+					end
+				end, self)
+			go:SetActive(tab[2] or false)
+			table.insert(self.btnGoList, go)
+		end
+	end
+end
+
+
+function MoreBtnsView:OnShow()
+	InputManager.AddLock()
+	Notifier.regist(cmdName.MSG_MOUSE_BTN_DOWN, slot(self.OnMouseBtnDown, self))
+end
+
+function MoreBtnsView:OnHide()
+	InputManager.ReleaseLock()
+	Notifier.remove(cmdName.MSG_MOUSE_BTN_DOWN, slot(self.OnMouseBtnDown, self))
+end
+
+function MoreBtnsView:OnMouseBtnDown(pos)
+	if not Utils.CheckPointInUIs(self.checkList, pos) then
+		if self.hideCallback ~= nil then
+			self.hideCallback()
+		end
+	end
+end
+
+function MoreBtnsView:OnGamePlayClick()
+	report_sys.EventUpload(35,player_data.GetGameId())
+	--help_ui.Show(player_data.GetGameId())
+	UI_Manager:Instance():ShowUiForms("help_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+                            Trace("Close help_ui")
+                          end, player_data.GetGameId())
+end
+
+function MoreBtnsView:OnRuleClick()
+	report_sys.EventUpload(34,player_data.GetGameId())
+	-- rules_ui.Show(player_data.GetGameId()) 
+	-- waiting_ui.Show()
+	UI_Manager:Instance():ShowUiForms("waiting_ui")
+	http_request_interface.getRoomByRid(roomdata_center.rid,1,function (str)
+		local s=string.gsub(str,"\\/","/")  
+		local t=ParseJsonStr(s)
+		Trace("OnRuleClick--------"..str)
+		
+		t.isRule = true
+
+		UI_Manager:Instance():ShowUiForms("recorddetails_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+	                            Trace("Close recorddetails_ui")
+	                          end, t)
+       -- waiting_ui.Hide()
+       UI_Manager:Instance():CloseUiForms("waiting_ui")
+   end)
+end
+
+function MoreBtnsView:OnResultClick()
+	report_sys.EventUpload(37,player_data.GetGameId())
+	-- waiting_ui.Show()
+	UI_Manager:Instance():ShowUiForms("waiting_ui")
+	http_request_interface.getRoomByRid(roomdata_center.rid,1,function (str)
+       local s=string.gsub(str,"\\/","/")  
+       local t=ParseJsonStr(s)
+       Trace("Onbtn_resultClick--------"..str)
+       -- recorddetails_ui.Show(t)   
+		UI_Manager:Instance():ShowUiForms("recorddetails_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+	                            Trace("Close recorddetails_ui")
+	                          end, t)
+       -- waiting_ui.Hide()
+       UI_Manager:Instance():CloseUiForms("waiting_ui")
+   end)
+end
+
+function MoreBtnsView:OnSettingClick()
+	report_sys.EventUpload(36,player_data.GetGameId())
+	--setting_ui.Show()
+	UI_Manager:Instance():ShowUiForms("setting_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+		Trace("Close setting_ui")
+	end)
+end
+
+function MoreBtnsView:OnMachineClick()
+	--mahjong_play_sys.AutoPlayReq(autoPlay)
+end
+
+function MoreBtnsView:OnGpsClick()
+	UI_Manager:Instance():ShowUiForms("gps_ui",UiCloseType.UiCloseType_CloseNothing,nil,gps_data.GetGpsData())
+end
+
+
+return MoreBtnsView

@@ -1,0 +1,73 @@
+local mahjong_effectMgr = class("mahjong_effectMgr")
+local poolBaseClass = require "logic/common/poolBaseClass"
+
+local pathRoot = "app_4/mj_common/effects/"
+
+function mahjong_effectMgr:ctor()
+	local new = function ()
+		return GameObject.New()
+	end
+	self.objectPool = poolBaseClass:create(new)
+end
+
+--[[--
+ * @Description: 通过cfg_hutype的id播放  
+ ]]
+function mahjong_effectMgr:PlayUIEffectById(id,parent)
+	local config = config_mgr.getConfig("cfg_hutype",id)
+	return self:SetParent(self:PlayUIEffect(config),parent)
+end
+
+--[[--
+ * @Description: 通过cfg_hutype的serverName播放  
+ ]]
+function mahjong_effectMgr:PlayUIEffectByName(name,parent)
+	local configs = config_mgr.getConfigs("cfg_hutype")
+	for k,v in pairs(configs) do
+		if v.serverName == name then
+			return self:SetParent(self:PlayUIEffect(v),parent)
+		end
+	end
+	logError("error effect name",name)
+end
+
+function mahjong_effectMgr:SetParent(obj,parent)
+	if parent then
+		obj.transform:SetParent(parent,false)
+	end
+	return obj
+end
+
+function mahjong_effectMgr:PlayUIEffect(data)
+	local prefabName = data.prefabName
+	local efSpriteName = data.efSpriteName
+	local fireworkType = data.fireworkType
+
+	local effect = EffectMgr.PlayEffect(pathRoot..fireworkType)
+	local effectFont
+	if prefabName and efSpriteName then
+		effectFont = EffectMgr.PlayEffect(pathRoot..prefabName)
+		local sprite = effectFont:GetComponentInChildren(typeof(UISprite))
+		if sprite then
+			sprite.spriteName = efSpriteName
+		else
+			logError("error efSpriteName",efSpriteName)
+		end
+	end
+
+	local obj = self.objectPool:Get()
+	local trans = obj.transform
+	effect.transform:SetParent(trans,false)
+	if effectFont then
+		effectFont.transform:SetParent(trans,false)
+	end
+
+	local recycleTimer = Timer.New(function ()
+    			self.objectPool:Recycle(obj)
+    	   end, 1, 1)
+   	recycleTimer:Start()
+
+	return obj
+end
+
+return mahjong_effectMgr

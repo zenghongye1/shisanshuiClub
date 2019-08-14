@@ -1,0 +1,238 @@
+--[[--
+ * @Description: 开房主界面逻辑处理
+ * @Author:      shine
+ * @FileName:    openroom_main_ui.lua
+ * @DateTime:    2017-07-13 19:11:00
+ ]]
+
+require "logic/hall_sys/openroom/room_data"
+
+openroom_main_ui = ui_base.New()
+local this = openroom_main_ui
+this.UI_Pos=nil
+local toggleIndex
+
+local mcreateHandle={}
+
+local curIndex = 0 
+
+function this.Awake()
+end
+
+function this.AppleVerifyHandler(  ) 
+end
+
+function this.Show() 
+	if this.gameObject==nil then
+		this.gameObject=newNormalUI(data_center.GetAppConfDataTble().appPath.."/ui/openroom_ui/openroom_main_ui")
+	else
+		GameObject.Destroy(this.gameObject)
+        this.gameObject=nil
+	end   
+    this.UI_Pos=child(this.transform,"panel_openroom/Panel_Right/sv/parent")
+     
+end
+
+
+function this.Start()	  
+	this.btnCreate = child(this.transform, "panel_openroom/CreateBtn")
+	if this.btnCreate ~= nil then
+		addClickCallbackSelf(this.btnCreate.gameObject, this.OnBtnCreateClick, this)
+	end 
+    local btn_close=child(this.transform,"panel_openroom/btn_close")
+    if btn_close~=nil then
+        addClickCallbackSelf(btn_close.gameObject,this.Hide,this)
+    end	
+     
+    if LuaHelper.isAppleVerify ~= nil and LuaHelper.isAppleVerify then
+        local lblTip = child(this.transform, "panel_openroom/Panel_Top/Label")
+        if lblTip ~= nil then
+        	lblTip.gameObject:SetActive(false)
+        end
+    end 
+         
+    --用于苹果审核
+    --[[if LuaHelper.isAppleVerify ~= nil and LuaHelper.isAppleVerify then
+        this.AppleVerifyHandler()
+    end --]]
+    local top_toggle=this.GetTopLeftToggle()
+    for i=1,#top_toggle do
+        top_toggle[i].name=i
+        addClickCallbackSelf(top_toggle[i].gameObject,this.OnTypeToggleClick,this)
+    end
+
+    this.InitBigToggle()
+end 
+
+function this.InitBigToggle()
+    local top_toggle=this.GetTopLeftToggle()
+    local typeIndex = 1
+    if #room_data.playType[1] == 0 then
+        typeIndex = 2
+        top_toggle[2].transform.localPosition = Vector3(140.2,-48,0)
+        top_toggle[2].startsActive = true
+        top_toggle[1].gameObject:SetActive(false)
+    end
+    if #room_data.playType[2] == 0 then
+        top_toggle[2].gameObject:SetActive(false)
+    end
+
+
+    if PlayerPrefs.HasKey("CUR_TYPE_ID") then
+        typeIndex = tonumber(PlayerPrefs.GetString("CUR_TYPE_ID")) 
+    end 
+    top_toggle[typeIndex].value = true
+    curIndex = typeIndex
+    this.InitToggle(room_data.playType[typeIndex])
+end
+
+--[[
+初始化UI列表及panel
+]] 
+function this.InitToggle(data)  
+    local grid=child(this.transform,"panel_openroom/Panel_Left/bg/Grid")
+    while grid.childCount>0 do
+        GameObject.DestroyImmediate(grid:GetChild(0).gameObject)
+    end 
+    componentGet(grid,"UIGrid").enabled=true
+    local tableInfo=data
+    local toggleitem=child(this.transform,"panel_openroom/toggle")  
+    for i=1,#tableInfo do 
+        local t=GameObject.Instantiate(toggleitem)
+        t.transform.parent=grid.transform
+        t.transform.localScale={x=1,y=1,z=1} 
+        t.name=tableInfo[i][1]
+        t.gameObject:SetActive(true)
+        subComponentGet(t.transform,"label_select","UILabel").text=tableInfo[i][2]
+        subComponentGet(t.transform,"label_noselect","UILabel").text=tableInfo[i][2]
+        addClickCallbackSelf(t.gameObject,this.OnToggleClick,this)   
+    end  
+    this.ResetToggle()
+end
+function this.ResetToggle()
+    local curGameID = nil
+    if PlayerPrefs.HasKey("CUR_GAME_ID") then
+    	curGameID = PlayerPrefs.GetString("CUR_GAME_ID")    	
+    end 
+    local toggletable=this.GetLeftToggle() 
+    if curGameID ~= nil  then  
+        local boo=false
+        for i=1,#toggletable do 
+           if toggletable[i].name==curGameID then 
+             toggletable[i].value=true
+             this.OnToggleClick(this,toggletable[i])
+             boo=true
+             toggleIndex=toggletable[i].name
+           end
+        end
+        if boo==false then
+            toggletable[1].value=true
+            this.OnToggleClick(this,toggletable[1])
+            toggleIndex=toggletable[1].name
+        end
+    elseif  table.getCount(toggletable)>0  then  
+        toggletable[1].value=true
+        this.OnToggleClick(this,toggletable[1])
+        toggleIndex=toggletable[1].name
+    end
+    
+end
+
+function this.OnTypeToggleClick(obj1,obj2)
+    if tonumber(obj2.name) == curIndex then
+        return
+    end
+    curIndex = tonumber(obj2.name)
+    this.InitToggle(room_data.playType[tonumber(obj2.name)]) 
+end 
+  
+function this.OnToggleClick(obj1,obj2) 
+    if obj2.name==toggleIndex then
+        return
+    end
+    toggleIndex=obj2.name
+    while this.UI_Pos.childCount>0 do
+        GameObject.DestroyImmediate(this.UI_Pos:GetChild(0).gameObject)
+    end  
+    local sv=componentGet(this.UI_Pos.transform.parent,"UIPanel") 
+   -- sv:ResetPosition() 
+    local s=componentGet(this.UI_Pos.transform.parent,"SpringPanel")
+    if s~=nil then 
+        s.onFinished=function() 
+            local yy= sv.clipOffset.y
+            Trace("finishsssssssssssss")
+            sv.clipOffset={x=0,y=0}
+            sv.transform.localPosition={x=sv.transform.localPosition.x,y=sv.transform.localPosition.y+yy,z=0}
+        end
+    end
+    MJRoom_UI.Init(tonumber(obj2.name)) 
+    -- if this.playType[obj2.name]~=nil then
+    --     this.playType[obj2.name].Init() 
+    -- else
+    --     logError("找不到对应的玩法开房界面文件name："..obj2.name)
+    -- end    
+end
+ 
+
+--[[--
+ * @Description: 设置当前默认选择游戏
+ ]] 
+ 
+function this.Hide()
+	if this.gameObject == nil then
+		return
+	else
+		GameObject.Destroy(this.gameObject)
+		this.gameObject = nil
+	end
+    mcreateHandle={}
+    toggleIndex=nil
+end
+function this.RegisterCreateHandle(f)  
+    mcreateHandle=f
+    return mcreateHandle
+end
+
+--///////////////////////////////外部获取接口start//////////////////////////////
+ function this.GetLeftToggle()
+    local toggletable={}
+    local grid=child(this.transform,"panel_openroom/Panel_Left/bg/Grid")
+    for i=0,grid.childCount-1 do
+        table.insert(toggletable,componentGet(grid:GetChild(i),"UIToggle"))
+    end
+    return toggletable
+    
+ end
+ function  this.GetTopLeftToggle()
+    local toggletable={}
+    local grid=child(this.transform,"panel_openroom/Panel_TopLeft")
+    for i=0,grid.childCount-1 do
+        table.insert(toggletable,componentGet(grid:GetChild(i),"UIToggle")) 
+    end
+    return toggletable
+ end
+--///////////////////////////////外部获取接口end////////////////////////////////
+
+ 
+
+--///////////////////////////////////点击事件处理start////////////////////////////////////////////
+
+function this.OnBtnCreateClick(obj)
+	-- waiting_ui.Show() 
+    UI_Manager:Instance():ShowUiForms("waiting_ui")
+    local top_toggle=this.GetTopLeftToggle()
+    for i=1,#top_toggle do
+        if top_toggle[i].value then 
+           PlayerPrefs.SetString("CUR_TYPE_ID", top_toggle[i].name)
+        end
+    end
+    local toggletable=this.GetLeftToggle()
+    for i=1,#toggletable do
+        if toggletable[i].value then 
+           PlayerPrefs.SetString("CUR_GAME_ID", toggletable[i].name)
+        end
+    end
+    mcreateHandle()  
+	this.Hide()	 
+end
+--///////////////////////////////////点击事件处理end//////////////////////////////////////////////

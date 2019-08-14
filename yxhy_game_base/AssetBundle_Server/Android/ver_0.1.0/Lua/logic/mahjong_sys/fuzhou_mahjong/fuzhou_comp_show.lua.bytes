@@ -1,0 +1,162 @@
+--[[--
+ * @Description: 福州麻将组件表现
+ * @Author:      shine
+ * @FileName:    fuzhou_comp_show.lua
+ * @DateTime:    2017-07-08 14:41:48
+ ]]
+require "logic/mahjong_sys/comp_show/comp_show_base"
+
+fuzhou_comp_show = comp_show_base.New()
+local this = fuzhou_comp_show
+this.super = comp_show_base
+
+--/////////////////////////需要重写的表现在此下面重写即可start/////////////////////////////////////
+
+--[[--
+ * @Description: 游戏阶段  
+ ]]
+this.game_state = {
+    none         = "none",
+    prepare      = "prepare",        --开始
+    banker       = "banker",          --定庄
+    deal         = "deal",               --抓牌
+    changeflower = "changeflower",      --补花
+    opengold     = "opengold",         --开金
+    round        = "round",        --游戏阶段
+    reward       = "reward",       --结算
+    gameend      = "gameend",       --结束
+}
+
+--[[--
+ * @Description: 事件注册  
+ ]]
+function this:RegisterEvents()
+    this.super.RegisterEvents(self)
+    Notifier.regist(cmd_fuzhoumahjong.F3_CHANGE_FLOWER, slot(self.OnChangeFlower, self)) -- 补花
+    Notifier.regist(cmd_fuzhoumahjong.F3_OPEN_GOLD, slot(self.OnGameOpenGlod, self))  -- 开金
+    Notifier.regist(cmd_fuzhoumahjong.F3_ROB_GOLD, slot(self.OnRobGold, self)) -- 抢金
+	Notifier.regist(cmdName.MAHJONG_COLLECT_CARD, slot(self.OnGameCollect, self)) -- 吃
+	Notifier.regist(cmdName.MAHJONG_TING_CARD, slot(self.OnTing, self))       --听牌
+end
+
+--[[--
+ * @Description: 事件注销  
+ ]]
+function this:UnRegisterEvents()
+    this.super.UnRegisterEvents(self)
+	Notifier.remove(cmd_fuzhoumahjong.F3_CHANGE_FLOWER, slot(self.OnChangeFlower, self)) -- 补花
+    Notifier.remove(cmd_fuzhoumahjong.F3_OPEN_GOLD, slot(self.OnGameOpenGlod, self))  -- 开金
+    Notifier.remove(cmd_fuzhoumahjong.F3_ROB_GOLD, slot(self.OnRobGold, self)) -- 抢金
+	Notifier.remove(cmdName.MAHJONG_COLLECT_CARD, slot(self.OnGameCollect, self)) -- 吃
+	Notifier.remove(cmdName.MAHJONG_TING_CARD, slot(self.OnTing, self))--听牌
+end
+
+--[[--
+ * @Description: 补花  
+ ]]
+function this:OnChangeFlower(tbl)
+    local paramTbl = tbl._para
+    local playerIndex = paramTbl["nFlowerWho"]      --谁补花
+    local flowerCards = paramTbl["stFlowerCards"]       --花牌
+    local newCards = paramTbl["stNewCards"]     --替换的花牌
+    local totalCards = paramTbl["nTotalFlowerCard"]     --花牌总数量
+    local leftCardNum = paramTbl["nCardLeft"]   --剩余牌数
+
+    local viewSeat = self.gvblnFun(playerIndex)
+
+    local isDeal = false
+    if self.curState == self.game_state.deal then
+        isDeal = true
+    end
+
+    if not isDeal then
+        ui_sound_mgr.PlaySoundClip("woman/buhua")
+    end
+
+    mahjong_anim_state_control.ShowAnimState(MahjongGameAnimState.changeFlower, 
+        function()
+            roomdata_center.SetPlayerFlowersCards(viewSeat, flowerCards)
+            if self.compTable ~= nil then
+                self.compTable:ShowChangeFlowers(viewSeat, flowerCards, totalCards, newCards, function() 
+                    Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmd_fuzhoumahjong.F3_CHANGE_FLOWER)
+                end,isDeal)
+            else
+                Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmd_fuzhoumahjong.F3_CHANGE_FLOWER)
+            end
+    end, true,true)
+end
+
+--[[--
+ * @Description: 开金  
+ ]]
+function this:OnGameOpenGlod(tbl)
+    Trace(GetTblData(tbl))
+    local cardValue = tbl._para.nCard
+    local isGold = tbl._para.bGold
+
+    self.curState = self.game_state.opengold
+
+    self.compTable:HideAllFlowerInTable(function ()
+    if mahjong_anim_state_control.GetCurrentIndex() == 2 then
+        mahjong_anim_state_control.SetState(3)
+    end 
+    mahjong_anim_state_control.ShowAnimState(MahjongGameAnimState.openGold, 
+        function()
+            self.compTable:ShowJin(cardValue, isGold, true, function()
+                self.compPlayerMgr:GetPlayer(1):ShowJinInHand()
+                Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmd_fuzhoumahjong.F3_OPEN_GOLD)
+            end)
+            if isGold then
+                roomdata_center.jin = cardValue
+                mahjong_ui.SetAllScoreVisible(true)
+            else
+                roomdata_center.AddFlowerCardToZhuang(cardValue)
+            end
+        end, true)
+    end)
+    ui_sound_mgr.PlaySoundClip("common/kaijin")
+end
+
+--[[--
+ * @Description: 抢金  
+ ]]
+function this:OnRobGold()
+    mahjong_anim_state_control.ShowAnimState(MahjongGameAnimState.grabGold)
+    Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmd_fuzhoumahjong.F3_ROB_GOLD)
+end
+
+--[[--
+ * @Description: 吃  
+ ]]
+function this:OnGameCollect(tbl)
+    Trace(GetTblData(tbl))
+
+    local operPlayViewSeat = self.gvbl(tbl._src)
+    local lastPlayViewSeat = operPlayViewSeat-1
+    if lastPlayViewSeat<1 then
+        lastPlayViewSeat = roomdata_center.MaxPlayer()
+    end
+    --Trace("lastPlayViewSeat"..lastPlayViewSeat.."self.gvbl(tbl._para.collectWho)"..self.gvblnFun(tbl._para.collectWho)) 
+    local mj = self.compPlayerMgr:GetPlayer(lastPlayViewSeat):GetLastOutCard()
+
+    local operType = MahjongOperAllEnum.Collect
+    
+    local operData = operatordata:New(operType, tbl._para.cardCollect.collect, tbl._para.cardCollect.useCards)
+
+    self:SetOutCardEfObj(nil, true)
+    self.compPlayerMgr:GetPlayer(operPlayViewSeat):OperateCard(operData, mj)
+
+    ui_sound_mgr.PlaySoundClip("woman/chi")
+    Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.MAHJONG_COLLECT_CARD)
+end
+
+--[[--
+ * @Description: 听  
+ ]]
+ function this:OnTing(tbl)
+    roomdata_center.SetHintInfoMap(tbl)
+    self.compPlayerMgr:GetPlayer(1):ShowTingInHand()
+    Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.MAHJONG_TING_CARD)
+end
+
+--/////////////////////////需要重写的表现在此下面重写即可end///////////////////////////////////////

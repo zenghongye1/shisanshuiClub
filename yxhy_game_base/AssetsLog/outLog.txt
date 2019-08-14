@@ -1,0 +1,13 @@
+﻿resp is null
+System.Net.Sockets.SocketException: 不知道这样的主机。
+
+  at System.Net.Dns.GetHostByName (System.String hostName) [0x00000] in <filename unknown>:0 
+  at System.Net.Dns.GetHostEntry (System.String hostNameOrAddress) [0x00000] in <filename unknown>:0 
+  at System.Net.Dns.GetHostAddresses (System.String hostNameOrAddress) [0x00000] in <filename unknown>:0 
+  at BestHTTP.PlatformSupport.TcpClient.General.TcpClient.Connect (System.String hostname, Int32 port) [0x00000] in D:\shisanshui\yxhy_game_base\yxhy_game_base\Assets\XY_Plugins\Best HTTP (Pro)\BestHTTP\PlatformSupport\TcpClient\TcpClient.cs:409 
+  at BestHTTP.HTTPConnection.Connect () [0x000ba] in D:\shisanshui\yxhy_game_base\yxhy_game_base\Assets\XY_Plugins\Best HTTP (Pro)\BestHTTP\HTTPConnection.cs:489 
+  at BestHTTP.HTTPConnection.ThreadFunc (System.Object param) [0x000b2] in D:\shisanshui\yxhy_game_base\yxhy_game_base\Assets\XY_Plugins\Best HTTP (Pro)\BestHTTP\HTTPConnection.cs:190 
+==========================Post:http://intest.dstars.cc/dstars/api/api.php?win_param={"siteid":1,"version":"3.1.0","appid":"4","method":"GameSAR.getVersionUp"}
+Set-up Android SDK path to make Android remote work
+==========================Post:http://intest.dstars.cc/dstars/api/api.php?win_param={"siteid":1,"version":"3.1.0","appid":"4","method":"GameSAR.getVersionUp"}
+==========================Post:http://intest.dstars.cc/dstars/api/api.php?win_param={"siteid":1,"version":"3.1.0","appid":"4","method":"GameSAR.getVersionUp"}

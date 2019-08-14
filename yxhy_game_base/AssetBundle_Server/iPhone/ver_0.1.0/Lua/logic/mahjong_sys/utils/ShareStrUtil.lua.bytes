@@ -1,0 +1,190 @@
+ShareStrUtil = {}
+local gameIdToFuncMap = {}
+local createRoomToFuncMap = {}
+local costtypeStr = {
+	[0] = "房主支付、",
+	[1] = "AA支付、",
+	[2] = "大赢家支付、",
+}
+--[[--
+ * @Description: 牌局内  
+ ]]
+function ShareStrUtil.GetShareStr(gameId)
+	local gameId = gameId or player_data.GetGameId()
+	local gameName = GameUtil.GetGameName(gameId)
+	local func = ShareStrUtil.GetGameShareStr--gameIdToFuncMap[gameId]
+
+
+	local ruleStr = ""
+	if func ~= nil then
+		ruleStr = func(gameId, roomdata_center.gamesetting)
+	end
+	return gameName, ruleStr
+end
+
+--[[--
+ * @Description: 牌局外  
+ ]]
+function ShareStrUtil.GetRoomShareStr(gameId, data, dontAdd)
+	local gameId = gameId or player_data.GetGameId()
+	local func = ShareStrUtil.GetRoomShareStrInternal--createRoomToFuncMap[gameId]
+
+	if func == nil then
+		logError("找不到gameId", gameId)
+		return ""
+	end
+	if data.costtype then
+		data.cfg["costtype"] = data.costtype
+	end
+	return func(gameId, data.cfg, dontAdd)
+end
+
+function ShareStrUtil.IsKeyNotConnect(connect,keys,gameData)
+	local connect_cfg = config_mgr.getConfig("cfg_rule",connect)
+	if connect_cfg then
+		for i = 1, #keys do
+			if keys[i] == connect and gameData[connect] == false then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function ShareStrUtil.GetGameShareStr(gameId, gameData)
+	local gameId = gameId or player_data.GetGameId()
+	local strTab = {}
+	ShareStrUtil.AddGamePlayerAndJU(strTab, gameData)
+	local keys = GameUtil.GetShareKeys(gameId)
+	if keys ~= nil and #keys > 0 then
+		for i = 1, #keys do
+			local value = nil
+			local cfg = config_mgr.getConfig("cfg_rule",keys[i])
+			if cfg ~= nil then
+				local connect = cfg.connect
+				if not (connect and ShareStrUtil.IsKeyNotConnect(connect,keys,gameData)) then
+					local res = gameData[keys[i]]
+					if type(res) == "boolean" then
+		               	if res==true then
+		                   	value=cfg.shareValue[1]
+		               	else
+		                	value=cfg.shareValue[0]
+		               	end
+		           	elseif type(res) == "number" then
+		                value=cfg.shareValue[res]
+		           	else
+		            	logError(type(res))
+		           	end
+					-- if gameData[keys[i]] == true then 
+					-- 	value = cfg.selectValue
+					-- elseif gameData[keys[i]] == false then
+					-- 	value = cfg.delselectValue
+					-- end
+					if value ~= nil then
+						table.insert(strTab,"、"..value)
+					end
+				end
+			end
+		end
+	end
+	table.insert(strTab, "\n"..GameUtil.GetShareContent(gameId))
+	return table.concat(strTab)
+end
+
+function ShareStrUtil.GetRoomShareStrInternal(gameId, roomShareData, dontAdd)
+	local strTab = {}
+	local gameId = gameId or player_data.GetGameId()
+	ShareStrUtil.AddRoomPlayerAndJU(strTab,roomShareData)
+	local keys = GameUtil.GetShareKeys(gameId)
+	if keys ~= nil and #keys > 0 then
+		for i = 1, #keys do
+			local cfg = config_mgr.getConfig("cfg_rule",keys[i])
+			if cfg ~= nil then
+				local value = ShareStrUtil.GetKeyValue(gameId, keys[i], roomShareData, cfg)
+				if value ~= nil then
+					table.insert(strTab,"、"..value)
+				end
+			end
+		end
+	end
+	if not dontAdd then
+		table.insert(strTab, "\n"..GameUtil.GetShareContent(gameId))
+	end
+	return table.concat(strTab)
+end
+
+
+function ShareStrUtil.GetKeyValue(gid, key, roomShareData, cfg)
+	local value = nil
+	-- 泉州不能三金倒特殊处理
+	-- if ENUM_GAME_TYPE.TYPE_QUANZHOU_MJ == gid and key == "bSupportSanJinDao" then
+	-- 	key = "nNoSanJinDao"
+	-- 	if roomShareData[key] == 1 then 
+	-- 		value = cfg.delselectValue
+	-- 	elseif roomShareData[key] == 0 then
+	-- 		value = cfg.selectValue
+	-- 	end
+	-- else
+	-- 	-- 部分字段通过openRoomName 兼容之前版本，如清一色
+	-- 	local key = cfg.openRoomName or key
+	-- 	if roomShareData[key] == 1 then 
+	-- 		value = cfg.selectValue
+	-- 	elseif roomShareData[key] == 0 then
+	-- 		value = cfg.delselectValue
+	-- 	end
+	-- end
+	if ENUM_GAME_TYPE.TYPE_QUANZHOU_MJ == gid and key == "bSupportSanJinDao" then
+		key = "nNoSanJinDao"
+		cfg = config_mgr.getConfig("cfg_rule",key)
+	else
+		key = cfg.RoomRuleKey or key
+	end
+	local num = roomShareData[key]
+	------牛牛两个字段需要特殊处理
+	if ENUM_GAME_TYPE.TYPE_NIUNIU == gid  then
+		if key == "baseScore" then
+			num = table.getCount(roomShareData["baseScore"])
+		elseif key == "multipleRule" then
+			num = 0 
+			for i,v in ipairs (roomShareData["multipleRule"]) do
+				if v >= 2 then
+					num = num + 1
+				end
+			end
+		end
+	end
+	
+	if num then
+		local str = cfg.shareValue[num]
+		if str and str~="" then
+			value = str
+		end
+	end
+	return value
+end
+
+
+function ShareStrUtil.AddGamePlayerAndJU(strTab, cfg)
+	if cfg.costtype then
+		table.insert(strTab, costtypeStr[cfg.costtype])
+	end
+	table.insert(strTab, roomdata_center.maxplayernum .. "人、")
+	if cfg.bSupportKe then
+		table.insert(strTab, "打课")
+	else
+		table.insert(strTab, roomdata_center.nJuNum .. "局")
+	end	
+end
+
+
+function ShareStrUtil.AddRoomPlayerAndJU(strTab,cfg)
+	if cfg.costtype then
+		table.insert(strTab, costtypeStr[cfg.costtype])
+	end
+	table.insert(strTab, cfg.pnum .. "人、")
+	if cfg.bsupportke ==1 then
+		table.insert(strTab, "打课")
+	else
+		table.insert(strTab, cfg.rounds .. "局")
+	end		 
+end

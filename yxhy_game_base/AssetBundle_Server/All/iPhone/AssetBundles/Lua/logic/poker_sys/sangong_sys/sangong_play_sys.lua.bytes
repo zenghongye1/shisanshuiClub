@@ -1,0 +1,100 @@
+require "logic/poker_sys/utils/poker3D_dictionary"
+
+sangong_play_sys = {}
+local this = sangong_play_sys
+local sangong_msg_manage_Inst = nil
+function this.RegisterEvent()
+
+end
+
+function this.UnRegisterEvents()
+
+end
+
+function this.Initialize()
+    this.RegisterEvent()
+end
+
+function this.Uninitialize()   
+    this.UnRegisterEvents()
+	mode_manager.UninitializeCurrMode()
+	msg_dispatch_mgr.SetIsEnterState(false)
+	msg_dispatch_mgr.ResetMsgQueue()  
+end
+
+function this.HandlerEnterGame()
+    map_controller.LoadLevelScene(900002, sangong_play_sys)
+	sessionData = player_data.GetSessionData()	
+end
+
+function this.EnterGame(msg)
+	require("logic.poker_sys.sangong_sys.cmd_manage.sangong_data_manage"):GetInstance():SetRoomInfo(msg)
+	this.HandlerEnterGame()
+end
+
+--[[--
+ * @Description: 进入游戏请求  
+ ]]
+function this.EnterGameReq(enterData, dst)
+	sangong_request_interface.EnterGameReq(enterData)
+end
+
+--加载完场景后第一件事
+function this.HandleLevelLoadComplete()
+    Trace("============================sangong_play_sys")
+	UI_Manager:Instance():ShowUiForms("sangong_ui",UiCloseType.UiCloseType_CloseOther)
+	gs_mgr.ChangeState(gs_mgr.state_mahjong)
+	map_controller.SetIsLoadingMap(false)
+	sangong_msg_manage_Inst = require("logic.poker_sys.sangong_sys.cmd_manage.sangong_msg_manage"):GetInstance()
+	msg_dispatch_mgr.SetIsEnterState(true)
+end
+
+function this.ExitSystem()
+	sangong_msg_manage_Inst:Uninitialize()
+    this.Uninitialize()
+    roomdata_center.ClearData()
+ 	UI_Manager:Instance():CloseUiForms("VoteQuitUI")
+	UI_Manager:Instance():CloseUiForms("sangong_ui")
+end
+
+function this.ChooseBankerReq()
+	sangong_request_interface.ChooseBankerReq(sessionData["_gt"],sessionData["_chair"])
+end
+
+function this.ReadyGameReq()	
+	sangong_request_interface.ReadyGameReq(sessionData["_gt"], sessionData["_chair"])
+end
+
+function this.beishu(beishu)
+	Trace("下注分数请求C2B:"..tostring(beishu))
+	sangong_request_interface.beishuReq(beishu,sessionData["_gt"], sessionData["_chair"])
+end
+
+function this.robbankerReq(beishu)
+	Trace("抢庄请求C2B倍数:"..tostring(beishu))
+	sangong_request_interface.robbankerReq(beishu,sessionData["_gt"], sessionData["_chair"])
+end
+
+--亮牌请求
+function this.OpenCardReq()
+	sangong_request_interface.OpenCardReq(sessionData["_gt"], sessionData["_chair"])
+end
+
+-- 解散房间
+function this.DissolutionRoom()
+  sangong_request_interface.Dissolution(sessionData["_gid"], sessionData["_gt"],sessionData["_chair"])
+end
+
+function this.VoteDrawReq(flag)
+	sangong_request_interface.VoteDrawReq(flag, sessionData["_gt"], sessionData["_chair"])
+end
+
+--玩家退出
+function this.LeaveReq()
+  sangong_request_interface.LeaveReq(sessionData["_gt"],sessionData["_chair"])
+end
+
+--聊天
+function this.ChatReq(contenttype,content,givewho)
+    sangong_request_interface.ChatReq(contenttype,content,sessionData["_gt"],sessionData["_chair"],givewho)
+end

@@ -1,0 +1,138 @@
+[
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+	[{
+		"exData": [
+			4,
+			8,
+			12
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"4局(房卡x1)",
+			"4局(房卡x1)",
+			"8局(房卡x2)"
+		],
+		"type": 1,
+		"group": 22,
+		"itemHeight": -80,
+		"maxPerLine": 3,
+		"title": "局数:",
+		"id": "rounds"
+	}],
+	[{
+		"exData": [
+			4,
+			3,
+			2
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"4人",
+			"3人",
+			"2人"
+		],
+		"type": 1,
+		"itemHeight": -80,
+		"group": 21,
+		"title": "人数:",
+		"id": "pnum",
+		"connecttype": [1],
+		"connect": [{
+			"2": {
+				"disable": [{
+					"bFollowDealer": 1
+				}],
+				"enable": []
+			},
+			"3": {
+				"disable": [{
+					"bFollowDealer": 1
+				}],
+				"enable": []
+			},
+			"4": {
+				"disable": [],
+				"enable": [{
+					"bFollowDealer": 1
+				}]
+			}
+		}],
+		"Isconnect": [{
+			"2": {
+				"select": []
+			},
+			"3": {
+				"select": []
+			},
+			"4": {
+				"select": []
+			}
+		}]
+
+	}],
+	[{
+		"multiterm": true,
+		"title": "玩法:",
+		"type": 0,
+		"group": 0,
+		"id": [
+			"hun",
+			"wind",
+			"bFollowDealer",
+			"bXiaoSa",
+			"qghu",
+			"bkd",
+			"bSupportGGWin"
+		],
+		"data": [
+			"带混牌",
+			"带风牌",
+			"跟庄",
+			"潇洒",
+			"可抢杠胡",
+			"边卡吊",
+			"天胡地胡"
+		],
+		"selectIndex": [
+
+		],
+		"connecttype": [],
+		"connect": [],
+		"Isconnect": [],
+		"itemHeight": -200,
+		"maxPerLine": 4
+	}],
+	[{
+		"exData": [
+			1,
+			0
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"点炮大包",
+			"点炮1家付"
+		],
+		"type": 1,
+		"itemHeight": -110,
+		"group": 20,
+		"title": "结算:",
+		"id": "bGunBaoAll"
+	}]
+]

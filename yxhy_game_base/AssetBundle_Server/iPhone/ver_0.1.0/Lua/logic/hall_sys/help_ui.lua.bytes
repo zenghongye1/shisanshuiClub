@@ -1,0 +1,509 @@
+--region *.lua
+--Date
+--此文件由[BabeLua]插件自动生成  
+
+
+
+--endregion
+
+local base = require("logic.framework.ui.uibase.ui_window")
+local BaseClass = class("help_ui",base)
+
+-- help_ui = ui_base.New()
+-- local this = help_ui  
+
+local currentPosy=0  
+local grid=nil
+local label_panel=nil
+
+local GameKindTbl = {
+  [1] = {18,20,25,26,40,41,42,43,44,45}, --麻将
+  [2] = {11,27}, --纸牌
+}
+
+
+function BaseClass:OnInit()
+
+  self._rulestype = nil
+
+  --用于苹果审核
+ --[[ if LuaHelper.isAppleVerify ~= nil and LuaHelper.isAppleVerify then
+    self:AppleVerifyHandler()
+  end--]]
+
+  --注册按钮事件
+  local btn_close = child(self.gameObject.transform,"panel_help/Panel_Top/btn_close")
+  if btn_close ~= nil then
+      addClickCallbackSelf(btn_close.gameObject,self.CloseWin,self)
+  end
+	self.sv_playrole = componentGet(child(self.gameObject.transform,"panel_help/Panel_Left/sv_playrole"),"UIScrollView")
+
+  self:initDropdownMenu()
+end
+
+function BaseClass:OnOpen(data)
+  -- if data ~= self._rulestype then
+  --   self._rulestype = data
+	self.sv_playrole:ResetPosition()
+    self:Show(data)
+  -- end
+end
+
+function BaseClass:PlayOpenAmination()
+end
+
+function BaseClass:CloseWin()
+  ui_sound_mgr.PlayCloseClick()
+  UI_Manager:Instance():CloseUiForms("help_ui")
+end
+
+--初始化下拉列表
+function BaseClass:initDropdownMenu()
+  
+  local Sprite_menuPanel = child(self.gameObject.transform,"panel_help/Panel_Left/Sprite_menuPanel")
+  if Sprite_menuPanel then
+    local menuTbl = {}
+    local Sprite_gridBg = child(Sprite_menuPanel,"Sprite_gridBg")
+    local isOpenMenuList = false
+
+    --开关
+    local function openMenuList(_open)
+      isOpenMenuList  = _open
+
+      for k,v in pairs(menuTbl) do
+        v.gameObject:SetActive(_open)
+      end
+      if Sprite_gridBg then
+        local gridSprite = componentGet(Sprite_gridBg.transform, "UISprite")
+        if gridSprite then
+          if _open then
+            if gridSprite.height <100 then
+              gridSprite.height = gridSprite.height +215
+            end
+          else
+            if gridSprite.height >100 then
+              gridSprite.height = gridSprite.height -215
+            end
+          end
+          --碰撞开关
+          local gridBoxCollider = componentGet(Sprite_gridBg.transform, "BoxCollider")
+          if gridBoxCollider then
+            gridBoxCollider.enabled = _open
+          end
+        end
+      end
+    end
+
+    if Sprite_gridBg then
+      addClickCallbackSelf(Sprite_gridBg.gameObject,function(_obj, _obj2)
+        openMenuList(false)
+      end,self)
+    end
+
+    --表头
+    local Sprite_m1_btn = child(Sprite_menuPanel,"Sprite_menu/Sprite")
+    if Sprite_m1_btn then
+        addClickCallbackSelf(Sprite_m1_btn.gameObject, function(_obj, _obj2)
+          openMenuList(not isOpenMenuList)
+        end,self)
+    end
+
+    --下拉列表
+    local menuGrid = child(Sprite_menuPanel, "Grid")
+    if menuGrid then
+      local mainMenuLabel = componentGet(child(Sprite_menuPanel, "Sprite_menu/Label"), "UILabel")
+      for i=1,3 do
+        local Sprite_item = child(menuGrid,"Sprite_m"..i)
+        if Sprite_item then
+            menuTbl[i] = Sprite_item
+            Sprite_item.name = tostring(i-1)
+
+            addClickCallbackSelf(Sprite_item.gameObject, function(_obj, _obj2)
+              openMenuList(false)
+
+              local listMenuLabel = componentGet(child(_obj2.transform, "Label"), "UILabel")
+              if mainMenuLabel and listMenuLabel then
+                mainMenuLabel.text = listMenuLabel.text
+              end
+
+              local iIndex = tonumber(_obj2.name) or 0
+              self:SiftGameMenu(iIndex)
+
+            end,self)
+        end
+      end
+    end
+  end
+end
+
+function BaseClass:setSelectedDropdownMenu(_itemIndex)
+  local Sprite_menuPanel = child(self.gameObject.transform,"panel_help/Panel_Left/Sprite_menuPanel")
+  if Sprite_menuPanel then
+    local Sprite_menuLabel = child(Sprite_menuPanel, "Sprite_menu/Label")
+    local Sprite_itemLabel = child(Sprite_menuPanel, string.format("Grid/%s/Label", _itemIndex))
+    if Sprite_menuLabel and Sprite_itemLabel then
+      componentGet(Sprite_menuLabel, "UILabel").text = componentGet(Sprite_itemLabel, "UILabel").text
+    end
+  end
+end
+
+function BaseClass:GetTxtPath(gid)
+  local name = GameUtil.GetRuleName(gid)
+  return data_center.GetAppConfDataTble().appPath.."/config/txt/rules/" .. name
+end
+
+function BaseClass:Show(rulestype, _isTimer)
+
+  --临时处理再次打开界面错乱问题
+  if not self.updateTimer then
+
+      local toggle_grid = grid or child(self.transform,"panel_help/Panel_Left/sv_playrole/toggle_grid")
+      if toggle_grid then
+        for i = (toggle_grid.transform.childCount -1),0,-1 do
+          GameObject.Destroy(toggle_grid.transform:GetChild(i).gameObject)
+        end
+      end
+      local Panel_Right = label_panel or child(self.transform,"panel_help/Panel_Right")
+      if Panel_Right then
+        for i = (Panel_Right.transform.childCount -1),0,-1 do
+          GameObject.Destroy(Panel_Right.transform:GetChild(i).gameObject)
+        end
+      end
+
+      --默认显示全部
+      self:setSelectedDropdownMenu(0)
+
+      self.updateTimer = FrameTimer.New(function()
+          self:Show(rulestype, true)
+          self.updateTimer = nil
+        end,1,1)
+      self.updateTimer:Start()
+  end
+  if not _isTimer then
+    return
+  end
+
+  -- if self.gameObject==nil then
+  --   require ("logic/hall_sys/help_ui")
+  --   self.gameObject=newNormalUI(data_center.GetAppConfDataTble().appPath.."/ui/help_ui/help_ui")
+  -- else  
+  --    self.gameObject:SetActive(true)
+  -- end 
+    self:InitUI(rulestype)
+    -- self:addlistener()  
+    -- self:Read(self,rulestype)
+    self:Read(rulestype)
+end
+
+-- function BaseClass:Awake() 
+--   --用于苹果审核
+--   if LuaHelper.isAppleVerify ~= nil and LuaHelper.isAppleVerify then
+--     this.AppleVerifyHandler()
+--   end
+-- end
+
+-- function BaseClass:Start() 
+--     this:RegistUSRelation()
+-- end
+
+-- function BaseClass:OnDestroy()
+--     this:UnRegistUSRelation()
+-- end
+
+function BaseClass:AppleVerifyHandler()
+    --[[self.toggle_sss=child(self.transform,"panel_help/Panel_Left/sv_playrole/toggle_grid/"..tostring(ENUM_GAME_TYPE.TYPE_SHISHANSHUI))
+   if self.toggle_sss~=nil then
+       self.toggle_sss.gameObject:SetActive(false)
+   end--]]
+end
+
+-- function BaseClass:addlistener()
+--    local btn_close=child(self.transform,"panel_help/Panel_Top/btn_close")
+--    if btn_close~=nil then
+--       addClickCallbackSelf(btn_close.gameObject,self.Hide,self)
+--    end 
+-- end
+
+function BaseClass:InitUI(choose_gid)
+
+    local toggle_item=child(self.transform,"panel_help/Panel_Left/toggle")
+    local back_item=child(self.transform,"panel_help/Panel_Left/back")
+    grid=child(self.transform,"panel_help/Panel_Left/sv_playrole/toggle_grid")
+    label_panel=child(self.transform,"panel_help/Panel_Right")
+
+    local cfg_game = config_mgr.getConfigs("cfg_game")
+    local gidList = model_manager:GetModel("openroom_model"):GetGidList()
+
+    local toggleInfo = {}
+    for i,v in ipairs(gidList) do
+      if cfg_game[v] then
+        table.insert(toggleInfo,{v,cfg_game[v].name})
+      end
+    end
+    
+    --筛选器开关
+    local Sprite_menu = child(self.gameObject.transform,"panel_help/Panel_Left/Sprite_menuPanel/Sprite_menu/Sprite")
+    if Sprite_menu then
+      componentGet(Sprite_menu.gameObject, "UIButton").isEnabled = game_scene.getCurSceneType() == scene_type.HALL
+    end
+    
+    -- 指定玩法移至第一位
+    if choose_gid and choose_gid ~=0 then
+      local choose_toggle
+      for k,v in ipairs(toggleInfo) do
+        if v[1] == choose_gid then
+          choose_toggle = table.remove(toggleInfo,k)
+          break
+        end
+      end
+      if choose_toggle then
+        table.insert(toggleInfo,1,choose_toggle)
+      end
+    end
+
+    for k,v in pairs(toggleInfo) do
+        local gid=v[1]
+        local label_name=v[2]
+        if GameUtil.CheckHasGame(gid)then
+            local item=GameObject.Instantiate(toggle_item.gameObject)
+            item.name=gid
+            item.transform.parent=grid.transform
+            item.transform.localScale={x=1,y=1,z=1}
+            item:SetActive(true)
+            local label_select=subComponentGet(item.transform,"label_select","UILabel")
+            local label_noselect=subComponentGet(item.transform,"label_noselect","UILabel")
+            label_select.text=label_name
+            label_noselect.text=label_name
+            addClickCallbackSelf(item.gameObject,self.Read,self)
+            local back=GameObject.Instantiate(back_item.gameObject)
+            back.name=gid
+            back:SetActive(true)
+            back.transform.parent=label_panel.transform
+            back.transform.localPosition={x=0,y=0,z=0}
+            back.transform.localScale={x=1,y=1,z=1}
+            componentGet(grid,"UIGrid"):Reposition()
+
+      			if game_scene.getCurSceneType() ~= scene_type.HALL then		--牌局内只显示当前游戏玩法
+      				return
+      			end
+        end
+    end
+end
+
+function BaseClass:SiftGameMenu(_iKind, _isTimer)
+
+  --临时处理再次打开界面错乱问题
+  if not self.shiftTimer then
+    local toggle_grid = grid or child(self.transform,"panel_help/Panel_Left/sv_playrole/toggle_grid")
+    if toggle_grid then
+      for i = (toggle_grid.transform.childCount -1),0,-1 do
+        GameObject.Destroy(toggle_grid.transform:GetChild(i).gameObject)
+      end
+    end
+    local Panel_Right = label_panel or child(self.transform,"panel_help/Panel_Right")
+    if Panel_Right then
+      for i = (Panel_Right.transform.childCount -1),0,-1 do
+        GameObject.Destroy(Panel_Right.transform:GetChild(i).gameObject)
+      end
+    end
+
+    self.shiftTimer = FrameTimer.New(function()
+        self:SiftGameMenu(_iKind, true)
+        self.shiftTimer = nil
+      end,1,1)
+    self.shiftTimer:Start()
+  end
+  if not _isTimer then
+    return
+  end
+
+  local toggle_item=child(self.transform,"panel_help/Panel_Left/toggle")
+  local back_item=child(self.transform,"panel_help/Panel_Left/back")
+  grid=child(self.transform,"panel_help/Panel_Left/sv_playrole/toggle_grid")
+  label_panel=child(self.transform,"panel_help/Panel_Right")
+  local gridSV=child(self.transform,"panel_help/Panel_Left/sv_playrole")
+
+  local siftTbl = {}
+  local iKind = _iKind or 0
+  for i,v in ipairs(GameKindTbl[iKind] or {}) do
+    siftTbl[v] = true
+  end
+
+  local cfg_game = config_mgr.getConfigs("cfg_game")
+  local gidList = model_manager:GetModel("openroom_model"):GetGidList()
+
+  local toggleInfo = {}
+  for i,v in pairs(gidList) do
+      if iKind<1 or siftTbl[v] then
+        table.insert(toggleInfo,{v,cfg_game[v].name})
+      end
+  end
+
+  for k,v in pairs(toggleInfo) do
+      local gid=v[1]
+      local label_name=v[2]
+      if GameUtil.CheckHasGame(gid) then
+          local item=GameObject.Instantiate(toggle_item.gameObject)
+          item.name=gid
+          item.transform.parent=grid.transform
+          item.transform.localScale={x=1,y=1,z=1}
+          item:SetActive(true)
+          local label_select=subComponentGet(item.transform,"label_select","UILabel")
+          local label_noselect=subComponentGet(item.transform,"label_noselect","UILabel")
+          label_select.text=label_name
+          label_noselect.text=label_name
+          addClickCallbackSelf(item.gameObject,self.Read,self)
+
+          local back=GameObject.Instantiate(back_item.gameObject)
+          back.name=gid
+          back:SetActive(true)
+          back.transform.parent=label_panel.transform
+          back.transform.localPosition={x=0,y=0,z=0}
+          back.transform.localScale={x=1,y=1,z=1}
+      end
+  end
+
+  --重设位置
+  componentGet(grid,"UIGrid"):Reposition()
+  componentGet(gridSV,"UIScrollView"):ResetPosition()
+
+  --默认打开第一项
+  if toggleInfo[1] then
+    local firstIndex = tonumber(toggleInfo[1][1]) or 0
+    if firstIndex >0 then
+      self:Read(toggleInfo[1][1])
+    end
+  end
+end
+
+function BaseClass:Read(obj2)
+    local gid  
+    if type(obj2)=="number" then
+        gid=obj2 
+    else 
+       gid =tonumber(obj2.name) 
+    end
+    self:ToggleClick(gid)
+    local label=child(self.transform,"panel_help/Panel_Right/"..tostring(gid))
+    if label~=nil then
+        self:readTxt(self:GetTxtPath(gid),tostring(gid))  
+    end
+end
+
+function BaseClass:Hide()
+  if not IsNil(self.gameObject) then 
+    self.gameObject:SetActive(false)
+    destroy(self.gameObject)
+    self.gameObject = nil
+	end    
+    self:Clear()
+end  
+
+
+function BaseClass:ToggleClick(gid)
+    for i=0,label_panel.transform.childCount-1 do
+        local l=label_panel.transform:GetChild(i)
+        if tonumber(l.name)==tonumber(gid) then
+            local c=componentGet(grid.transform:GetChild(i),"UIToggle")
+            c.value=true
+            l.gameObject:SetActive(true)
+        else 
+            l.gameObject:SetActive(false)
+        end
+
+    end
+end 
+
+function BaseClass:Clear()
+    currentPosy=0  
+end
+
+function BaseClass:readTxt(rulestype,backname)  
+    componentGet(label_panel.gameObject,"UIScrollView"):ResetPosition()
+    if child(label_panel.transform, backname).childCount>2 then 
+        return
+    end 
+    currentPosy=0   
+    if rulestype==nil then
+        return
+    end  
+    local path=rulestype or "rules/shisanshui"   
+    local txt=newNormalObjSync(path, typeof(UnityEngine.TextAsset)) 
+    if txt==nil then
+        logError(path..".txt 不存在")
+        return
+    end
+    local i=1 --子目录数量
+    local m=1 --主目录数量   
+    local t=string.split(tostring(txt),"##") 
+    for k=1,table.getCount(t),1  do 
+      local str=t[k]--DelS(t[k]) 
+      local tt= string.split(str,"-")     
+      if table.getCount(tt)>1 then    
+         if string.find(tt[1], "main", 1)~=nil  then
+            m=self:addmainlab(m,tt[2],backname)  
+         end
+         if string.find(tt[1], "child", 1)~=nil then
+             if table.getCount(tt)>2 then  
+              for i=3, table.getCount(tt) do
+                  tt[2]=tt[2].."-"..tt[i]
+              end 
+             end
+            i=self:addchildlab(i,tt[2],backname)  
+         end
+      elseif t[k]~=nil then   
+         self:upchildlab(i, str, backname)
+      end 
+    end
+end
+
+local function DelS(s)
+    assert(type(s)=="string")
+    return s:match("^%s*(.-)%s*$")
+end
+ 
+function BaseClass:addmainlab(m,str,backname)    
+   local lab_message01=child(label_panel.transform, backname.."/lab_main"..tostring(m)) 
+   if lab_message01~=nil then
+       componentGet(lab_message01.transform,"UILabel").text=str
+   else
+       local lab_message=child(label_panel.transform, backname.."/lab_main"..tostring(m-1))
+       lab_message01=GameObject.Instantiate(lab_message.gameObject)
+       lab_message01.transform.parent=lab_message.transform.parent  
+       lab_message01.name="lab_main"..tostring(m)
+       lab_message01.transform.localScale={x=1,y=1,z=1}  
+       lab_message01.transform.localPosition={x=0,y=currentPosy,z=0} 
+       componentGet(lab_message01,"UILabel").text=str
+   end   
+   currentPosy=lab_message01.transform.localPosition.y-componentGet(lab_message01.gameObject,"UILabel").height
+   m=m+1   
+   return m
+end
+
+function BaseClass:addchildlab(i, str, backname)  
+    local lab_message01=child(label_panel.transform, backname.."/lab_child"..tostring(i))
+    if lab_message01~=nil then
+       componentGet(lab_message01.transform,"UILabel").text=str
+    else 
+       local lab_message=child(label_panel.transform, backname.."/lab_child"..tostring(i-1))
+       lab_message01=GameObject.Instantiate(lab_message.gameObject)
+       lab_message01.transform.parent=lab_message.transform.parent 
+       lab_message01.name="lab_child"..tostring(i)
+       lab_message01.transform.localScale={x=1,y=1,z=1}  
+       lab_message01.transform.localPosition={x=0,y=currentPosy,z=0}
+       componentGet(lab_message01,"UILabel").text=str  
+    end    
+    currentPosy=lab_message01.transform.localPosition.y-componentGet(lab_message01.gameObject,"UILabel").height 
+    i=i+1
+   return i
+end
+
+function BaseClass:upchildlab(i, str, backname)
+   local lab_message01=child(label_panel.transform, backname.."/lab_child"..tostring(i-1))
+   componentGet(lab_message01.transform,"UILabel").text=componentGet(lab_message01.transform,"UILabel").text.."\n"..str
+   currentPosy=lab_message01.transform.localPosition.y-componentGet(lab_message01.gameObject,"UILabel").height
+
+   return i
+end
+
+return BaseClass

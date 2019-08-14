@@ -1,0 +1,24 @@
+--[[--------------------------------------------------------------
+
+%%%cfg_share(自动生成，请勿修改！)
+
+----------------------------------------------------------------]]
+
+local t = {}
+
+t["bSupportOneColor"] = {openRoomName = "nOneColor", selectValue = "清一色", }
+t["bSupportGoldDragon"] = {openRoomName = "nGoldDragon", selectValue = "可胡金龙", }
+t["bSupportGunAll"] = {openRoomName = "nGunAll", selectValue = "放炮三家赔", delselectValue = "放炮单赔"}
+t["bNoSupportPingHuByOneGold"] = {openRoomName = "nonegold", selectValue = "单金不能平胡", }
+t["bMustYouJinByTwoGold"] = {openRoomName = "ntwogold", selectValue = "双金及以上要游金", }
+t["bSupportSanJinDao"] = {openRoomName = "nSanJinDao", delselectValue = "不能三金倒"}
+t["bSupportCB"] = {selectValue = "承包", }
+t["bBankerType"] = {selectValue = "轮庄", delselectValue = "胡庄"}
+t["bSupportGoldIsBai"] = {selectValue = "白板为金", }
+t["bSupportGunWin"] = {selectValue = "可点炮", }
+t["bBankerDouble"] = {selectValue = "庄翻倍", }
+t["bHalfSelfDraw"] = {selectValue = "半自摸", delselectValue = "全自摸"}
+t["nYouJinFanNum"] = {selectValue = "游金4倍", delselectValue = "游金5倍"}
+t["bSupportThreePeng"] = {selectValue = "开局三连碰", }
+
+return t

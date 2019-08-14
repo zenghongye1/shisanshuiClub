@@ -1,0 +1,137 @@
+local poolBaseClass = require "logic/common/poolBaseClass"
+
+EffectMgr = {}
+local this = EffectMgr
+local PoolMap = {}
+local root = nil
+local isUpdate = false
+local cur_frame = 1
+local update_interval = 5 -- 多少帧检查一次
+local total_time = 0
+local recycleTimeList = {} -- 定时回收对象列表
+local dontRecycleTimeList = {} -- 不定时回收对象列表
+
+--[[--
+ * @Description: 	播放特效
+ * path：			资源路径
+ * poolType：		1.UI、2.3D场景  
+ * time：			生成时间，-1为持续
+ ]]
+function EffectMgr.PlayEffect(path,poolType,time)
+	local poolType = poolType or 1
+
+	local temp = PoolMap[path]
+	if temp == nil then
+		temp = this.InitEffectPool(path,poolType)
+	end
+
+	local poolClass = temp.poolClass
+	if poolClass == nil then
+		return nil
+	end
+
+	local obj = poolClass:Get()
+	local time = time or 1
+	
+	if time~= -1 then
+		recycleTimeList[obj] = {cur_time = 0,recycle_time = time,path = path}
+		isUpdate = true
+	else
+		dontRecycleTimeList[obj] = {path = path} -- 后续扩展
+	end
+
+	return obj
+end
+
+--[[--
+ * @Description: 停止特效  
+ ]]
+function EffectMgr.StopEffect(obj)
+	local tbl = dontRecycleTimeList[obj]
+	if tbl then
+		local temp = PoolMap[tbl.path]
+		if temp then
+			temp.poolClass:Recycle(obj)
+		end	
+		dontRecycleTimeList[obj] = nil
+	end
+end
+
+function EffectMgr.Init()
+	UpdateBeat:Add(this.Update)
+end
+
+function EffectMgr.GetRoot()
+	if IsNil(root) then
+		local r = GameObject.New("EffectPool")
+		r:SetActive(false)
+		root = r
+		return root
+	end
+	return root
+end
+
+function EffectMgr.InitEffectPool(path,poolType)
+	local createFunc = function () 
+		local prefab = newNormalObjSync(path, typeof(GameObject))
+		return newobject(prefab)	
+	end
+
+	local resetFunc = function (obj)
+		obj:SetActive(false)
+		obj:SetActive(true)
+	end
+
+	local recycleFunc = function (obj)
+		obj.transform:SetParent(this.GetRoot().transform,false)
+	end
+
+	local temp = {poolType = poolType,poolClass = poolBaseClass:create(createFunc,resetFunc,recycleFunc)}
+	PoolMap[path] = temp
+	return temp
+end
+
+function EffectMgr.UpdateRecycleTimeList(time)
+	for obj,v in pairs(recycleTimeList) do
+		v.cur_time = v.cur_time + time
+		if v.recycle_time <= v.cur_time then
+			this.DelObject(obj,v.path)
+			recycleTimeList[obj] = nil
+		end
+	end
+	local count = 0  
+	for k,v in pairs(recycleTimeList) do  
+	    count = count + 1  
+	end  
+	if count == 0 then
+		isUpdate = false
+	end
+end
+
+function EffectMgr.Update()
+	if not isUpdate then
+		return 
+	end
+	total_time = total_time + Time.deltaTime
+	if cur_frame%update_interval == 0 then
+		this.UpdateRecycleTimeList(total_time)
+		cur_frame = 0
+		total_time = 0
+	end
+	cur_frame = cur_frame + 1
+end
+
+function EffectMgr.DelObject(obj,path)
+	if not IsNil(obj) then
+		local temp = PoolMap[path]
+		if temp ~= nil then
+			temp.poolClass:Recycle(obj)
+		end	
+	end
+end
+
+function EffectMgr.UnInitEffectPool(path)
+	PoolMap[path] = nil
+end
+
+return EffectMgr

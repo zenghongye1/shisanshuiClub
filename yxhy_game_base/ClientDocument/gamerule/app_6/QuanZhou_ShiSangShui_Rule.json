@@ -1,0 +1,287 @@
+[
+  [
+        {
+            "multiterm": true,
+            "title": "玩        法:",
+            "id": [
+                "leadership",
+                "joker"
+            ],
+          "data": [
+            "加一色坐庄",
+            "大小鬼"
+          ],
+          "connecttype": [ 1 ],
+          "itemHeight": -78,
+		  "itemWidth": 330,
+          "connect": [
+            {
+              "leadership": {
+                "disable": [
+                  { "pnum": [ 2, 3, 6 ] }, 
+                  { "addColor": [ 0 ] },
+                  { "buyhorse": [ 1 ] }
+                ],
+                "enable": [{ "maxfan": [ 1, 2, 3, 4, 5 ] }]
+              }
+            } 
+          ],
+          "Isconnect": [
+            {
+              "leadership": {
+              "select": [
+                  { "pnum": [ 4 ] },
+                  { "addColor": [ 1 ] },
+                  { "buyhorse": [ 0 ] },
+                  { "maxfan": [ 5 ] }
+                ]
+              }
+            } 
+          ],
+          "selectIndex": [
+          ],
+          "type": 0, 
+          "group":0
+        }
+    ],
+
+
+
+  [
+    {
+      "exData": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "selectIndex": [
+        3
+      ],
+      "itemWidth": 120,
+      "itemHeight": -78,
+      "maxPerLine": 6, 
+      "data": [
+        "2人",
+        "3人",
+        "4人",
+        "5人",
+        "6人"
+      ],
+      "title": "人        数:",
+      "id": "pnum",
+       "type": 1,
+      "group": 26,
+      "connecttype": [2,1 ],
+      "connect": [
+        {
+          "2": [
+            { "rounds": [ "8局(房卡x1)", "12局(房卡x2)", "16局(房卡x3)" ] }
+          ],
+          "3": [
+            { "rounds": [ "8局(房卡x1)", "12局(房卡x2)", "16局(房卡x3)" ] }
+          ],
+          "4": [
+            { "rounds": [ "8局(房卡x2)", "12局(房卡x3)", "16局(房卡x4)" ] }
+          ],
+          "5": [
+            { "rounds": [ "8局(房卡x2)", "12局(房卡x3)", "16局(房卡x4)" ] }
+          ],
+          "6": [
+            { "rounds": [ "8局(房卡x3)", "12局(房卡x4)", "16局(房卡x5)" ] }
+          ]
+        },
+        {
+          "2": {
+            "disable": [
+              { "addColor": [ 1, 2 ] }
+            ],
+            "enable": [ { "addColor": [ 0 ] } ]
+          },
+          "3": {
+            "disable": [
+              { "addColor": [ 1, 2 ] }
+            ],
+            "enable": [ { "addColor": [ 0 ] } ]
+          },
+          "4": {
+            "disable": [
+              { "addColor": [  2 ] }
+            ],
+            "enable": [
+              { "addColor": [ 0, 1 ] } 
+            ]
+          },
+          "5": {
+            "disable": [
+              { "addColor": [ 0, 2 ] }
+            ],
+            "enable": [ { "addColor": [ 1 ] } ]
+          },
+          "6":  {
+            "disable": [
+              { "addColor": [ 0,1] }
+            ],
+            "enable": [ { "addColor": [ 2 ] } ]
+          }
+        }
+      ],
+      "Isconnect": [
+        {
+          "2": { 
+          },
+          "3": { 
+          },
+          "4": { 
+          },
+          "5": { 
+          },
+          "6": { 
+          }
+        },
+        {
+          "2": {
+            "select": [
+              { "addColor": [ 0 ] }
+            ]
+          },
+          "3": {
+            "select": [
+              { "addColor": [ 0 ] }
+            ]
+          },
+          "4": {
+            "select": [
+              { "addColor": [ 0 ] }
+            ]
+          },
+          "5": {
+            "select": [
+              { "addColor": [ 1 ] }
+            ]
+          },
+          "6": {
+            "select": [
+              { "addColor": [ 2 ] }
+            ]
+          }
+        }
+      ],
+      "iosconnect": [
+        {
+          "2": [
+            { "rounds": [ "8局(x1)",  "12局(x2)", "16局(x3)" ]  }
+          ],
+          "3": [ 
+            { "rounds": [ "8局(x1)", "12局(x2)", "16局(x3)" ] }
+          ],
+          "4": [
+           { "rounds": [ "8局(x2)",  "12局(x3)", "16局(x4)" ]  }
+          ],
+          "5": [
+           { "rounds": [ "8局(x2)",  "12局(x3)", "16局(x4)" ]  }
+          ],
+          "6": [
+           { "rounds": [ "8局(x3)",  "12局(x4)", "16局(x5)" ]  }
+          ]
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "exData": [
+        8,
+        12,
+        16
+      ],
+      "data": [
+        "8局(房卡x2)",
+        "12局(房卡x3)",
+        "16局(房卡x4)"
+      ],
+      "iosdata": [
+        "8局(x2)",
+        "12局(x3)",
+        "16局(x4)" 
+      ],
+
+      "itemHeight": -78,
+	  "itemWidth": 330,
+	  "distance": 84,
+	  "maxPerLine": 2,
+      "selectIndex": [ 1 ],
+      "title": "局        数:",
+      "id": "rounds",
+       "type": 1, 
+       "group":25
+    }
+  ], 
+  [
+    {
+      "exData": [
+        0,
+        1,
+        2
+      ],
+      "itemHeight": -156,
+	  "itemWidth": 232,
+      "selectIndex": [ 1 ],
+      "data": [
+        "不加色",
+        "加一色",
+        "加两色"
+      ],
+      "title": "加        色:",
+      "id": "addColor", 
+       "type": 1, 
+       "group":27
+    }
+  ],
+  [
+    {
+      "exData": [
+        0,
+        1
+      ],
+      "itemHeight": -78,
+	  "itemWidth": 232,
+      "selectIndex": [ 1 ],
+      "data": [
+        "无马牌",
+        "有马牌"
+      ],
+      "title": "买        马:",
+      "id": "buyhorse" ,
+       "type": 1, 
+       "group":28
+    }
+  ], 
+  [
+    {
+      "exData": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "itemWidth": 120,
+      "itemHeight": -78,
+      "maxPerLine": 6, 
+      "selectIndex": [ 5 ],
+      "data": [
+        "1倍",
+        "2倍",
+        "3倍",
+        "4倍",
+        "5倍"
+      ],
+      "title": "闲家最大倍数:",
+      "id": "maxfan",
+       "type": 1,
+       "group":29
+    }
+  ]
+]

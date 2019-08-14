@@ -1,0 +1,5 @@
+local winner_pattern = class("winner_pattern",require("logic.niuniu_sys.pattern"))
+function winner_pattern:ctor()
+end
+
+return winner_pattern

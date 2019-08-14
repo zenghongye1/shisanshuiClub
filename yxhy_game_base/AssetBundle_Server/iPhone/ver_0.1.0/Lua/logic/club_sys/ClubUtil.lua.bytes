@@ -1,0 +1,133 @@
+ClubUtil = {}
+local GameUtil = GameUtil
+
+ClubUtil.iconIdToNameMap = 
+{
+	[1] = "icon_27",
+	[2] = "icon_28",
+	[3] = "icon_29",
+}
+
+ClubUtil.locationTab = nil
+ClubUtil.locationList = {}
+
+function ClubUtil.GetClubIconName(id)
+	if id == nil or ClubUtil.iconIdToNameMap[id] == nil then
+		return "icon_27"
+	else
+		return ClubUtil.iconIdToNameMap[id]
+	end
+end
+
+function ClubUtil.GetClubMemberCapacity()
+	return 50
+end
+
+function ClubUtil.GetGameContent(gids, sp)
+	if gids == nil then
+		return ""
+	end
+	sp = sp or "、"
+	local strTab = {}
+	for i = 1, #gids do
+		if global_define.CheckHasName(gids[i]) then
+		strTab[#strTab + 1] = GameUtil.GetGameName(gids[i])
+		end
+	end
+	return table.concat(strTab, sp)
+end
+
+
+function ClubUtil.CopyClubInfo(dest, source)
+	for k, v in pairs(source) do
+		dest[k] = v
+	end
+end
+
+
+function ClubUtil.InitLocations()
+	local path = data_center.GetAppConfDataTble().appPath.."/config/txt/location/location"
+	local locationTxtAsset = newNormalObjSync(path, typeof(UnityEngine.TextAsset))
+	if locationTxtAsset == nil then
+		logError("加载不到location.txt")
+		return
+	end
+	ClubUtil.locationTab = ParseJsonStr(locationTxtAsset.text)
+	ClubUtil.InitLocationList()
+end
+
+function ClubUtil.InitLocationList()
+	ClubUtil.locationList = {}
+	for cityId, cityInfo in pairs(ClubUtil.locationTab.city) do
+		table.insert(ClubUtil.locationList, {cityId, cityInfo.name})
+		-- for areaId, areaInfo in pairs(cityInfo.area) do
+		-- 	if areaId % 100 ~= 1 then   -- 过滤市辖区
+		-- 		table.insert(ClubUtil.locationList, {areaId, areaInfo.name})
+		-- 	end
+		-- end
+	end
+end
+
+function ClubUtil.SearchClubSortFunc(clubA, clubB)
+	if clubA == nil or clubB == nil then
+		return false
+	end
+	if model_manager:GetModel("ClubModel"):IsClubMember(clubA.cid) then
+		return false
+	end
+	if model_manager:GetModel("ClubModel"):IsClubMember(clubB.cid) then
+		return true
+	end
+	return false
+end
+
+
+function ClubUtil.RoomListSortFunc(clubA, clubB)
+	if clubA == nil or clubB == nil then
+		return false
+	end
+	if clubA.uid == clubB.uid  then
+		return false
+	end
+	if clubA.uid == model_manager:GetModel("ClubModel").selfPlayerId then
+		return true
+	elseif clubB.uid == model_manager:GetModel("ClubModel").selfPlayerId then
+		return false
+	end
+	return false
+end
+
+function ClubUtil.FormatGameStr(content, maxCount)
+	if string.len(content) <= maxCount then
+		return content
+	end
+	local str = string.sub(content, 1, maxCount - 1)
+	return str .. "..."
+end
+
+
+function ClubUtil.GetLocationNameById(id, defaultStr)
+
+	defaultStr = defaultStr or "未设置"
+	if id == nil then
+		return defaultStr
+	end
+	id = tostring(id)
+	local info
+	-- city
+	if id % 100 == 0 then
+		info = ClubUtil.locationTab.city[id]
+	else
+		local cityId = id - id % 100 
+		local city = ClubUtil.locationTab.city[tostring(cityId)]
+		if city ~= nil then
+			info = city.area[id]
+		end
+	end
+	if info == nil then
+		return  defaultStr
+	else
+		return info.name
+	end
+end
+

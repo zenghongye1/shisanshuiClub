@@ -1,0 +1,27 @@
+local base = require "logic.mahjong_sys.action.common.mahjong_action_base"
+local mahjong_action_gameWin = class("mahjong_action_gameWin", base)
+
+local mahjong_ui = mahjong_ui
+
+function mahjong_action_gameWin:Execute(tbl)
+	mahjong_ui:HideOperTips()
+	local winner = tbl._para.stWinList[1].winner
+	local win_type = tbl._para.stWinList[1].winType
+	local win_viewSeat = self.gvblnFun(winner)
+
+	 if win_type == "huangpai" then
+ 		mahjong_ui:ShowHuang(function()
+ 			--Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.F1_GAME_WIN)
+ 		end)
+ 	else
+ 		local typeId = 9002
+ 		local soundName = "hu"
+
+ 		ui_sound_mgr.PlaySoundClip(mahjong_path_mgr.GetMjSoundPath(soundName))
+
+ 		mahjong_effectMgr:PlayUIEffectById(typeId,mahjong_ui.playerList[win_viewSeat].operPos)
+
+ 	end
+end
+
+return mahjong_action_gameWin

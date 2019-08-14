@@ -1,0 +1,63 @@
+local base = require("logic.framework.ui.uibase.ui_window")
+local poker_ui_base = class("poker_ui_base",base)
+
+function poker_ui_base:ctor()
+	base.ctor(self)
+end
+
+function poker_ui_base:OnInit()
+	self.timeTipObj = self:GetGameObject("Panel/Anchor_Center/readyBtns/timeTip")
+	self:InitDisMissCountDown()
+end
+
+function poker_ui_base:OnOpen()
+	
+end
+
+function poker_ui_base:OnClose()
+	self:HideDisMissCountDown()
+end
+
+--自己重连未准备倒计时文本
+function poker_ui_base:InitDisMissCountDown()
+	self.disMissCountdownView = require("logic/poker_sys/common/ready_dis_countdown"):create(self.timeTipObj)
+	self.disMissCountdownView.afterStr = "s后解散牌局"
+	self.disMissCountdownView.isSign = 30
+	self.disMissCountdownView:HideCountDownView()
+	self.disMissCountdownView:SetCallback(slot(self.DisMissCountDownProc,self))
+end
+
+function poker_ui_base:SetDisMissCountDown(time)
+	self.disMissCountdownView:ShowCountDownView(time)
+end
+
+function poker_ui_base:HideDisMissCountDown()
+	self.disMissCountdownView:HideCountDownView()
+end
+
+function poker_ui_base:DisMissCountDownProc(leftTime,isSign)
+	if isSign then
+		Notifier.dispatchCmd(cmdName.MSG_SHAKE,{})
+	end
+end
+
+
+local shakeTimer = nil
+function poker_ui_base:SetShakeTimer(interval)
+	local interval = interval or 30
+	if not shakeTimer then
+		shakeTimer = Timer.New(function()
+			Notifier.dispatchCmd(cmdName.MSG_SHAKE,{})
+		end,interval,-1)
+		shakeTimer:Start()
+	end
+end
+
+function poker_ui_base:StopShakeTimer()
+	if shakeTimer then
+		shakeTimer:Stop()
+		shakeTimer = nil
+	end
+end
+
+return poker_ui_base

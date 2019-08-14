@@ -1,0 +1,146 @@
+local base = require("logic.framework.ui.uibase.ui_childwindow")
+local Tab_class = class("recorddetailTap1",base)
+function Tab_class:ctor()
+	base.ctor(self)
+end
+
+function Tab_class:OnInit()
+	base.OnInit(self)
+end
+
+function Tab_class:OnOpen()
+	base.OnOpen(self)
+	Trace("Tab_a OnOpen")
+end
+
+function Tab_class:OnClose()
+	base.OnClose(self)
+	Trace("Tab_a OnClose")
+end
+
+function Tab_class:UpdateView(_data, _isTimer)
+
+	--临时处理再次打开界面错乱问题
+	if not self.updateTimer then
+	    self.updateTimer = FrameTimer.New(function()
+	        self:UpdateView(_data, true)
+	        self.updateTimer = nil
+	        UI_Manager:Instance():GetUiFormsInShowList("recorddetails_ui"):RefreshDepth()
+	      end,1,1)
+	    self.updateTimer:Start()
+	end
+	if not _isTimer then
+		local scrollViewGrid = child(self.gameObject.transform, "ScrollView/Grid")
+		if scrollViewGrid then
+		    for i = (scrollViewGrid.transform.childCount -1),0,-1 do
+		      GameObject.Destroy(scrollViewGrid.transform:GetChild(i).gameObject)
+		    end
+		end
+
+		return
+	end
+
+	if not _data then
+		return
+	end
+
+	local datatable = _data
+	-- if datatable.ctime~=nil then
+	-- 	componentGet(datatabletime,"UILabel").text=os.date("%Y/%m/%d %H:%M",datatable.ctime)
+	-- 	datatabletime.gameObject:SetActive(true)
+	-- end
+	-- if datatable.rno~=nil then
+	-- 	componentGet(child(self.transform,"recorddetails_panel/Panel_Middle/lab_rno").gameObject,"UILabel").text="房间号:"..datatable.rno
+	-- end
+
+	local Label_blank = child(self.gameObject.transform, "Label_blank")
+	if Label_blank then
+		Label_blank.gameObject:SetActive(not datatable.clog.scorelog or table.getCount(datatable.clog.scorelog) <1)
+	end
+
+	if datatable.clog.scorelog==nil or table.getCount(datatable.clog.scorelog)==0 then
+		return
+	end
+
+	local scrollViewGrid = child(self.gameObject.transform, "ScrollView/Grid")
+	if not scrollViewGrid then
+		return
+	end
+
+	local item_model = child(self.gameObject.transform, "ScrollView/item_model")
+	if not item_model then
+		return
+	end
+	for i=1,table.getCount(datatable.clog.scorelog) do 
+		local item = child(scrollViewGrid.gameObject.transform, "item_"..i)
+		if not item then
+			item = NGUITools.AddChild(scrollViewGrid.gameObject, item_model.gameObject)
+			-- item.transform.localScale={x=1,y=1,z=1}
+			item.name="item_"..i
+			item.gameObject:SetActive(true)
+			componentGet(scrollViewGrid.gameObject,"UIGrid"):Reposition()
+
+			addClickCallbackSelf(item.gameObject, function(obj)
+				
+				Trace("OpenCardDetail---"..i)
+				-- local rounds = string.split(obj1.transform.parent.name,"_")
+				local rounds = i
+				report_sys.EventUpload(17)
+				-- require "logic/hall_sys/record_ui/carddetails_ui"
+				-- carddetails_ui.Show(datatable, rounds)
+				UI_Manager:Instance():ShowUiForms("carddetails_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+                                    Trace("Close carddetails_ui")
+                                  end,datatable,rounds)
+
+			end, self)
+		end
+
+		-- local btn_detail=child(item.transform,"btn_detail")
+		-- if btn_detail~=nil then
+		-- 	addClickCallbackSelf(btn_detail.gameObject, function( obj1,obj2 )
+		-- 		Trace("OpenCardDetail---")
+		-- 	end, self)
+		-- end
+
+		local lab_number=child(item.transform,"sp_number/lab_number") 
+		componentGet(lab_number.gameObject,"UILabel").text=i
+		local k = 1
+		for j,v in pairs(datatable.clog.chairs) do 
+			subComponentGet(item.transform,"sv_user","UIPanel").depth = 2
+			local tex_photo=child(item.transform, "sv_user/grid_player/tex_photo_"..k)
+			if tex_photo==nil then
+				local old_tex_photo=child(item.transform, "sv_user/grid_player/tex_photo_1")
+				tex_photo=NGUITools.AddChild(child(item.transform,"sv_user/grid_player").gameObject,old_tex_photo.gameObject)
+				tex_photo.name="tex_photo_"..k
+				componentGet(child(item.transform,"sv_user/grid_player"),"UIGrid"):Reposition()
+			end
+
+			local imagetype=datatable.clog.imgs[j].type 
+			local imageurl=datatable.clog.imgs[j].url
+			HeadImageHelper.SetImage(componentGet(tex_photo.gameObject,"UITexture"),imagetype,imageurl)
+			local lab_name=child(tex_photo.transform,"lab_name")
+			componentGet(lab_name.gameObject,"UILabel").text=v
+
+			local lab_earn = child(tex_photo.transform,"lab_reward")
+			local lab_earn_red = child(tex_photo.transform,"lab_reward_red")
+			local score = tonumber(datatable.clog.scorelog[i][j])
+			if score >=0 then
+				lab_earn.gameObject:SetActive(true)
+				lab_earn_red.gameObject:SetActive(false)
+
+				componentGet(lab_earn.gameObject,"UILabel").text = "+"..score
+			else
+				lab_earn.gameObject:SetActive(false)
+				lab_earn_red.gameObject:SetActive(true)
+
+				componentGet(lab_earn_red.gameObject,"UILabel").text = score
+			end
+
+			k = k+1
+		end
+	end
+
+	componentGet(child(self.gameObject.transform, "ScrollView"), "UIScrollView"):ResetPosition()
+end
+
+return Tab_class

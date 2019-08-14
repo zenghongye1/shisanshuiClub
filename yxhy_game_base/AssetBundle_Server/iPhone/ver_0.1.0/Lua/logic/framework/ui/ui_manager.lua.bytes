@@ -1,0 +1,369 @@
+-- create by xuemin.lin
+require "common/extern"
+
+ui_manager_instace = nil
+local ui_manager = class("ui_manager")
+
+function ui_manager:ctor()
+	self.m_CacheAllUiForms = {}
+	self.m_CurrentShowFormsList = {} --当前显示的UI列表
+	self.m_NavigationStackUiForms = require("logic.framework.ui.stack"):create()
+	self.m_UiRoot = UnityEngine.GameObject.Find("uiroot_xy/Camera")
+	self.m_CurrentDepthForNormalLayer = 0
+	self.m_CurrentDepthForMainLayer = 0
+	self.m_CurrentDepthForTopLayer = 0
+	self.m_offsetDepth = 20
+end
+
+function ui_manager:Instance()
+	if ui_manager_instace == nil then
+		ui_manager_instace = require("logic.framework.ui.ui_manager"):create()
+	end
+	return ui_manager_instace
+end
+
+--[[
+	**UiFormName : UI界面的名字
+	**CloseType  ：打开界面的时候关闭其他界面，或者不关闭其他界面，类型参照UiCloseType
+	**OnCloseCb  ：这个界面被关闭完成的回调
+]]
+function ui_manager:ShowUiForms(UiFormName,CloseType,OnCloseCb,...)
+	local Ui = self:FindUiFormsInCache(UiFormName,self.m_CacheAllUiForms)
+	
+	if Ui == nil then
+		Ui = self:LoadFormsToCache(UiFormName)
+		--logError(Ui.gameObject.name)
+	end
+	
+	table.insert(self.m_CurrentShowFormsList,Ui)
+	if Ui.m_UiLayer ==  UILayerEnum.UILayerEnum_Normal  then
+		if CloseType == UiCloseType.UiCloseType_CloseNothing or CloseType == nil then
+		elseif CloseType == UiCloseType.UiCloseType_CloseOther or CloseType == UiCloseType.UiCloseType_Navigation then
+			if self.m_CurrentShowFormsList ~= nil then
+				for i,v in pairs(self.m_CurrentShowFormsList) do
+					if v.IsOpened == true and v.m_UiLayer == UILayerEnum.UILayerEnum_Normal then
+					
+						self:UpdateUiFromsDepth(v,false)
+						v:Close()
+					end
+				end
+			end
+			if CloseType == UiCloseType.UiCloseType_Navigation then
+				self:NavigationPush(Ui)
+			end
+	--	elseif CloseType == UiCloseType.UiCloseType_Navigation then
+			
+		end
+	elseif Ui.m_UiLayer == UILayerEnum.UILayerEnum_Main then
+	
+		
+	elseif Ui.m_UiLayer == UILayerEnum.UILayerEnum_Top then
+		
+	end
+	
+		
+	Ui:Open(CloseType,OnCloseCb,...)
+	self:UpdateUiFromsDepth(Ui,true)
+	Ui:RefreshDepth(true)--刷新界面的里面panel的层级
+	
+	return Ui
+end
+
+--[[
+	**UiFormName :要关闭的 UI界面名字
+]]
+function ui_manager:CloseUiForms(UiFormName,IsDestory)
+	local Ui,index = self:FindUiFormsInCache(UiFormName,self.m_CurrentShowFormsList)
+	if Ui == nil then
+	--	logError("Ui not in m_CurrentShowFormsList"..UiFormName)
+		return
+	end
+	if Ui.m_UiLayer ==  UILayerEnum.UILayerEnum_Normal then
+		if Ui.m_CloseType == UiCloseType.UiCloseType_CloseNoting or Ui.m_CloseType == nil then
+		elseif Ui.m_CloseType == UiCloseType.UiCloseType_CloseOther then
+			
+		elseif Ui.m_CloseType == UiCloseType.UiCloseType_Navigation then
+			self:NavigationPop()	
+			table.remove(self.m_CurrentShowFormsList,index)
+			Trace("============="..table.nums(self.m_CurrentShowFormsList))
+			return
+		end
+	end
+	if Ui.IsOpened == true then
+		self:UpdateUiFromsDepth(Ui,false)
+		Ui:Close()
+	end
+	table.remove(self.m_CurrentShowFormsList,index)
+	Trace("============="..table.nums(self.m_CurrentShowFormsList))
+	if IsDestory then
+		local destoryUi,index = self:FindUiFormsInCache(UiFormName,self.m_CacheAllUiForms)
+		if destoryUi ~= nil then
+			GameObject.Destroy(destoryUi.gameObject)
+			table.remove(self.m_CacheAllUiForms,index)
+		end
+		
+	end
+--	self:SortCurrentShowFormsListDepth()
+end
+
+--
+function ui_manager:FastTip(text, time, pos, encoding, outlineColorValue)
+	local fastTip = self:ShowUiForms("fast_tip",UiCloseType.UiCloseType_CloseNothing)
+	fastTip:Show(text, time, pos, encoding, outlineColorValue)
+	return fastTip
+	
+end
+
+--[[
+	根据UI窗口的名字查找是否这个UI存在缓存中
+  ]]
+function ui_manager:FindUiFormsInCache(UiFormName,UiList)
+	for i,v in pairs(UiList) do
+		if v.UiFormName == UiFormName then
+			return v,i
+		end
+	end
+	return nil
+end
+
+function ui_manager:GetUiFormsInShowList(UiFormName)
+	for i,v in pairs(self.m_CurrentShowFormsList) do
+		if v.UiFormName == UiFormName then
+			return v
+		end
+	end
+	return nil
+end
+
+--[[
+	更新Panel的深度,为panel的深度排序。isopen为ture表示当前打开，false表示隐藏
+]]
+function ui_manager:UpdateUiFromsDepth(Ui,IsOpen)
+	if IsOpen then
+		self:SortCurrentShowFormsListDepth()
+	end
+--[[	local panel = componentGet(Ui.gameObject.transform,"UIPanel")
+	if IsOpen == true then
+		
+			if Ui.m_UiLayer ==  UILayerEnum.UILayerEnum_Normal then
+				self.m_CurrentDepthForNormalLayer = self.m_CurrentDepthForNormalLayer + self.m_offsetDepth	
+				panel.depth = tonumber(Ui.m_UiLayer) + self.m_CurrentDepthForNormalLayer
+			
+			elseif Ui.m_UiLayer == UILayerEnum.UILayerEnum_Main then
+				self.m_CurrentDepthForMainLayer = self.m_CurrentDepthForMainLayer + self.m_offsetDepth	
+				panel.depth = tonumber(Ui.m_UiLayer) + self.m_CurrentDepthForMainLayer
+			elseif Ui.m_UiLayer == UILayerEnum.UILayerEnum_Top then
+				self.m_CurrentDepthForTopLayer = self.m_CurrentDepthForTopLayer + self.m_offsetDepth	
+				panel.depth = tonumber(Ui.m_UiLayer) + self.m_CurrentDepthForTopLayer
+			end
+		
+	else
+		--if Ui.IsOpened == true then
+			if Ui.m_UiLayer ==  UILayerEnum.UILayerEnum_Normal then
+				local depth = panel.depth - tonumber(self.m_CurrentDepthForNormalLayer)
+				self.m_CurrentDepthForNormalLayer = self.m_CurrentDepthForNormalLayer - self.m_offsetDepth
+			elseif Ui.m_UiLayer == UILayerEnum.UILayerEnum_Main then
+				local depth = panel.depth - tonumber(self.m_CurrentDepthForMainLayer)
+				self.m_CurrentDepthForMainLayer = self.m_CurrentDepthForMainLayer - self.m_offsetDepth
+			elseif Ui.m_UiLayer == UILayerEnum.UILayerEnum_Top then
+				local depth = panel.depth - tonumber(self.m_CurrentDepthForTopLayer)
+				self.m_CurrentDepthForTopLayer = self.m_CurrentDepthForTopLayer - self.m_offsetDepth
+			end
+		--end
+	end
+	panel.sortingOrder = panel.depth
+	Ui.sortingOrder = panel.depth--]]
+	
+end
+
+function ui_manager:SortCurrentShowFormsListDepth()
+	self.m_CurrentDepthForNormalLayer = 0
+	self.m_CurrentDepthForMainLayer = 0
+	self.m_CurrentDepthForTopLayer = 0
+	if table.nums(self.m_CurrentShowFormsList) > 0 then
+	for i,Ui in ipairs(self.m_CurrentShowFormsList) do
+		local panel = componentGet(Ui.gameObject.transform,"UIPanel")
+		if Ui.m_UiLayer ==  UILayerEnum.UILayerEnum_Normal then
+				self.m_CurrentDepthForNormalLayer = self.m_CurrentDepthForNormalLayer + self.m_offsetDepth	
+				panel.depth = tonumber(Ui.m_UiLayer) + self.m_CurrentDepthForNormalLayer
+			
+			elseif Ui.m_UiLayer == UILayerEnum.UILayerEnum_Main then
+				self.m_CurrentDepthForMainLayer = self.m_CurrentDepthForMainLayer + self.m_offsetDepth	
+				panel.depth = tonumber(Ui.m_UiLayer) + self.m_CurrentDepthForMainLayer
+			elseif Ui.m_UiLayer == UILayerEnum.UILayerEnum_Top then
+				self.m_CurrentDepthForTopLayer = self.m_CurrentDepthForTopLayer + self.m_offsetDepth	
+				panel.depth = tonumber(Ui.m_UiLayer) + self.m_CurrentDepthForTopLayer
+			end
+			panel.sortingOrder = panel.depth
+			Ui.sortingOrder = panel.depth
+			Ui:RefreshDepth()
+	end
+	end
+end
+
+--[[
+	用于导航界面。Push是打开一个新UI
+]]
+function ui_manager:NavigationPush(Ui)	
+	self.m_NavigationStackUiForms:Push(Ui) 
+end
+
+--[[
+	用于导航界面。Pop是回退到上一级UI
+]]
+function ui_manager:NavigationPop()
+	local Ui = self.m_NavigationStackUiForms:Pop()
+	if Ui.IsOpened == true then
+		self:UpdateUiFromsDepth(Ui,false)
+		Ui:Close()
+	end
+	Ui = self.m_NavigationStackUiForms:Top()
+	if Ui~= nil and Ui.IsOpened == false then
+		
+		Ui:Open()
+		self:UpdateUiFromsDepth(Ui,true)
+	--	Ui:RefreshDepth(true)
+	end
+	return Ui
+end
+
+--[[
+	加载UI，私有方法，外界不需要调用到
+]]
+function ui_manager:LoadFormsToCache(UiFormName)
+	if ui_prefab_enum["ui_enum_"..UiFormName] == nil then
+		return
+	end
+	return self:LoadUIForm(UiFormName)
+end
+
+function ui_manager:LoadUIForm(UiFormName)
+	local luaFile = ui_script_enum["ui_script_"..UiFormName]
+	local luaFileObj = require(luaFile):create()
+	luaFileObj.UiFormName = UiFormName
+	luaFileObj.m_UiRoot = self.m_UiRoot
+	table.insert(self.m_CacheAllUiForms,luaFileObj)
+	return luaFileObj
+end
+
+--这个方法可以不用，用OnInit代替
+function ui_manager:Awake(UiFormsName)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.Awake ~= nil then
+		Ui:Awake()
+	end
+end
+
+function ui_manager:Start(UiFormsName)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.Start ~= nil then
+		Ui:Start()
+	end
+end
+
+function ui_manager:Update(UiFormsName)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CurrentShowFormsList)
+	if Ui ~= nil and Ui.IsOpened == true and Ui.Update~= nil then
+		Ui:Update()
+	end
+end
+
+function ui_manager:OnEnable(UiFormsName)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.OnEnable ~= nil then
+		Ui:OnEnable()
+	end
+end
+
+function ui_manager:OnDisable(UiFormsName)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.OnDisable ~= nil then
+		Ui:OnDisable()
+	end
+end
+
+function ui_manager:OnTriggerEnter(UiFormsName,collider)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.OnTriggerEnter ~= nil then
+		Ui:OnTriggerEnter(collider)
+	end
+end
+
+function ui_manager:OnTriggerStay(UiFormsName,collider)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.OnTriggerStay ~= nil then
+		Ui:OnTriggerStay(collider)
+	end
+end
+
+function ui_manager:OnTriggerExit(UiFormsName,collider)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.OnTriggerExit ~= nil then
+		Ui:OnTriggerExit(collider)
+	end
+end
+
+function ui_manager:OnCollisionEnter(UiFormsName,collision)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.OnCollisionEnter ~= nil then
+		Ui:OnCollisionEnter(collision)
+	end
+end
+
+function ui_manager:OnCollisionStay(UiFormsName,collision)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.OnCollisionStay ~= nil then
+		Ui:OnCollisionStay(collision)
+	end
+end
+
+function ui_manager:OnCollisionExit(UiFormsName,collision)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.OnCollisionExit ~= nil then
+		Ui:OnCollisionExit(collision)
+	end
+end
+
+function ui_manager:OnFingerHover(UiFormsName,e)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CurrentShowFormsList)
+	if Ui ~= nil and Ui.OnFingerHover ~= nil then
+		Ui:OnFingerHover(e)
+	end
+end
+
+function ui_manager:OnSwipe(UiFormsName,Direction,SelectObj)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CurrentShowFormsList)
+	if Ui ~= nil and Ui.OnSwipe ~= nil then
+		Ui:OnSwipe(Direction,SelectObj)
+	end
+end
+
+function ui_manager:OnFingerUp(UiFormsName,fingerUp)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CurrentShowFormsList)
+	if Ui ~= nil and Ui.OnFingerUp ~= nil then
+		Ui:OnFingerUp(fingerUp)
+	end
+end
+
+function ui_manager:OnFingerDown(UiFormsName,fingerDown)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.OnFingerDown ~= nil then
+		Ui:OnFingerDown(fingerDown)
+	end
+end
+
+function ui_manager:OnTap(UiFormsName,tap)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.OnTap ~= nil then
+		Ui:OnTap(tap)
+	end
+end
+
+function ui_manager:OnDragRecognizer(UiFormsName,DeltaMove,normalizedTime)
+	local Ui = self:FindUiFormsInCache(UiFormsName,self.m_CacheAllUiForms)
+	if Ui ~= nil and Ui.OnDragRecognizer ~= nil then
+		Ui:OnDragRecognizer(DeltaMove,normalizedTime)
+	end
+end
+
+return ui_manager

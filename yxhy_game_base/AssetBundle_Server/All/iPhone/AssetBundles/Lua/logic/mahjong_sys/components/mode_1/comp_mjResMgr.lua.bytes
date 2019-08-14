@@ -1,0 +1,145 @@
+local mode_comp_base = require "logic/mahjong_sys/components/base/mode_comp_base"
+local comp_mjResMgr = class ("comp_mjResMgr", mode_comp_base)
+
+
+function comp_mjResMgr:ctor()
+	self.name = "comp_resMgr"
+
+    self.mjMeshs = {} --麻将mesh列表
+    self.outCardEfObj = nil -- 出牌标志
+    self.normalMat_512 = nil -- 512贴图，2D视角使用
+    self.normalMat_1024 = nil -- 1024贴图，3D视角使用
+    self.highLightMat = nil -- 高亮材质
+    self.disableMat = nil  -- 不能点击材质
+    self.collectHighLightMat = nil -- 吃牌高亮材质
+    self.mjItemPool = {} --麻将子克隆池
+
+    self:LoadMJMesh()
+    self:InitOutCardEfObj()
+    self:LoadHighLightMat()
+end
+
+ --[[--
+ * @Description: 加载麻将网格  
+ ]]
+function comp_mjResMgr:LoadMJMesh()
+	local resMJMeshObj = newNormalObjSync(mahjong_path_mgr.GetMjPath("mahjongtiles"), typeof(GameObject))
+    local meshFilters = resMJMeshObj:GetComponentsInChildren(typeof(UnityEngine.MeshFilter))
+    for i = 0,meshFilters.Length-1,1 do
+        table.insert(self.mjMeshs, meshFilters[i].sharedMesh)
+    end
+end
+
+ --[[--
+ * @Description: 初始化出牌标志
+ ]]
+function comp_mjResMgr:InitOutCardEfObj()
+  	local outCardEfRes = newNormalObjSync(mahjong_path_mgr.GetMjPath("jiantou"), typeof(GameObject))
+    self.outCardEfObj = newobject(outCardEfRes)     
+end
+
+--[[--
+ * @Description: 加载高亮材质  
+ ]]
+function comp_mjResMgr:LoadHighLightMat()
+    self.normalMat_512 = newNormalObjSync(mahjong_path_mgr.GetMaterialPath("mj_hand_512"), typeof(UnityEngine.Material))
+    self.normalMat_1024 = newNormalObjSync(mahjong_path_mgr.GetMaterialPath("mj_hand_1024"), typeof(UnityEngine.Material))
+    self.highLightMat = newNormalObjSync(mahjong_path_mgr.GetMaterialPath("mahjongtilespecular_new_blue"), typeof(UnityEngine.Material))
+    self.collectHighLightMat = newNormalObjSync(mahjong_path_mgr.GetMaterialPath("mahjongtilespecular_new_collect"), typeof(UnityEngine.Material))
+    self.disableMat = newNormalObjSync(mahjong_path_mgr.GetMaterialPath("mahjongtilespecular_new_disable"),typeof(UnityEngine.Material))
+end
+
+--[[--
+ * @Description: 获取麻将mesh  
+ ]]
+function comp_mjResMgr:GetMahjongMesh(index)
+	local mesh = self.mjMeshs[index]
+	if mesh == nil then
+		Trace("GetMahjongMesh !!!!!!!!!!!!!!!!!!!!!!!!!! error !!!!!!!!! index"..index)
+	end
+    return mesh
+end
+
+function comp_mjResMgr:GetOutCardEfObj()
+    return self.outCardEfObj
+end
+
+--[[--
+ * @Description: 设置出牌标志  
+ ]]
+function comp_mjResMgr:SetOutCardEfObj(pos)
+    self.outCardEfObj.transform.position = pos
+end
+
+--[[--
+ * @Description: 隐藏出牌标志  
+ ]]
+function comp_mjResMgr:HideOutCardEfObj()
+    self.outCardEfObj.transform.position = self.outCardEfObj.transform.position + Vector3(0,-1,0)
+end
+
+function comp_mjResMgr:GetNormalMat_512()
+    return self.normalMat_512
+end
+
+function comp_mjResMgr:GetNormalMat_1024()
+    return self.normalMat_1024
+end
+
+--[[--
+ * @Description: 获取高亮材质  
+ ]]
+function comp_mjResMgr:GetHighLightMat()
+    return self.highLightMat
+end
+
+function comp_mjResMgr:GetCollectHighLightMat()
+    return self.collectHighLightMat
+end
+
+function comp_mjResMgr:GetDisableMat()
+    return self.disableMat
+end
+
+--[[--
+ * @Description: 创建一个麻将子克隆  
+ ]]
+function comp_mjResMgr:CeateMJItem(original)
+    local mj
+    if #self.mjItemPool >0 then
+        mj = self.mjItemPool[#self.mjItemPool]
+        table.remove(self.mjItemPool,#self.mjItemPool)
+    else
+        mj = comp_mjItem.create()
+    end
+    if original~=nil then
+        mj.transform.position = original.transform.position
+        mj.transform.eulerAngles = original.transform.eulerAngles
+        mj:SetMesh(original.paiValue)
+        RecursiveSetLayerVal(mj.transform,original.mjModelObj.layer)
+    end
+    mj:SetActive(true)
+    return mj
+end
+
+--[[--
+ * @Description: 销毁一个麻将子克隆  
+ ]]
+function comp_mjResMgr:DestroyMJItem(mj)
+    mj:SetActive(false)
+    table.insert(self.mjItemPool,mj)
+end
+
+function comp_mjResMgr:Uninitialize()
+	mode_comp_base.Uninitialize(self)
+    if not IsNil(self.outCardEfObj) then
+        GameObject.DestroyImmediate(self.outCardEfObj)
+    end
+    for i,v in ipairs(self.mjItemPool) do
+        if v~=nil then
+            v:Uninitialize()
+        end
+    end
+end
+
+return comp_mjResMgr

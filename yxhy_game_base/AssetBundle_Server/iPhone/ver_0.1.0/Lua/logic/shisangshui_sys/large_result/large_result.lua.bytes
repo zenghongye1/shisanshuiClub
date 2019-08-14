@@ -1,0 +1,335 @@
+
+--require "logic/shisangshui_sys/card_data_manage"
+
+large_result =ui_base.New()
+local this =large_result
+
+local largeResultData = {}
+local fangzhuId = nil
+local selfId = nil
+local ScorestUid = {}
+
+
+function this.Show(tbl)	
+	UI_Manager:Instance():CloseUiForms("place_card")
+	UI_Manager:Instance():CloseUiForms("shisanshui_smallResult_ui")
+	UI_Manager:Instance():CloseUiForms("common_card")
+		
+	if this.gameObject == nil then
+		this.gameObject = newNormalUI(data_center.GetResRootPath().."/ui/large_result")
+	else
+		this.gameObject:SetActive(true)
+	end
+	if (tbl._para ~= nil and tbl._para.totallInfo ~= nil) then
+		Trace("总结算large_result------"..GetTblData(tbl))
+		largeResultData = tbl._para
+	else
+		largeResultData = nil
+		logError("十三水服务器给大结算空")
+	end
+	roomdata_center.isStart = false
+end
+
+--[[--
+ * @Description: 逻辑入口  
+ ]]
+function this.Start()
+	this.registerevent()
+	
+	if largeResultData ~= nil then
+		this.LoadAllResult(largeResultData)
+	end		
+	this:RegistUSRelation()
+end
+
+--[[--
+ * @Description: 销毁  
+ ]]
+function this.OnDestroy()
+	this.gameObject = nil
+	this:UnRegistUSRelation() 
+end
+	
+
+function this.Hide()
+	if this.gameObject == nil then
+		return
+	else
+		GameObject.Destroy(this.gameObject)
+	end
+end
+
+--注册事件
+function this.registerevent()
+	local endbtn = child(this.transform, "Panel/endbtn")
+	if endbtn ~= nil then
+		UIEventListener.Get(endbtn.gameObject).onClick = this.EndBtnClick
+	end
+    local btn_share=child(this.transform,"Panel/sharebtn")
+    if btn_share ~= nil then
+		UIEventListener.Get(btn_share.gameObject).onClick = this.ShareClick
+	end
+end
+
+function this.LoadAllResult(result)
+	Trace("large_result from server"..GetTblData(result))
+	fangzhuId = result["owner_uid"]		--房主的uid
+	selfId = data_center.GetLoginUserInfo().uid		--本机uid
+	local highestNum ={}  ----记录最高分index
+	local otherResult = {}
+	local Score_Uid = {}	  ----最高分——uid表	
+	
+	if result.user_list ~= nil then
+		local uList = result.user_list
+		for k,v in pairs(uList) do
+			Score_Uid[tostring(v)] = result["totallInfo"][k]["score"]
+			
+			local number= player_seat_mgr.GetLogicSeatByStr(k)
+			local userData = room_usersdata_center.GetTempUserByLogicSeat(tonumber(number))
+			result["totallInfo"][k]["uid"] = result["user_list"][k]		--uid存入totallInfo表
+			result["totallInfo"][k]["name"] = userData.name				--name存入totallInfo表
+			result["totallInfo"][k]["url"] = userData.headurl			--url存入totallInfo表
+			
+			if tonumber(selfId) ~= tonumber(v) then	
+				Trace("总结算判断不是本机"..selfId.."不等于"..v)
+				table.insert(otherResult,result["totallInfo"][k])
+			else	   --------主机用户放在首位---------
+				local trans = child(this.transform, "Panel/user")
+				trans.gameObject:SetActive(true)
+				-----------------总结算用户信息-----------------------
+				local obj1 = child(this.transform,"Panel/user/IDlbl")
+				local IDLbl = componentGet(obj1, "UILabel")
+				local obj2 = child(this.transform,"Panel/user/namelbl")
+				local NameLbl = componentGet(obj2, "UILabel")			
+				-----------------总结算获胜情况-----------------------		
+				local winLbl = componentGet(child(this.transform,"Panel/user/winState/count1"), "UILabel")
+				local shotLbl = componentGet(child(this.transform,"Panel/user/winState/count2"), "UILabel")
+				local allshotLbl = componentGet(child(this.transform,"Panel/user/winState/count3"), "UILabel")
+				local specialLbl = componentGet(child(this.transform,"Panel/user/winState/count4"), "UILabel")
+				local tex_photo= componentGet(child(this.transform, "Panel/user/picFrame"), "UITexture")
+				--获取头像
+				hall_data.getuserimage(tex_photo,2,result["totallInfo"][k]["url"])
+				--获取用户结算信息
+				IDLbl.text = "ID:"..tostring(v)
+				NameLbl.text = tostring(result["totallInfo"][k]["name"])
+				local winInfo = result["totallInfo"][k]["nums"]
+				winLbl.text = tostring(winInfo[4]).."次"
+				shotLbl.text = tostring(winInfo[3]).."次"
+				allshotLbl.text = tostring(winInfo[1]).."次"
+				specialLbl.text = tostring(winInfo[2]).."次"
+				
+				local reduceScoreLbl = componentGet(child(this.transform, "Panel/user/winState/negScore"), "UILabel")
+				local addScoreLbl = componentGet(child(this.transform, "Panel/user/winState/posScore"), "UILabel")
+				
+				local totalScores = result["totallInfo"][k]["score"]
+				if totalScores <= 0 then
+					reduceScoreLbl.text = tostring(totalScores)
+					reduceScoreLbl.gameObject:SetActive(true)
+					addScoreLbl.gameObject:SetActive(false)
+				else
+					addScoreLbl.text = "+"..totalScores
+					reduceScoreLbl.gameObject:SetActive(false)
+					addScoreLbl.gameObject:SetActive(true)
+				end
+				------------判断本机用户是否房主-----------------------
+				local fangzhu = componentGet(child(this.transform, "Panel/user/fangzhu"), "UISprite")
+				if tonumber(selfId) == tonumber(fangzhuId) then	
+					fangzhu.gameObject:SetActive(true)
+				else
+					fangzhu.gameObject:SetActive(false)
+				end
+			end
+		end
+		
+		local roomNum = child(this.transform, "Anchor_Bottom/left")
+		if roomNum then
+			local roomNum_label = componentGet(roomNum,"UILabel")
+			if roomNum_label then
+				roomNum_label.text = this.GetRoomNum()
+				roomNum.gameObject:SetActive(true)
+			end
+		end
+
+		local gameTime = child(this.transform, "Anchor_Bottom/right")
+		if gameTime then
+			local gameTime_label = componentGet(gameTime,"UILabel")
+			if gameTime_label then
+				gameTime_label.text = this.GetGameTime()
+				gameTime.gameObject:SetActive(true)
+			end
+		end
+	
+		ScorestUid = this.FindHighestByuid(Score_Uid) 		----获取最高分的uid
+		-------------本机用户显示最高分特技-------------
+		this.ShowHighest(selfId,ScorestUid,0)
+		this.ShowOthersResult(otherResult)
+	end
+end
+
+
+function this.GetRoomNum()
+	local str = "房号:"..roomdata_center.roomnumber
+	local round = roomdata_center.nJuNum.."局"
+
+	str = str.."（"..round.."）"
+	return str
+end
+
+function this.GetGameTime()
+	local str = GameUtil.GetGameName(roomdata_center.gid).."  "
+	str = str..os.date("%Y-%m-%d  %H:%M:%S",os.time())
+	return str
+end
+				
+--------------------非主机用户结算信息----------------------			
+function this.ShowOthersResult(result)
+	local orderScore = result
+	table.sort(orderScore,function (a,b) return a.score > b.score end)	
+	Trace("orderScore in  large_result"..GetTblData(orderScore))
+	
+	for k,v in ipairs(orderScore) do
+		if v ~= nil then
+			local trans = child(this.transform, "Panel/userGrid/user"..k)
+			trans.gameObject:SetActive(true)
+							-----------------总结算用户信息-----------------------
+			local obj1 = child(this.transform,"Panel/userGrid/user"..k.."/IDlbl")
+			local IDLbl = componentGet(obj1, "UILabel")
+			local obj2 = child(this.transform,"Panel/userGrid/user"..k.."/namelbl")
+			local NameLbl = componentGet(obj2, "UILabel")	
+							-----------------总结算获胜情况-----------------------		
+			local winLbl = componentGet(child(this.transform,"Panel/userGrid/user"..k.."/winState/count1"), "UILabel")
+			local shotLbl = componentGet(child(this.transform,"Panel/userGrid/user"..k.."/winState/count2"), "UILabel")
+			local allshotLbl = componentGet(child(this.transform,"Panel/userGrid/user"..k.."/winState/count3"), "UILabel")
+			local specialLbl = componentGet(child(this.transform,"Panel/userGrid/user"..k.."/winState/count4"), "UILabel")
+			local tex_photo= componentGet(child(this.transform, "Panel/userGrid/user"..k.."/picFrame"), "UITexture")
+			--获取头像
+			hall_data.getuserimage(tex_photo,2,v["url"])
+			--获取用户结算信息
+			IDLbl.text = "ID:"..tostring(v["uid"])
+			NameLbl.text = tostring(v["name"])	---------------------------待处理--------------------------
+			local winInfo = v["nums"]
+			winLbl.text = tostring(winInfo[4]).."次"
+			shotLbl.text = tostring(winInfo[3]).."次"
+			allshotLbl.text = tostring(winInfo[1]).."次"
+			specialLbl.text = tostring(winInfo[2]).."次"
+			
+			local reduceScoreLbl = componentGet(child(this.transform, "Panel/userGrid/user"..k.."/winState/negScore"), "UILabel")
+			local addScoreLbl = componentGet(child(this.transform, "Panel/userGrid/user"..k.."/winState/posScore"), "UILabel")
+			
+			local totalScores = v["score"]
+			if totalScores <= 0 then
+				reduceScoreLbl.text = tostring(totalScores)
+				reduceScoreLbl.gameObject:SetActive(true)
+				addScoreLbl.gameObject:SetActive(false)
+			else
+				addScoreLbl.text = "+"..totalScores
+				reduceScoreLbl.gameObject:SetActive(false)
+				addScoreLbl.gameObject:SetActive(true)
+			end
+			------------判断本机用户是否房主-----------------------
+			local fangzhu = componentGet(child(this.transform, "Panel/userGrid/user"..k.."/fangzhu"), "UISprite")
+			if tonumber(v["uid"]) == tonumber(fangzhuId) then	
+				fangzhu.gameObject:SetActive(true)
+			else
+				fangzhu.gameObject:SetActive(false)
+			end		
+			-------------非本机用户显示最高分特技-------------
+			this.ShowHighest(v["uid"],ScorestUid,k)
+		end
+	end
+	-------------居中控制-------------
+	local userNum = #orderScore
+	local selfPos = child(this.transform, "Panel/user")
+	local other1Pos = child(this.transform, "Panel/userGrid")
+	local grid = componentGet(child(this.transform,"Panel/userGrid"), "UIGrid")
+	grid.enabled = true
+	if userNum == 1 then
+		selfPos.transform.localPosition =  Vector3(-110,-6,0)				
+	elseif userNum == 2 then
+		selfPos.transform.localPosition =  Vector3(-213,-6,0)
+		other1Pos.transform.localPosition =  Vector3(102,-6,0)
+	elseif userNum == 3 then
+		selfPos.transform.localPosition =  Vector3(-314,-6,0)		
+	elseif userNum == 4 then
+		selfPos.transform.localPosition =  Vector3(-422,-6,0)
+	else
+		return
+	end
+end
+
+function this.EndBtnClick(obj)
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	this.Hide()
+	shisangshui_play_sys.LeaveReq()
+end
+
+function this.ShareClick(obj)
+	report_sys.EventUpload(38,player_data.GetGameId())
+	local loginType = data_center.GetPlatform()
+	screenshotHelper.GetShot(loginType,0,2,"分享战绩","http://connect.qq.com/","分享战绩")
+	
+	-- ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+ --    Trace("ShareClick")
+ --    YX_APIManage.Instance:GetCenterPicture("screenshot.png")
+ --    YX_APIManage.Instance.onfinishtx = function(tx) 
+ --        local shareType = 0--0微信好友，1朋友圈，2微信收藏
+ --        local contentType = 2 --1文本，2图片，3声音，4视频，5网页
+ --        local title = "我在测试"  
+ --        local filePath = YX_APIManage.Instance:onGetStoragePath().."screenshot.png"
+ --        local url = "http://connect.qq.com/"
+ --        local description = "test"
+ --        YX_APIManage.Instance:WeiXinShare(shareType,contentType,title,filePath,url,description, function (msg)
+ --        	Trace("onWeiXinShareCallBack------"..GetTblData(msg))
+	-- 		local msg = string.gsub(msg, "\\/", "/")
+	-- 		local retStr = ParseJsonStr(msg)
+	-- 		if retStr["errCode"]==0 then
+	-- 			http_request_interface.ShareDone(function (msg)
+	-- 				-- body
+	-- 			end)
+	-- 		end
+ --    	end)
+ --    end
+end
+
+------最高分加特技------
+function this.ShowHighest(uid,ScorestuidList,IS)	-----IS=0 ：本机用户
+	local winCrown
+	local winFrame
+	for i=1,#ScorestuidList do
+		if uid == tonumber(ScorestuidList[i]) then
+			if IS == 0 then
+				winCrown=componentGet(child(this.transform, "Panel/user/crown"), "UISprite")
+				winFrame=componentGet(child(this.transform, "Panel/user/frame"), "UISprite")
+				winCrown.gameObject:SetActive(false)
+				winFrame.gameObject:SetActive(false)
+			else
+				winCrown=componentGet(child(this.transform, "Panel/userGrid/user"..IS.."/crown"), "UISprite")
+				winFrame=componentGet(child(this.transform, "Panel/userGrid/user"..IS.."/frame"), "UISprite")
+				winCrown.gameObject:SetActive(false)
+				winFrame.gameObject:SetActive(false)
+			end
+			winCrown.gameObject:SetActive(true)
+			winFrame.gameObject:SetActive(true)
+		end
+	end
+end
+
+----------获取最高分的uid表------------
+function this.FindHighestByuid(ScoreUid)
+	local Temp = 0
+	local higestUid = 0
+	local ScorestuidList = {}
+	for k,v in pairs(ScoreUid) do
+		if v > Temp then
+			Temp = v
+			higestUid = k
+		end	
+	end
+	table.insert(ScorestuidList,higestUid)
+	for k,v in pairs(ScoreUid) do
+		if k ~= higestUid and v == Temp and v > 0 then
+			table.insert(ScorestuidList,k)
+		end	
+	end
+	return ScorestuidList
+end

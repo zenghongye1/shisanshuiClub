@@ -1,0 +1,265 @@
+﻿[
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+
+  [
+    {
+      "exData": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "selectIndex": [
+        5
+      ],
+      "itemWidth": 116,
+      "itemHeight": -78,
+      "maxPerLine": 6, 
+      "data": [
+        "2人",
+        "3人",
+        "4人",
+        "5人",
+        "6人"
+      ],
+      "title": "人数:",
+      "id": "pnum",
+       "type": 1,
+      "group": 26,
+	  "connecttype": [1 ],
+      "connect": [
+        {
+          "2": {
+            "disable": [
+              { "nColorAdd": [  ] }
+            ],
+            "enable": [ { "nColorAdd": [ 0,1,2,3,4 ] } ]
+          },
+          "3": {
+            "disable": [
+              { "nColorAdd": [  ] }
+            ],
+            "enable": [ { "nColorAdd": [ 0,1,2,3,4 ] } ]
+          },
+          "4": {
+            "disable": [
+              { "nColorAdd": [  ] }
+            ],
+            "enable": [
+              { "nColorAdd": [ 0,1,2,3,4 ] } 
+            ]
+          },
+          "5": {
+            "disable": [
+              { "nColorAdd": [ 0 ] }
+            ],
+            "enable": [ { "nColorAdd": [ 1,2,3,4 ] } ]
+          },
+          "6":  {
+            "disable": [
+              { "nColorAdd": [ 0,1 ] }
+            ],
+            "enable": [ { "nColorAdd": [ 2,3,4 ] } ]
+          }
+        }
+      ],
+      "Isconnect": [
+        {
+          "2": {
+            "select": [
+              { "nColorAdd": [ 0 ] }
+            ]
+          },
+          "3": {
+            "select": [
+              { "nColorAdd": [ 0 ] }
+            ]
+          },
+          "4": {
+            "select": [
+              { "nColorAdd": [ 0 ] }
+            ]
+          },
+          "5": {
+            "select": [
+              { "nColorAdd": [ 1 ] }
+            ]
+          },
+          "6": {
+            "select": [
+              { "nColorAdd": [ 2 ] }
+            ]
+          }
+        }
+      ],
+      "iosconnect": [
+
+      ]
+    }
+  ],
+  [
+    {
+      "exData": [
+        8,
+        12,
+        16
+      ],
+      "data": [
+        "8局",
+        "12局",
+        "16局"
+      ],
+
+      "itemHeight": -78,
+	  "itemWidth": 232,
+	  "distance": 84,
+	  "maxPerLine": 3,
+      "selectIndex": [ 3 ],
+      "title": "局数:",
+      "id": "rounds",
+       "type": 1, 
+       "group":25
+    }
+  ], 
+  
+  [
+    {
+      "exData": [
+        120,
+        60,
+        30
+      ],
+      "itemWidth": 232,
+      "itemHeight": -78,
+      "maxPerLine": 5, 
+      "selectIndex": [ 1 ],
+      "data": [
+        "120秒",
+        "60秒",
+        "30秒"
+      ],
+      "title": "摆牌:",
+      "id": "nChooseCardTime",
+       "type": 1,
+       "group":29
+    }
+  ],
+  
+  [
+        {
+			"exData": [
+				5,
+				6,
+				7,
+				8
+			],
+			"selectIndex":[1],
+			"title": "鬼牌:",
+            "id": "nGhostAdd"
+			"data": [
+				"5鬼",
+				"6鬼",
+				"7鬼",
+				"8鬼"
+			],
+			"itemHeight": -78,
+			"itemWidth": 180,
+			"type": 1, 
+			"group":20,
+			"tipsList":
+				{
+					"1":"去掉黑桃2/3/4/5/6",
+					"2":"去掉黑桃2/3/4/5/6/7",
+					"3":"去掉黑桃2/3/4/5/6/7/8",
+					"4":"去掉黑桃2/3/4/5/6/7/8/9"
+				}
+			
+        }
+    ],
+	
+  [
+    {
+      "exData": [
+        0,
+        1,
+        2,
+		3,
+		4
+      ],
+      "itemHeight": -156,
+	  "itemWidth": 180,
+	  "maxPerLine": 5, 
+      "selectIndex": [ 3 ],
+      "data": [
+        "不加色",
+        "加一色",
+        "加二色",
+		"加三色",
+		"加四色"
+      ],
+      "title": "加色:",
+      "id": "nColorAdd", 
+       "type": 1, 
+       "group":27
+    }
+  ],
+  [
+    {
+      "exData": [
+        0,
+        2,
+        1,
+        3,
+        4,
+        5
+      ],
+      "data": [
+        "无马牌",
+        "红心5",
+        "红心8",
+        "红心10",
+        "红心K",
+        "随机马牌"
+      ],
+      "itemHeight": -58,
+	  "itemWidth": 275,
+	  "distance": 61,
+	  "maxPerLine": 2,
+      "selectIndex": [ 3 ],
+      "title": "买马:",
+      "id": "nBuyCode",
+       "type": 2, 
+       "group":28
+    }
+  ],
+  [
+    {
+		"multiterm": true,
+		"title": "打枪:",
+		"id": [
+			"nGunAdd" 
+            ],
+          "data": [
+			"额外+1水"
+          ], 
+          "itemHeight": -78,
+		  "itemWidth": 232,
+          "selectIndex": [
+          ],
+          "type": 0, 
+          "group":0
+    }
+  ]
+]

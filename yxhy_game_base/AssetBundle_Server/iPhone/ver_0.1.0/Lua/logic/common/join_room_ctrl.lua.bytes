@@ -1,0 +1,273 @@
+--[[--
+ * @Description: 加入房间逻辑处理
+ * @Author:      shine
+ * @FileName:    join_room_ctrl.lua
+ * @DateTime:    2017-07-20 17:31:19
+ ]]
+
+require"logic/hall_sys/openroom/room_data"
+
+join_room_ctrl = {}
+local this = join_room_ctrl
+
+
+function this.ReEnterRoomByQuery(_dsts)
+    --重弹窗口处理
+     MessageBox.ShowYesNoBox(GetDictString(6022),
+        function() 
+            local tbl = {_dst = _dsts[1]}
+            this.EnterGameHandle(tbl)
+        end)
+end
+
+
+--[[--
+ * @Description: 加入房间处理  
+ ]]
+function this.JoinRoomByRno(rno)
+    --Trace("JoinRoomByRno start--------------------------------------")
+    http_request_interface.getRoomByRno(rno, function (str)
+        --waiting_ui.Hide()
+        local s = string.gsub(str, "\\/", "/")
+        local dataTbl = ParseJsonStr(s)
+		if dataTbl ~= nil then
+			Trace("JoinRoom:-----------------"..GetTblData(dataTbl))
+			if tonumber(dataTbl.ret)~=0 then
+				model_manager:GetModel("ClubModel"):CheckMsgRet(dataTbl)
+				return
+			else
+				--根据_dsts来确定是否重连，如果有就重连，木有就不重连
+				if dataTbl._dsts ~= nil and #dataTbl._dsts > 0 then  
+				 --重连必须重以_dsts里面的_gid为准。目前暂时只取第一个，其它忽略
+					data_center.SetCurGameID(dataTbl._dsts[1]._gid)
+					this.ReEnterRoomByQuery(dataTbl._dsts)            
+				else
+					data_center.SetCurGameID(dataTbl.data.gid)
+					this.EnterType(dataTbl)
+				end     
+			end 
+		end
+    end)   
+end
+
+function this.CreateRoomHandler(dataTbl)
+    -- waiting_ui.Hide()
+    UI_Manager:Instance():CloseUiForms("waiting_ui")
+    if game_scene.getCurSceneType() ~= scene_type.HALL then
+        return
+    end
+  
+    local content = "房间开设成功！房号："..tostring(dataTbl.data.rno).."\n请确认你是否参与对局？"
+    local inviteInfo = MessageBox.GetBtnInfo("邀请好友", "button_05", function() this.OnInvite(dataTbl) end)
+    local enterGameInfo = MessageBox.GetBtnInfo("进入房间","button_03", function() this.OnEnterGame(dataTbl) MessageBox:Hide() end)
+
+    --苹果审核隐藏界面
+    if G_isAppleVerifyInvite then
+        MessageBox.Show(content, {enterGameInfo},nil,false)
+        return
+    end
+
+    MessageBox.Show(content, {enterGameInfo,inviteInfo},nil,false)
+end
+
+function this.OnInvite(dataTbl)
+    report_sys.EventUpload(25)
+    local loginType = data_center.GetPlatform()
+    if GameUtil.CheckGameIdIsMahjong(dataTbl.data.gid) then
+          invite_sys.inviteFriend(loginType,dataTbl.data.rno, GameUtil.GetGameName(dataTbl.data.gid), ShareStrUtil.GetRoomShareStr(dataTbl.data.gid, dataTbl.data))  
+    elseif dataTbl.data.gid == ENUM_GAME_TYPE.TYPE_SHISHANSHUI then 
+        
+        room_data.GetSssRoomDataInfo().owner_uid = dataTbl.data.uid
+        room_data.GetSssRoomDataInfo().isZhuang = dataTbl.data.cfg.leadership
+        room_data.GetSssRoomDataInfo().isChip = dataTbl.data.cfg.buyhorse
+        room_data.GetSssRoomDataInfo().play_num = dataTbl.data.cfg.rounds
+        room_data.GetSssRoomDataInfo().people_num = dataTbl.data.cfg.pnum
+        room_data.GetSssRoomDataInfo().add_card = dataTbl.data.cfg.addColor
+        room_data.GetSssRoomDataInfo().add_ghost = dataTbl.data.cfg.joker
+        room_data.GetSssRoomDataInfo().max_multiple = dataTbl.data.cfg.maxfan
+        
+        invite_sys.inviteFriend(loginType,dataTbl.data.rno, GameUtil.GetGameName(ENUM_GAME_TYPE.TYPE_SHISHANSHUI), tostring(room_data.GetSSSShareString()))
+    elseif dataTbl.data.gid == ENUM_GAME_TYPE.TYPE_NIUNIU then
+        require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().phpData = dataTbl.data
+        invite_sys.inviteFriend(loginType,dataTbl.data.rno, GameUtil.GetGameName(ENUM_GAME_TYPE.TYPE_NIUNIU),require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance():InviteFriendString())
+    end
+end
+
+function this.OnEnterGame(dataTbl)
+    -- waiting_ui.Show()
+    UI_Manager:Instance():ShowUiForms("waiting_ui")
+    report_sys.EventUpload(26)
+    this.EnterType(dataTbl)
+end
+
+
+function this.CreateRoom(data)
+    http_request_interface.createRoom(data, function (str)
+        --waiting_ui.Hide()
+        local s = string.gsub(str, "\\/", "/")
+        local dataTbl = ParseJsonStr(s)
+        if dataTbl ~= nil then
+			Trace("CreateRoom:-----------------"..GetTblData(dataTbl))
+            if tonumber(dataTbl.ret)~=0 then
+				-- waiting_ui.Hide()
+                UI_Manager:Instance():CloseUiForms("waiting_ui")
+                model_manager:GetModel("ClubModel"):CheckMsgRet(dataTbl)
+				-- if tonumber(dataTbl.ret) == 100 then
+				-- 	UI_Manager:Instance():FastTip(GetDictString(6001))
+				-- elseif tonumber(dataTbl.ret) == 101 then
+				-- 	UI_Manager:Instance():FastTip(GetDictString(6004))
+				if tonumber(dataTbl.ret)==102 then
+                    this.OnNotEnough()
+				end
+			else			
+				
+				--根据_dsts来确定是否重连，如果有就重连，木有就不重连
+				if dataTbl._dsts ~= nil and #dataTbl._dsts > 0 then   
+					 --重连必须重以_dsts里面的_gid为准。目前暂时只取第一个，其它忽略
+					data_center.SetCurGameID(dataTbl._dsts[1]._gid)
+					this.ReEnterRoomByQuery(dataTbl._dsts)            
+				else
+					--设置当前的gameid
+					data_center.SetCurGameID(dataTbl.data.gid)
+					if dataTbl.nextaction == 0 then
+						this.CreateRoomHandler(dataTbl)
+					elseif dataTbl.nextaction == 1 then
+						this.EnterType(dataTbl)
+					end                
+				end
+			end
+			
+        end        
+    end)     
+end
+
+function this.OnNotEnough()
+    MessageBox.ShowYesNoBox(GetDictString(6046), function ()
+        hall_ui:shop()
+    end)
+end
+
+function this.CreateClubRoom(data)
+    http_request_interface.createClubRoom(data, function (str)
+        --waiting_ui.Hide()
+        local s = string.gsub(str, "\\/", "/")
+        local dataTbl = ParseJsonStr(s)
+        if dataTbl ~= nil then
+			Trace("CreateClubRoom:-----------------"..GetTblData(dataTbl))
+            if tonumber(dataTbl.ret)~=0 then
+                -- waiting_ui.Hide()
+                UI_Manager:Instance():CloseUiForms("waiting_ui")
+                model_manager:GetModel("ClubModel"):CheckMsgRet(dataTbl)
+                -- if tonumber(dataTbl.ret) == 100 then
+                --  UI_Manager:Instance():FastTip(GetDictString(6001))
+                -- elseif tonumber(dataTbl.ret) == 101 then
+                --  UI_Manager:Instance():FastTip(GetDictString(6004))
+                -- if tonumber(dataTbl.ret)==102 then
+                --     this.OnNotEnough()
+                -- end
+            else            
+                --设置当前的gameid
+                data_center.SetCurGameID(dataTbl.data.gid)
+                --根据_dsts来确定是否重连，如果有就重连，木有就不重连
+                if dataTbl._dsts ~= nil and #dataTbl._dsts > 0 then  
+					 --重连必须重以_dsts里面的_gid为准。目前暂时只取第一个，其它忽略
+					data_center.SetCurGameID(dataTbl._dsts[1]._gid)
+                    this.ReEnterRoomByQuery(dataTbl._dsts)            
+                else
+                    if dataTbl.nextaction == 0 then
+                        this.CreateRoomHandler(dataTbl)
+                    elseif dataTbl.nextaction == 1 then
+                        this.EnterType(dataTbl)
+                    end                
+                end
+            end
+            
+        end        
+    end)     
+end
+
+
+--[[--
+ * @Description: 查询状态（进入游戏时候调用）  
+ ]]
+function this.QueryState(callback)
+  http_request_interface.QueryStatus({}, function (str)
+     local s=string.gsub(str,"\\/","/")
+     Trace("QueryState--------------------------------"..tostring(s))
+     local t=ParseJsonStr(s)   
+     if t._dsts ~= nil and #t._dsts > 0 then     
+        local tbl = {_dst = t._dsts[1]}
+        --设置当前的gameid
+        Trace("_dsts[1]._gid===================="..tostring(t._dsts[1]._gid))
+        data_center.SetCurGameID(t._dsts[1]._gid)
+        
+        this.EnterGameHandle(tbl)
+     else
+        if callback ~= nil then
+            callback()
+        end
+     end
+  end)
+end
+
+
+--[[--
+ * @Description: 进入游戏处理  
+ ]]
+function this.EnterGameHandle(data)
+    local gid = data._dst._gid
+    this.CheckDownGame(gid, function() 
+        mahjong_play_sys.EnterGameReq(data)
+        player_data.SetReconnectEpara(data) 
+    end)
+end
+
+
+function this.EnterType(dataTbl)
+
+    this.CheckDownGame(dataTbl.data.gid, function()  
+
+        if dataTbl.data.gid == ENUM_GAME_TYPE.TYPE_SHISHANSHUI then
+            local k=dataTbl.data 
+            k.nGhostAdd = dataTbl.data.cfg.joker
+            k.nColorAdd = dataTbl.data.cfg.addColor
+            k.pnum = dataTbl.data.cfg.pnum
+            k.rounds = dataTbl.data.cfg.rounds
+            k.nBuyCode = dataTbl.data.cfg.buyhorse
+            k.nWaterBanker = dataTbl.data.cfg.leadership
+            k.nMaxMult = dataTbl.data.cfg.maxfan
+            room_data.GetSssRoomDataInfo().owner_uid = dataTbl.data.uid
+            room_data.GetSssRoomDataInfo().isZhuang = k.nWaterBanker
+            room_data.GetSssRoomDataInfo().isChip = k.nBuyCode
+            room_data.GetSssRoomDataInfo().play_num = k.rounds
+            room_data.GetSssRoomDataInfo().people_num = k.pnum
+            room_data.GetSssRoomDataInfo().add_card = k.nColorAdd
+            room_data.GetSssRoomDataInfo().add_ghost = k.nGhostAdd
+            room_data.GetSssRoomDataInfo().max_multiple = k.nMaxMult                            
+            shisanshui_request_interface.EnterGameReq(messagedefine.chessPath, k)
+        elseif dataTbl.data.gid == ENUM_GAME_TYPE.TYPE_NIUNIU then
+            niuniu_request_interface.EnterGameReq(dataTbl.data)
+        elseif GameUtil.CheckGameIdIsMahjong(dataTbl.data.gid) then
+            majong_request_interface.EnterGameReq(dataTbl.data)
+        end                              
+    end)
+end
+
+
+function this.CheckDownGame(gid, callback)
+    if not GameUtil.CheckNeedDown(gid) then
+        callback()
+        return
+    end
+    if this.assetUpdateMgr == nil then
+        this.assetUpdateMgr = GameObject.Find("uiroot_xy/Camera/version_update_ui(Clone)"):GetComponent(typeof(NS_VersionUpdate.AssetUpdateManager))
+        if this.assetUpdateMgr == nil then
+            return
+        end
+    end
+    this.assetUpdateMgr:EnterGameHotHander(global_define.appConfig.appId, tostring(gid), "0", "", 
+        function ()
+            GameKernel.GetResourceMgr().LoadGameDep("dep_game_" .. gid .. ".all", callback)
+        end
+        )
+end

@@ -1,0 +1,66 @@
+local base = require "logic/mahjong_sys/game_15/ui_action/mahjong_action_small_reward_15"
+local mahjong_action_small_reward_83 = class("mahjong_action_small_reward_83", base)
+local reward_ui_path = "logic.mahjong_sys.ui_mahjong.window.mahjong_small_reward_ui"
+
+local data_class = require "logic/mahjong_sys/data/mahjong_data_class/mahjong_small_reward_data"
+local player_data_class = require "logic/mahjong_sys/data/mahjong_data_class/mahjong_small_reward_player_data"
+
+local lib_hupai_score = require "logic/mahjong_sys/common/lib/lib_hupai_score"
+local lib_gang_score = require "logic/mahjong_sys/common/lib/lib_gang_score"
+local lib_common = require "logic/mahjong_sys/common/lib/lib_common"
+local lib_common_c = nil
+
+function mahjong_action_small_reward_83:GetScoreItem(rewards, win_type, who_winlst, i, banker, bGangAddNoWin)
+	local scoreItem = {}
+
+	local base = 1
+
+	local isHadHangFen = false
+	lib_common_c = lib_common:create(self.mode)
+
+	local lib_hupai_score_c = lib_hupai_score:create(self.mode)
+	if win_type == "huangpai" then
+		ui_sound_mgr.PlaySoundClip(mahjong_path_mgr.GetMjCommonSoundPath("audio_liuju"))  
+		local item_huang = lib_hupai_score_c:GetHuangpaiScore(bGangAddNoWin)		
+		if item_huang ~= nil then
+			table.insert(scoreItem, item_huang)  
+		end		
+		isHadGangFen = lib_common_c:GetGangAddNoWin(bGangAddNoWin)
+	else	
+		isHadGangFen = true	
+		ui_sound_mgr.PlaySoundClip(mahjong_path_mgr.GetMjCommonSoundPath("audio_win")) 
+	 	-----------------------------------------------------------------------------------------------------------------	 
+
+
+	 	-----------------------------------翻倍结算--------------------------------------------	 
+	 	local exbei_type = self.config.beishu_type.exbei_type
+	 	local hubei_type = self.config.beishu_type.hubei_type
+	 	for n,o in ipairs(who_winlst) do
+		 	local beishu, beiTbl = lib_common_c:GetFanInfo(rewards[o].win_info, "", "倍", exbei_type, hubei_type)
+		 	local item_hu = lib_hupai_score_c:GetHuPaiScore(rewards, o, win_type, i, base)
+		 	if item_hu ~= nil then
+		 		table.insert(scoreItem, item_hu)
+		 	end
+
+		 	--兼容老的， 新的总倍数无需自己计算。
+		 	--beishu = rewards[o].win_info.nFanNum
+		 	if beishu > 1 and item_hu ~= nil then
+		 		item_hu.num = tostring(beishu).."倍"
+			 	for i,v in ipairs(beiTbl) do
+					table.insert(scoreItem, v)
+			 	end		 		
+		 	end		 		 	 		 	
+	 	end	
+ 	end
+
+ 	------------------------------------------杠分结算-----------------------------------------------
+ 	local lib_gang_score_c = lib_gang_score:create(self.mode)
+ 	local gangScoreTbl = lib_gang_score_c:GetGangScore(isHadGangFen, rewards, i, base) 		
+ 	for i,v in ipairs(gangScoreTbl) do
+ 		table.insert(scoreItem, v)
+ 	end		
+
+ 	return scoreItem
+end
+
+return mahjong_action_small_reward_83

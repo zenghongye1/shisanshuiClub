@@ -1,0 +1,241 @@
+local carddetails_ui_item = require "logic/hall_sys/record_ui/carddetails_ui_item"
+local mahjong_opercard_view = require "logic/mahjong_sys/ui_mahjong/reward/mahjong_opercard_view"
+local mahjong_handcard_view = require "logic/mahjong_sys/ui_mahjong/reward/mahjong_handcard_view"
+
+local base = require("logic.framework.ui.uibase.ui_window")
+local carddetails_ui = class("carddetails_ui",base)
+
+function carddetails_ui:ctor()
+    base.ctor(self)
+    self.datatable = nil
+    self.opercardPoolList = {}
+    self.itemList = {}
+end
+
+function carddetails_ui:OnInit()
+  base.OnInit(self)
+  self:FindChild()
+end
+
+function carddetails_ui:OnOpen(datatable,m)
+    base.OnOpen(self,datatable)
+    self.datatable = datatable
+
+    FrameTimer.New(
+      function() 
+        self:InitInfo(m)
+      end,1,1
+    ):Start()
+    
+end
+
+function carddetails_ui:PlayOpenAmination()
+end
+
+function carddetails_ui:close()
+  ui_sound_mgr.PlayCloseClick()
+  UI_Manager:Instance():CloseUiForms("carddetails_ui")
+end
+
+function carddetails_ui:FindChild()
+    self.btn_close=child(self.transform,"cardetails_panel/Panel_Top/Sprite")
+    if self.btn_close~=nil then
+        addClickCallbackSelf(self.btn_close.gameObject,self.close,self)
+    end 
+
+    self.scrollView_comp = subComponentGet(self.transform,"cardetails_panel/Panel_Middle/sv_all","UIScrollView") 
+    self.grid_rank=child(self.transform,"cardetails_panel/Panel_Middle/sv_all/grid_rank") 
+    self.time_label = subComponentGet(self.transform,"cardetails_panel/Panel_Middle/lab_data","UILabel") 
+    self.gameName_label = subComponentGet(self.transform,"cardetails_panel/Panel_Middle/gameName","UILabel") 
+    self.roomNum = subComponentGet(self.transform,"cardetails_panel/Panel_Middle/room","UILabel")
+
+    self.operItemList_EX = child(self.transform, "cardetails_panel/Panel_Middle/infoList/operItemList").gameObject
+    self.cardItemList_EX = child(self.transform, "cardetails_panel/Panel_Middle/infoList/cardItemList").gameObject
+end
+
+
+function carddetails_ui:SetRoomNum()
+   if self.datatable.rno~=nil then
+      local str = "房号:  "..self.datatable.rno
+      local round = self.datatable.accountc.curr_ju.."/"..self.datatable.accountc.ju_num.."局"
+      if self.datatable.cfg.bsupportke and self.datatable.cfg.bsupportke == 1 then
+        round = "打课"
+      end
+      str = str.." ("..round..")"
+      self.roomNum.text=str
+   end
+end
+
+function carddetails_ui:SetName()
+   if self.datatable.gid~=nil then
+      self.gameName_label.text=GameUtil.GetGameName(self.datatable.gid)
+   end
+end
+
+function carddetails_ui:SetTime()
+   if self.datatable.ctime~=nil then
+      self.time_label.text=os.date("%Y/%m/%d %H:%M",self.datatable.ctime)
+   end
+end
+
+function carddetails_ui:GetOperCard()
+  local opercard = nil
+  if 0 == #self.opercardPoolList then
+    local go = newobject(self.operItemList_EX)
+    opercard = mahjong_opercard_view:create(go)
+    return opercard
+  else
+    while(#self.opercardPoolList > 0)
+    do
+      if not IsNil(self.opercardPoolList[#self.opercardPoolList].gameObject) then
+        return table.remove(self.opercardPoolList)
+      else
+        table.remove(self.opercardPoolList)
+      end
+    end
+    return self:GetOperCard()
+  end
+end
+
+function carddetails_ui:RecycleOperCard(item)
+  if not IsNil(item.gameObject) then
+    table.insert(self.opercardPoolList,item)
+    item:SetActive(false)
+  end
+end
+
+function carddetails_ui:GetHandCard()
+  local go = newobject(self.cardItemList_EX)
+  local handcard = mahjong_handcard_view:create(go)
+  return handcard
+end
+
+function carddetails_ui:InitInfo(index) 
+   if self.datatable==nil then
+      return
+   end
+   if self.datatable.clog==nil or self.datatable.clog.scorelog==nil or table.getCount(self.datatable.clog.scorelog)==0 then
+        return
+   end 
+   if self.datatable.aRankId  ==nil then
+       return
+   end
+
+   self:SetRoomNum()
+   self:SetName()
+   self:SetTime()
+
+   local key=self.datatable.aRankId  
+   for i=#key+1,#self.itemList do
+     self.itemList[i]:SetActive(false)
+   end
+   for i=1, table.getCount(key) do        
+      local item=self.itemList[i] --child(self.grid_rank, "item_"..i)
+      if item==nil then
+            local old_item=child(self.transform, "cardetails_panel/Panel_Middle/sv_all/playerInfoItem")
+            item_go=NGUITools.AddChild(self.grid_rank.gameObject,old_item.gameObject)
+            item_go.transform.localScale={x=1,y=1,z=1}
+            item_go.name="item_"..i
+            item = carddetails_ui_item:create(item_go.gameObject)
+            item.mainUI = self
+            table.insert(self.itemList,item)
+      end    
+      item:SetActive(true)
+	    item:ResetItemView()
+
+      item:SetScore(self.datatable.clog.scorelog[index][key[i]])
+
+      item:SetHeadInfo(self.datatable.accountc.rewards[key[i]])
+      
+      local cardInfo=self.datatable.clog.scorelog[index]["cardInfo"]
+      if cardInfo == nil then
+        return
+      end 
+	    local iBanker = tonumber(self.datatable.clog.scorelog[index]["banker"]) or 0
+      --logError(GetTblData(self.datatable))
+      local t=cardInfo[key[i]]
+	  local mj_type=child(self.transform, "cardetails_panel/Panel_Middle/mj_type")
+	  mj_type.gameObject:SetActive(false)
+	  
+      if tonumber(self.datatable.gid)==ENUM_GAME_TYPE.TYPE_SHISHANSHUI then 
+          item:ShowSSS(t)
+      elseif  tonumber(self.datatable.gid)==ENUM_GAME_TYPE.TYPE_NIUNIU then 
+          item:ShowNiuniu(t) 
+    		  local banker=child(item.transform, "headView/zhuangIcon")
+    		  if banker then
+    			 banker.gameObject:SetActive(("p"..iBanker) ==key[i])
+    		  end 
+      else   
+          local banker=child(item.transform, "headView/zhuangIcon")
+          if banker then
+            banker.gameObject:SetActive(("p"..iBanker) ==key[i])
+          end 
+          local laizi=self.datatable.clog.scorelog[index].laizicards
+          local score = self.datatable.clog.scorelog[index].score
+          local rewards = self.datatable.clog.scorelog[index]["rewards"]
+          local scoreItem
+          local isPao
+          if rewards then
+            local reward = rewards[tonumber(string.sub(key[i], 2))]
+            local gid = self.datatable.gid
+            local rewardClass = require("logic/mahjong_sys/game_"..gid.."/ui_action/mahjong_action_small_reward_"..gid)
+            local win_type = reward.win_type
+            local win_viewSeat,viewSeat = 1,0
+            if win_type~="" and reward.win_info.nFanDetailInfo~=nil then
+              win_viewSeat = 0
+            end
+            scoreItem = rewardClass:GetScoreItem(reward,win_type,win_viewSeat,viewSeat)
+            isPao = reward.nJiePao == 1
+          end
+
+          if mj_type then
+            mj_type.gameObject:SetActive(true)
+            local fanTypeLabel = subComponentGet(mj_type, "fanTypeLabel", "UILabel")
+            fanTypeLabel.text = self:GetMjFanType(score,self.datatable.gid)
+          end
+          if tonumber(self.datatable.gid)==ENUM_GAME_TYPE.TYPE_XIAMEN_MJ or 
+            tonumber(self.datatable.gid)==ENUM_GAME_TYPE.TYPE_ZHANGZHOU_MJ or
+            tonumber(self.datatable.gid)==ENUM_GAME_TYPE.TYPE_LONGYAN_MJ or
+            tonumber(self.datatable.gid)==ENUM_GAME_TYPE.TYPE_NINGDE_MJ then
+            item:ShowMJ(t,scoreItem,laizi,37,isPao)
+          else
+            item:ShowMJ(t,scoreItem,laizi,nil,isPao)
+          end
+      end   
+   end
+   componentGet(self.grid_rank.gameObject,"UIGrid"):Reposition()   
+   self.scrollView_comp:ResetPosition()
+end 
+
+function carddetails_ui:GetMjFanType(score,gid)
+  local fanTypeStr = ""
+  if score then
+    local fanTypeTbl = {}
+    local config = config_mgr.getConfigs("cfg_hutype")
+    for _,fanTypeName in ipairs(score) do
+      for _,data in pairs(config) do
+        if data.serverName and fanTypeName[data.serverName] ~= nil and fanTypeName[data.serverName] > 0 then
+          if gid == 45 and data.serverName == "nSanJinDao" then
+            table.insert(fanTypeTbl,"杀猪")
+          else
+            table.insert(fanTypeTbl,data.chineseName)
+          end
+          break
+        end
+      end
+    end
+    for i=1,#fanTypeTbl do
+      fanTypeStr = fanTypeStr..fanTypeTbl[i]
+      if i~=#fanTypeTbl then
+        fanTypeStr = fanTypeStr.."、"
+      end
+    end
+  end
+  return fanTypeStr
+end
+
+
+
+
+
+return carddetails_ui

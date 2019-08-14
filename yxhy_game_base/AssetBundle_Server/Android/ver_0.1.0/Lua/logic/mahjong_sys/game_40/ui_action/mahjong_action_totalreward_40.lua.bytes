@@ -1,0 +1,190 @@
+local base = require "logic/mahjong_sys/common/mahjong_action_base"
+local mahjong_action_totalreward_40 = class("mahjong_action_totalreward_40", base)
+
+local mahjong_ui = mahjong_ui
+
+function mahjong_action_totalreward_40:Execute(tbl)
+	Trace(GetTblData(tbl))
+
+	local para = tbl._para
+	local scoreLog = {}
+	if para ~= nil then
+		scoreLog = para.scoreLog
+	end
+	--local rid = para.rid
+	local user_list = room_usersdata_center.GetUsersDataList()
+	--local owner_uid = para.owner_uid
+	--local rno = para.rno
+	--local ju_num = para.ju_num
+	--local scoreLog = para.scoreLog
+
+	--[[--
+	 * @Description: [1]={
+			["win_type"]="gunwin";["p1"]=-9;["laizicards"]={
+				[1]=35;
+			};["curr_ju"]=1;["p2"]=9;["banker"]=1;["win_info"]={
+				["p2"]={
+					["nflower_flag_mlzj"]=0;["nFanNum"]=4;["nTripleNum"]=0;["nXuKeZi"]=3;["nQiangJin"]=1;["nflower_flag_cxqd"]=0;["nWinChair"]=2;["nZiKeZi"]=0;["nFanDetailInfo"]={
+						[1]={
+							["szFanName"]="抢金";["byFanType"]=38;["byCount"]=1;["byFanNumber"]=4;
+						};
+					};
+				};["p1"]={
+					
+				};
+			};["who_win"]={
+				[1]=2;
+			};["ts"]=1508832382;
+		};  
+	 ]]
+
+	local show_win_type = self.config.big_settlement_show.win_type
+	local show_byFanType = self.config.big_settlement_show.byFanType
+
+	local totalrewardData = {}
+
+	for i,v in pairs(user_list) do
+		local totalrewardData_one = {}
+		totalrewardData_one.all_score = 0
+		totalrewardData_one.tList = {}
+		table.insert(totalrewardData,totalrewardData_one)
+	end
+
+	-- 计算详细信息
+	for i,v in ipairs(scoreLog) do
+		local win_type = v.win_type
+		local who_win = v.who_win[1]
+		local win_info = v.win_info
+		for j,w in ipairs(totalrewardData) do
+			local pStr = "p"..j
+			-- 总分
+			if v[pStr] then
+				w.all_score = w.all_score + v[pStr]
+			else
+				logError("获取玩家p失败，"..pStr)
+			end
+
+			-- 细目
+			if j == who_win then
+				-- 胡牌类型
+				local w_type = show_win_type[win_type]
+				if w_type then
+					if w.tList[w_type] then
+						w.tList[w_type] = w.tList[w_type] + 1
+					else
+						w.tList[w_type] = 1
+					end
+				end
+
+				-- 番型
+				if win_info and win_info[pStr] then
+					-- 取
+					local data = {}
+					for k,v in pairs(show_byFanType) do
+						if win_info[pStr][k] then
+							table.insert(data,v)
+						end
+					end
+
+					-- 存
+					for k,x in ipairs(data) do
+						if w.tList[x] then
+							w.tList[x] = w.tList[x] + 1
+						else
+							w.tList[x] = 1
+						end
+					end
+				else
+					logError(win_info,"获取win_info失败，"..pStr)
+				end
+			end
+		end
+	end
+
+	for i,v in ipairs(totalrewardData) do
+		local d = {}
+		for k,u in pairs(v.tList) do
+			local o = {[k] = u}
+			table.insert(d,o)
+		end
+		v.tList = self:SetInfo(d)
+	end
+	roomdata_center.totalRewardData = totalrewardData
+end
+
+function mahjong_action_totalreward_40:SetInfo(data)
+	local tList = {}	
+	if data == nil or #(data) == 0 then
+		return tList
+	end
+	for kk, score in ipairs(data) do
+		--固定
+		if score["selfdraw"] ~= nil then
+			local item = {}
+			item.selfdraw = score["selfdraw"]
+			item.name = "自摸胡"
+			item.num = score["selfdraw"]
+			table.insert(tList,item)
+		end
+		if score["gunwin"] ~= nil then
+			local item = {}
+			item.gunwin = score["gunwin"]
+			item.name = "平胡"
+			item.num = score["gunwin"]
+			table.insert(tList,item)
+		end
+
+		if score["nQYS"] ~= nil then --清一色
+			local item = {}
+			item.nQYS = score["nQYS"]
+			item.name = "清一色"
+			item.num = score["nQYS"]
+			table.insert(tList,item)
+		end
+
+		--不固定
+		if score["nHalfQYS"] ~= nil and score["nHalfQYS"] >0 then
+			local item = {}
+			item.nHalfQYS = score["nHalfQYS"]
+			item.name = "半清一色"
+			item.num = score["nHalfQYS"]
+			table.insert(tList,item)
+		end
+
+		--新加
+		if score["nQiDui"] ~= nil and score["nQiDui"] >0 then --七对
+			local item = {}
+			item.nQiDui = score["nQiDui"]
+			item.name = "七对"
+			item.num = score["nQiDui"]
+			table.insert(tList,item)
+		end
+		if score["nHQidui"] ~= nil and score["nHQidui"] >0 then --豪华七对
+			local item = {}
+			item.nHQidui = score["nHQidui"]
+			item.name = "豪华七对"
+			item.num = score["nHQidui"]
+			table.insert(tList,item)
+		end
+		if score["nCHQidui"] ~= nil and score["nCHQidui"] >0 then --超豪华七对
+			local item = {}
+			item.nCHQidui = score["nCHQidui"]
+			item.name = "超豪华七对"
+			item.num = score["nCHQidui"]
+			table.insert(tList,item)
+		end
+		if score["nZZQidui"] ~= nil and score["nZZQidui"] >0 then --至尊豪华七对
+			local item = {}
+			item.nZZQidui = score["nZZQidui"]
+			item.name = "至尊豪华七对"
+			item.num = score["nZZQidui"]
+			table.insert(tList,item)
+		end
+
+	end
+
+	return tList
+
+end
+
+return mahjong_action_totalreward_40

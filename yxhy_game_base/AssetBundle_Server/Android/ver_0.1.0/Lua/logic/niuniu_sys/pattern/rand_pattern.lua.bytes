@@ -1,0 +1,6 @@
+local rand_pattern = class("rand_pattern",require("logic.niuniu_sys.pattern"))
+
+function rand_pattern:ctor()
+end
+
+return rand_pattern

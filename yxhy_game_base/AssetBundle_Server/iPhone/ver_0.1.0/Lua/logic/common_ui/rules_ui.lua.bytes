@@ -1,0 +1,82 @@
+--region *.lua
+--Date
+--此文件由[BabeLua]插件自动生成 
+ 
+rules_ui = ui_base.New()
+local this = rules_ui 
+
+local rules_key={}
+
+function this.Show(typeIndex)
+	if this.gameObject==nil then
+		require ("logic/common_ui/rules_ui")
+		this.gameObject=newNormalUI(data_center.GetAppConfDataTble().appPath.."/ui/common/rules_ui")
+	else  
+        this.gameObject:SetActive(true)
+	end 
+    rules_key = GameUtil.GetRuleKeys(typeIndex)
+    this.addlistener()
+    this.Init()
+end
+
+function this.Start() 
+    this:RegistUSRelation()
+end
+
+function this.OnDestroy()
+    this:UnRegistUSRelation()
+end
+function this.addlistener() 
+    local btn_close=child(this.transform,"rules_panel/btn_close")
+    if btn_close~=nil then
+        addClickCallbackSelf(btn_close.gameObject,this.Hide,this)
+    end 
+end
+
+function this.Init()
+    local grid= child(this.transform,"rules_panel/ScrollView/Grid")
+    local item=child(this.transform,"rules_panel/item")
+    if rules_key == nil then
+        rules_key = {}
+    end
+    local config = config_mgr.getConfigs("cfg_rule")
+    local index = 1
+    for i=1, #rules_key do 
+        local connect = config[rules_key[i]].connect
+        if not (connect and roomdata_center.gamesetting[connect]~=nil and roomdata_center.gamesetting[connect]==false) then
+            local t=GameObject.Instantiate(item)
+            t.parent=grid
+            t.transform.localScale={x=1,y=1,z=1}
+            t.name =index
+            local label=subComponentGet(t.transform,"content","UILabel")
+            label.text=index.."、"..config[rules_key[i]]["name"]..":"
+            local value=subComponentGet(t.transform,"value","UILabel")
+            local serverValue = roomdata_center.gamesetting[rules_key[i]]
+            if serverValue~=nil then
+                if type(serverValue) == "boolean" then
+                   if roomdata_center.gamesetting[rules_key[i]]==true then
+                       value.text=config[rules_key[i]]["value"][1]
+                   else
+                       value.text=config[rules_key[i]]["value"][2]
+                   end
+               elseif type(serverValue) == "number" then
+                    value.text=config[rules_key[i]]["value"][serverValue]
+               else
+                logError(type(serverValue))
+               end
+            elseif rules_key[i] == "maxplayernum" then
+                value.text=config[rules_key[i]]["value"][tonumber(roomdata_center[rules_key[i]])]
+            end
+            t.gameObject:SetActive(true)
+            index = index + 1
+        end
+    end
+end
+
+function  this.Hide()
+    ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+    if not IsNil(this.gameObject) then   
+		GameObject.Destroy(this.gameObject)
+        this.gameObject=nil
+	end
+end

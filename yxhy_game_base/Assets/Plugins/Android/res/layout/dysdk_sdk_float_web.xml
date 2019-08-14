@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <RelativeLayout
+        android:id="@+id/rl_web"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible" >
+
+        <RelativeLayout
+            android:id="@+id/rl_top"
+            android:layout_width="match_parent"
+            android:layout_height="50dip"
+            android:background="@color/dysdk_black" >
+
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="5dip"
+                android:gravity="center"
+                android:paddingBottom="6dip"
+                android:paddingLeft="8dip"
+                android:paddingRight="8dip"
+                android:paddingTop="6dip"
+                android:src="@drawable/dysdk_sdk_back" />
+
+            <TextView
+                android:id="@+id/tv_charge_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="用户中心"
+                android:textColor="@android:color/white"
+                android:textSize="20dp" />
+
+            <ImageView
+                android:id="@+id/iv_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="5dip"
+                android:gravity="center"
+                android:paddingBottom="6dip"
+                android:paddingLeft="8dip"
+                android:paddingRight="8dip"
+                android:paddingTop="6dip"
+                android:src="@drawable/dysdk_float_ic_action_cancel" />
+        </RelativeLayout>
+
+        <WebView
+            android:id="@+id/wv_content"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@id/rl_top" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_push_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:visibility="gone" >
+
+        <ImageView
+            android:id="@+id/iv_push_picture"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY"
+            android:src="@drawable/dysdk_logo" />
+
+        <Button
+            android:id="@+id/btn_see"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_below="@id/iv_push_picture"
+            android:background="@color/dysdk_ui_cyan"
+            android:text="更多详情 >>"
+            android:textColor="@color/dysdk_white" />
+
+        <ImageButton
+            android:id="@+id/ibtn_close"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignRight="@id/iv_push_picture"
+            android:layout_alignTop="@id/iv_push_picture"
+            android:layout_margin="5dp"
+            android:background="@drawable/dysdk_sdk_ico_close" />
+    </RelativeLayout>
+    
+    <RelativeLayout
+        android:id="@+id/rl_push_content_land"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:visibility="gone" >
+
+        <Button
+            android:id="@+id/btn_see_land"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/dysdk_ui_cyan"
+            android:text="更多详情 >>"
+            android:textColor="@color/dysdk_white" />
+        
+        <ImageView
+            android:id="@+id/iv_push_picture_land"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_above="@id/btn_see_land"
+            android:adjustViewBounds="true"
+            android:scaleType="fitStart" />
+
+        <ImageButton
+            android:id="@+id/ibtn_close_land"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignRight="@id/iv_push_picture_land"
+            android:layout_alignTop="@id/iv_push_picture_land"
+            android:layout_margin="5dp"
+            android:background="@drawable/dysdk_sdk_ico_close" />
+    </RelativeLayout>
+
+</RelativeLayout>

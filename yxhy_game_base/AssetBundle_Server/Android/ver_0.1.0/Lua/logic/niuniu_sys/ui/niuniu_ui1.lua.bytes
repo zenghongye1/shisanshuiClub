@@ -1,0 +1,1750 @@
+require "logic/mahjong_sys/_model/room_usersdata_center"
+require "logic/mahjong_sys/_model/room_usersdata"
+require "logic/mahjong_sys/_model/operatorcachedata"
+require "logic/mahjong_sys/_model/operatordata"
+require "logic/hall_sys/openroom/room_data"
+require "logic/niuniu_sys/other/niuniu_rule_define"
+require "logic/animations_sys/animations_sys"
+require "logic/niuniu_sys/niuniu_play_sys"
+require "logic/hall_sys/setting_ui/setting_ui"
+require "logic/hall_sys/record_ui/recorddetails_ui"
+require "logic/gvoice_sys/gvoice_sys"
+require "logic/niuniu_sys/ui/cuopai_ui"
+require "logic/niuniu_sys/ui/niuniu_specialcard_ui"
+
+niuniu_ui = ui_base.New()
+local this = niuniu_ui
+
+local transform = this.transform
+
+local operTipEX = nil
+
+this.timerAlarm = nil
+
+
+local gvoice_engine = nil 
+
+local disTimer_Elapse = nil  --重连解散定时器
+local leftTime = nil
+local widgetTbl = {}
+local compTbl = {}
+local bankerBtnList = {}
+
+local special_card_type = {}
+local special_card_type_fengshu = {}
+local special_card_anim = {}
+local glodcoin = {}
+local read_card_player = {}
+
+local gameDataInfo = {}
+
+local chatTextTab = {
+	"慢死了，虾米都煮成稀饭了",
+	"快点呀！我等得花都又开了",
+	"哎！牌这么差，这下要掉粉了",
+	"辛辛苦苦很多年，一把回到解放前",
+	"搏一搏，单车变摩托",
+	"押得多赢得多，娶个媳妇回家暖被窝~",
+	"有运气还要什么技术啊"
+}
+local chatImgTab = {
+	"1","2","3","4","5",
+	"6","7","8","9","10",
+	"11","12","13","14","15",
+	"16","17","18","19","20",
+	"21","22","23","24","25",
+	"26",
+}
+
+local function Onbtn_exitClick()
+	report_sys.EventUpload(31,player_data.GetGameId())
+  if roomdata_center.isStart then
+	Trace("+++++++++投票，投票+++++++++++++")
+	UI_Manager:Instance():ShowGoldBox(GetDictString(6030), {function() UI_Manager:Instance():CloseUiForms("message_box") end,
+  		function ()  		
+  		niuniu_play_sys.VoteDrawReq(true)
+  		UI_Manager:Instance():CloseUiForms("message_box")
+  	end}, {"quxiao","fonts_01"}, {"button_03", "button_02"}, MessageBoxType.vote)
+  	return
+  end
+	--如果是固定庄家模式，并且是庄家，则退出时要清桌，其他模式不清桌，自己退出
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	local configData = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().roomInfo
+	local isBanker = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance():IsBanker()
+	local takeTurnsMode = configData.GameSetting.takeTurnsMode
+	if takeTurnsMode == niuniu_rule_define.SUB_BULL_BANKER.SUB_BULL_BANKER_FIXED then
+		if isBanker then
+			UI_Manager:Instance():ShowGoldBox("你是庄家，离开后会解散牌桌，是否离开？",{function ()  		
+			niuniu_play_sys.LeaveReq()
+			UI_Manager:Instance():CloseUiForms("message_box")
+			end}, {"fonts_01"}, {"button_02"})
+			return
+		end
+	end		
+	Trace("++++++++++离开，离开++++++++++")
+	local t= GetDictString(5001)
+	UI_Manager:Instance():ShowGoldBox(t,{function ()  		
+	niuniu_play_sys.LeaveReq()
+	UI_Manager:Instance():CloseUiForms("message_box")
+	end}, {"fonts_01"}, {"button_02"})
+end
+
+local function Onbtn_moreClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	--this.SetMorePanle()
+	this.SetMorePanel()
+end
+
+local function OnBtn_WarningClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	report_sys.EventUpload(35,player_data.GetGameId())
+	help_ui.Show(ENUM_GAME_TYPE.TYPE_NIUNIU)
+	local luaBaseComp = componentGet(help_ui.transform,typeof(LogicBaseLua))
+	if luaBaseComp ~= nil then
+		luaBaseComp.beKeepDepthValue = false
+	end
+end
+
+local function Onbtn_readyClick()	
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	Trace("Onbtn_readyClick")
+	
+	if(disTimer_Elapse ~= nil) then
+		this.StopTime_Dis()  ----重连解散定时器关
+	end
+	niuniu_play_sys.ReadyGameReq()
+end
+
+--发送开牌消息
+local function onbtn_openCardClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	niuniu_play_sys.OpenCardReq()
+--	niuniu_ui.IsShowOpenCardBtn(false)
+end
+
+--打开搓牌界面
+local function OnBtnCuoPaiOnClick(go)
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	cuopai_ui.Show()
+end
+
+--我要当庄
+local function Onbtn_setBankerOnClick()
+	UI_Manager:Instance():ShowGoldBox("成为庄家后不可提前离场，是否确认成为庄家", {function() UI_Manager:Instance():CloseUiForms("message_box") end,
+  		function ()  		
+  		niuniu_play_sys.ChooseBankerReq()
+		this.IsShowBankerList(false)
+  		UI_Manager:Instance():CloseUiForms("message_box")
+  	end}, {"quxiao","fonts_01"}, {"button_03", "button_02"}, MessageBoxType.vote)
+end
+
+function this.ShowDisTimerLab(state)
+	if(disTimer_Elapse ~= nil) then
+		this.StopTime_Dis()  ----重连解散定时器关
+	end
+	if(widgetTbl.dismiss_timePanel ~= nil) then
+		widgetTbl.dismiss_timePanel.gameObject:SetActive(state)
+	end
+end
+
+local isClick=true
+local function Onbtn_voiceClick()
+	report_sys.EventUpload(32,player_data.GetGameId())
+	Trace("Onbtn_voiceClick")
+end
+
+local function Onbtn_inviteFriend()	--邀请好友
+	Trace("Onbtn_inviteFriend")
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	report_sys.EventUpload(29,player_data.GetGameId())
+	local loginType = data_center.GetPlatform()
+	local data = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance()
+	Trace("GameName:"..tostring(GameUtil.GetGameName(ENUM_GAME_TYPE.TYPE_NIUNIU)))
+	
+	invite_sys.inviteFriend(loginType,data.roomInfo.rno,GameUtil.GetGameName(ENUM_GAME_TYPE.TYPE_NIUNIU),data:InviteFriendString())
+end
+
+local function Onbtn_dimissRoom()	--解散房间
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	report_sys.EventUpload(30,player_data.GetGameId())
+	 UI_Manager:Instance():ShowGoldBox(GetDictString(6031), {function() UI_Manager:Instance():CloseUiForms("message_box") end, function ()  		
+  		niuniu_play_sys.DissolutionRoom()
+  		UI_Manager:Instance():CloseUiForms("message_box")
+  	end}, {"quxiao","fonts_01"}, {"button_03","button_02"})
+end
+
+local function Onbtn_chatClick()
+	Trace("Onbtn_chatClick")
+	report_sys.EventUpload(33,player_data.GetGameId())
+	chat_ui.Init(chatTextTab,chatImgTab)
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	chat_ui.SetChatPanle()
+end
+
+function OnBtn_SettingOnClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	report_sys.EventUpload(36,player_data.GetGameId())
+	Trace("++++++++SettingOnClick")
+	setting_ui.Show()
+	  local luaBaseComp = componentGet(setting_ui.transform,typeof(LogicBaseLua))
+	  if luaBaseComp ~= nil then
+		luaBaseComp.beKeepDepthValue = false
+	  end
+end
+
+--更多蒙板
+local function Onbtn_moreContainerClick()
+	this.moreContainerClickAnimation()
+end
+
+--战绩UI
+function OnBtn_AchievementOnClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	report_sys.EventUpload(37,player_data.GetGameId())
+	http_request_interface.getRoomByRid(roomdata_center.rid,1,function (str)
+	   local s=string.gsub(str,"\\/","/")  
+	   local t=ParseJsonStr(s)
+	   Trace(str)
+	 recorddetails_ui.Show(t) 
+	   local luaBaseComp = componentGet(recorddetails_ui.transform,typeof(LogicBaseLua))
+		if luaBaseComp ~= nil then
+			luaBaseComp.beKeepDepthValue = false
+		end
+   end)
+end
+
+local function InitVoteView()
+	this.voteView = vote_quit_view.New()
+	this.voteView:SetTransform(child(widgetTbl.panel, "Anchor_TopRight/voteView"))
+	this.voteView:Hide()
+end
+
+--[[--
+ * @Description: 获取各节点对象  
+ ]]
+local function InitWidgets()
+	widgetTbl.panel = child(this.transform, "Panel")
+	
+	--返回大厅按钮
+	widgetTbl.btn_exit = child(widgetTbl.panel, "Anchor_TopLeft/exit")
+	if widgetTbl.btn_exit~=nil then
+       addClickCallbackSelf(widgetTbl.btn_exit.gameObject,Onbtn_exitClick,this)
+    end
+    --更多按钮
+	widgetTbl.btn_more = child(widgetTbl.panel, "Anchor_TopRight/more")
+	if widgetTbl.btn_more~=nil then
+       addClickCallbackSelf(widgetTbl.btn_more.gameObject,Onbtn_moreClick,this)
+       widgetTbl.btn_more.gameObject:SetActive(true)
+    end
+	--[[--提示按钮
+    widgetTbl.btn_waring = child(widgetTbl.panel, "Anchor_TopRight/morePanel/bg/gameplay/")
+	if widgetTbl.btn_waring~=nil then
+       addClickCallbackSelf(widgetTbl.btn_waring.gameObject,OnBtn_WarningClick,this)
+       widgetTbl.btn_waring.gameObject:SetActive(true)
+    end
+    --更多面板
+    widgetTbl.panel_more = child(widgetTbl.panel, "Anchor_TopRight/morePanel")
+    if widgetTbl.panel_more~=nil then
+       widgetTbl.panel_more.gameObject:SetActive(false)
+    end
+    --更多面板蒙板
+    widgetTbl.panel_moreContainer = child(widgetTbl.panel, "Anchor_TopRight/morePanel/bg/Container")
+    if widgetTbl.panel_moreContainer~=nil then
+       addClickCallbackSelf(widgetTbl.panel_moreContainer.gameObject,Onbtn_moreContainerClick,this)
+   	end
+
+    --设置按钮
+     widgetTbl.setting = child(widgetTbl.panel, "Anchor_TopRight/morePanel/bg/setting")
+    if widgetTbl.setting~=nil then
+    	addClickCallbackSelf(widgetTbl.setting.gameObject,OnBtn_SettingOnClick,this)
+       widgetTbl.setting.gameObject:SetActive(true)
+    end
+    --战绩按钮
+      widgetTbl.result = child(widgetTbl.panel, "Anchor_TopRight/morePanel/bg/result")
+    if widgetTbl.result~=nil then
+    	addClickCallbackSelf(widgetTbl.result.gameObject,OnBtn_AchievementOnClick,this)
+       widgetTbl.result.gameObject:SetActive(true)
+    end--]]
+    --准备按钮
+	widgetTbl.btn_ready = child(widgetTbl.panel, "Anchor_Center/readyBtns/ready")
+	if widgetTbl.btn_ready~=nil then
+       addClickCallbackSelf(widgetTbl.btn_ready.gameObject,Onbtn_readyClick,this)
+		widgetTbl.btn_ready.gameObject:SetActive(false)
+    end
+	
+	--翻牌按钮
+	widgetTbl.btn_openCard = child(widgetTbl.panel,"Anchor_Center/readyBtns/opencard")
+	widgetTbl.btn_openCardLabel = componentGet(child(widgetTbl.btn_openCard,"label"),"UILabel")
+	if widgetTbl.btn_openCard ~= nil then
+		addClickCallbackSelf(widgetTbl.btn_openCard.gameObject,onbtn_openCardClick,this)
+		widgetTbl.btn_openCard.gameObject:SetActive(false)
+	end
+	
+	--搓牌按钮
+	widgetTbl.btnCuoPai = child(widgetTbl.panel,"Anchor_Center/readyBtns/cuopai")
+	if widgetTbl.btnCuoPai ~= nil then
+		local btn = widgetTbl.btnCuoPai.gameObject:GetComponent(typeof(UIButton))
+		EventDelegate.Add(btn.onClick, EventDelegate.Callback(OnBtnCuoPaiOnClick))
+		widgetTbl.btnCuoPai.gameObject:SetActive(false)
+	end
+	
+	--提示按钮
+	widgetTbl.btnTip = child(widgetTbl.panel,"Anchor_Center/readyBtns/tips")
+	if widgetTbl.btnTip ~= nil then
+		widgetTbl.btnTip.gameObject:SetActive(false)
+	end
+	
+	
+	--我要当庄按钮
+	widgetTbl.btn_setBanker = child(widgetTbl.panel,"Anchor_Center/readyBtns/setbanker")
+	if widgetTbl.btn_setBanker ~= nil then
+		addClickCallbackSelf(widgetTbl.btn_setBanker.gameObject,Onbtn_setBankerOnClick,this)
+		widgetTbl.btn_setBanker.gameObject:SetActive(false)
+	end
+	
+    --语音按钮
+	widgetTbl.btn_voice = child(widgetTbl.panel, "Anchor_Right/voice")
+	if widgetTbl.btn_voice~=nil then
+       addClickCallbackSelf(widgetTbl.btn_voice.gameObject,Onbtn_voiceClick,this)
+       widgetTbl.btn_voice.gameObject:SetActive(true)
+       addPressedCallbackSelf(widgetTbl.btn_voice,"", this.Onbtn_voicePressed, this)
+       this.AddSoundDragEventListener(widgetTbl.btn_voice.gameObject)
+    end
+    --聊天按钮
+	widgetTbl.btn_chat = child(widgetTbl.panel, "Anchor_Right/chat")
+	if widgetTbl.btn_chat~=nil then
+       addClickCallbackSelf(widgetTbl.btn_chat.gameObject,Onbtn_chatClick,this)
+       widgetTbl.btn_chat.gameObject:SetActive(true)
+       chat_ui.Init(chatTextTab,chatImgTab)
+    end
+	
+	--邀请按钮
+	widgetTbl.btn_invite = child(widgetTbl.panel, "Anchor_Center/readyBtns/invite")
+	if widgetTbl.btn_invite~=nil then
+	   addClickCallbackSelf(widgetTbl.btn_invite.gameObject,Onbtn_inviteFriend,this)
+	   widgetTbl.btn_invite.gameObject:SetActive(true)
+	end	
+	
+	--解散按钮
+	widgetTbl.btn_dismiss = child(widgetTbl.panel, "Anchor_Center/readyBtns/dismiss")
+	if widgetTbl.btn_dismiss~=nil then
+	   addClickCallbackSelf(widgetTbl.btn_dismiss.gameObject,Onbtn_dimissRoom,this)
+	   widgetTbl.btn_dismiss.gameObject:SetActive(true)
+	end	
+	
+	--复制按钮
+	widgetTbl.btn_copy = child(widgetTbl.panel, "Anchor_TopLeft/gameCount/btn_Copy")
+	if widgetTbl.btn_copy ~= nil then
+		addClickCallbackSelf(widgetTbl.btn_copy.gameObject,this.Onbtn_CopyRoomNum,this)
+	end
+
+	--wifi状态
+    widgetTbl.sprite_network = componentGet(child(widgetTbl.panel,"Anchor_TopLeft/phoneInfo/network"),"UISprite")
+    --电池状态
+    widgetTbl.sprite_power = componentGet(child(widgetTbl.panel,"Anchor_TopLeft/phoneInfo/power"),"UISprite")
+	--时间状态
+	widgetTbl.lbl_time = componentGet(child(widgetTbl.panel,"Anchor_TopLeft/phoneInfo/timeLbl"),"UILabel")
+
+    --房号
+    Trace("----------------------------------------------------label_gameinfo")
+	widgetTbl.label_gameinfo = child(widgetTbl.panel, "Anchor_Bottom/gameInfo")
+	if widgetTbl.label_gameinfo~=nil then
+       widgetTbl.label_gameinfo.gameObject:SetActive(false)
+    end
+
+    widgetTbl.label_roomId = child(widgetTbl.panel, "Anchor_TopLeft/gameCount/roomId")
+	if widgetTbl.label_roomId~=nil then
+       widgetTbl.label_roomId.gameObject:SetActive(true)
+    end
+
+   	--初始化语音信息
+   	this.InitChatSound()
+	
+    --牌局信息
+    widgetTbl.leftCard = child(widgetTbl.panel,"Anchor_TopLeft/gameCount/num")
+
+	--特殊牌型图标
+	widgetTbl.group = child(widgetTbl.panel,"Anchor_Center/special_card_type_group")
+	widgetTbl.glodCoingroup = child(widgetTbl.panel,"Anchor_Center/glodcoin")
+	if widgetTbl.group ~= nil then
+		for i =1, 6 do
+			local special_card_icon = child(widgetTbl.group,"special_card_type_"..i)
+			special_card_type["special_card_type_"..tostring(i)] = special_card_icon
+			special_card_type["special_card_type_"..tostring(i)].gameObject:SetActive(false)
+			local fengshu = child(widgetTbl.group,"fengshu"..i)
+			fengshu.gameObject:SetActive(false)
+			table.insert(special_card_type_fengshu,fengshu)
+			
+			--找到飞金币的对象
+			local coinsAnchor = child(widgetTbl.glodCoingroup,"coin"..i)
+			local coins = {}
+			for j = 1,6 do 
+				local coinObj = child(coinsAnchor,"coin"..j)
+				coinObj.gameObject:SetActive(false)
+				table.insert(coins,coinObj)
+			end
+			local coinsData = {}
+			coinsData.isPlaying = false
+			coinsData.coins = coins
+			table.insert(glodcoin,coinsData)
+			
+		end
+	end
+	
+	widgetTbl.finish = child(widgetTbl.panel,"Anchor_Center/finish")
+	if widgetTbl.finish ~= nil then
+		--widgetTbl.finish.gameObject:SetActive(false)
+	end
+	
+	widgetTbl.finishIcon = child(widgetTbl.panel,"Anchor_Center/finish/sprite")
+	if widgetTbl.finishIcon ~= nil then
+		widgetTbl.finishIcon.gameObject:SetActive(false)
+		widgetTbl.finishIcon.gameObject.transform.localScale = Vector3(0.80,0.80,0.80)
+	end
+	
+	widgetTbl.special_card_Anin = child(widgetTbl.panel,"Anchor_Center/special_card_Anim")
+	if widgetTbl.special_card_Anin ~= nil then
+		for i =1, 6 do
+			local special_card_icons = child(widgetTbl.special_card_Anin,"special_card_type_"..i)
+			special_card_anim["special_card_type_"..tostring(i)] = special_card_icons
+			special_card_anim["special_card_type_"..tostring(i)].gameObject:SetActive(false)
+		end
+	end
+
+	--理牌提示
+	widgetTbl.readCardGroup = child(widgetTbl.panel,"Anchor_Center/read_card_group")
+	if widgetTbl.readCardGroup~=nil then
+		widgetTbl.readCardGroup.gameObject:SetActive(true)
+		for i=1,6 do
+			local tReadCard = child(widgetTbl.readCardGroup,"read_card"..i)
+			read_card_player[tostring(i)] = tReadCard
+			read_card_player["time"..tostring(i)]=nil
+			tReadCard.gameObject:SetActive(false)
+		end
+	end
+
+	--水庄倒计时
+	widgetTbl.xiaopao_timePanel = child(widgetTbl.panel,"Anchor_Center/xiaopao_time")
+	if widgetTbl.xiaopao_timePanel~=nil then
+		widgetTbl.xiaopao_timePanel.gameObject:SetActive(false)
+	end
+	widgetTbl.xiaopao_time= componentGet(child(widgetTbl.xiaopao_timePanel,"time"),"UILabel")
+
+	widgetTbl.ruleInfoPanel = child(widgetTbl.panel,"Anchor_RightBottom/roomInfo")
+	if widgetTbl.ruleInfoPanel~=nil then
+		widgetTbl.ruleInfoPanel.gameObject:SetActive(false)
+	end
+
+    --创建用户列表
+    this.playerList = {}
+	local roomData = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance():GetNiuNiuRoomInfo()
+	local peopleNum = roomData.nPlayerNum
+	Trace("PeopleNum:"..tostring(peopleNum))
+
+	--初始化聊天坐标信息
+	local chatConfigString = "{\"2\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":3,\"x\":110,\"y\":-150,\"z\":0}],\"3\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":4,\"x\":245,\"y\":0,\"z\":0}],\"4\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":2,\"x\":-220,\"y\":-95,\"z\":0},{\"index\":3,\"x\":160,\"y\":-145,\"z\":0}],\"5\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":2,\"x\":-225,\"y\":-85,\"z\":0},{\"index\":3,\"x\":120,\"y\":-153,\"z\":0},{\"index\":3,\"x\":110,\"y\":-150,\"z\":0}],\"6\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":3,\"x\":90,\"y\":-155,\"z\":0},{\"index\":3,\"x\":105,\"y\":-150,\"z\":0},{\"index\":4,\"x\":220,\"y\":-20,\"z\":0}]}"
+	local chatSoundConfigString = "{\"2\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":4,\"x\":152,\"y\":-90.1,\"z\":0}],\"3\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":35,\"y\":53,\"z\":0},{\"index\":3,\"x\":275,\"y\":53,\"z\":0}],\"4\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":31,\"y\":52,\"z\":0},{\"index\":2,\"x\":40,\"y\":-44,\"z\":0},{\"index\":4,\"x\":200,\"y\":-84,\"z\":0}],\"5\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":31,\"y\":53,\"z\":0},{\"index\":2,\"x\":39,\"y\":-30,\"z\":0},{\"index\":4,\"x\":-372,\"y\":-60,\"z\":0},{\"index\":4,\"x\":152,\"y\":-90.1,\"z\":0}],\"6\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":32,\"y\":55,\"z\":0},{\"index\":2,\"x\":32,\"y\":52,\"z\":0},{\"index\":4,\"x\":132,\"y\":-90.1,\"z\":0},{\"index\":4,\"x\":146,\"y\":-90.1,\"z\":0},{\"index\":3,\"x\":-401,\"y\":-296,\"z\":0}]}"
+	local chatJson = ParseJsonStr(chatConfigString)
+	local chatJsonItem = chatJson[tostring(peopleNum)]
+
+	local chatSoundJson = ParseJsonStr(chatSoundConfigString)
+	local chatSoundJsonItem = chatSoundJson[tostring(peopleNum)]
+
+    for i=1,6 do
+    	local playerTrans = child(widgetTbl.panel, "Anchor_Center/Players/Player"..i)
+    	if playerTrans ~= nil then
+			if i < tonumber(peopleNum) or i == tonumber(peopleNum) then
+			local viewSeateConfig = config_data_center.getConfigDataByID("dataconfig_niuniutableconfig","id",tonumber(peopleNum))
+			local position = viewSeateConfig["pos"..tostring(i)]
+			local posjson = string.gsub(position,"\\/","/")  
+			local seateJson = ParseJsonStr(posjson)
+			Trace("LocalPosition frome configTable:"..tostring(seateJson))
+			local x = seateJson["x"]
+			local y = seateJson["y"]
+			local z = 0
+			local prepare_x = seateJson["prepare_x"]
+			local prepare_y = seateJson["prepare_y"]
+			playerTrans.localPosition = Vector3(x,y,z)
+			local playerComponent = require("logic.niuniu_sys.ui.niuniu_player_ui"):create(playerTrans)
+			playerComponent:SetReadyLocalPosition(prepare_x,prepare_y)
+			
+			local score_x = seateJson["score_x"]
+			local score_y = seateJson["score_y"]
+			playerComponent:SetPaoAnchorLocalPosition(score_x,score_y)
+			local coin_x = seateJson["coin_x"]
+			local coin_y = seateJson["coin_y"]
+			playerComponent:SetXiaZhuLocalPosition(coin_x,coin_y)
+			
+			--设置聊天坐标信息
+			local chatJsonItemLast = chatJsonItem[i]
+			local tChatIndex = chatJsonItemLast.index
+			local tChatPosX = chatJsonItemLast.x
+			local tChatPosY = chatJsonItemLast.y
+			playerComponent:SetChatTextLocalPosition(tChatIndex,tChatPosX,tChatPosY)
+			--设置语音聊天坐标信息
+			local chatSoundJsonItemLast = chatSoundJsonItem[i]
+			local tChatSoundIndex = chatSoundJsonItemLast.index
+			local tChatSoundPosX = chatSoundJsonItemLast.x
+			local tChatSoundPosY = chatSoundJsonItemLast.y
+			playerComponent:SetChatSoundLocalPosition(tChatSoundIndex,tChatSoundPosX,tChatSoundPosY)
+    		table.insert(this.playerList, playerComponent)
+		end
+    		playerTrans.gameObject:SetActive(false)
+    	end
+    end
+	
+	----设置互动表情位置
+	local posTbl = config_mgr.getConfig("cfg_niuniupos",peopleNum)
+	for i=1,peopleNum do
+		local playerTrans = child(widgetTbl.panel, "Anchor_Center/Players/Player"..i)
+		this.InitInteractionView(playerTrans.gameObject,posTbl["pos"][i])
+	end
+    
+    --赖子
+	compTbl.laizi = child(widgetTbl.panel, "Anchor_TopLeft/lai")
+	if compTbl.laizi~=nil then
+       compTbl.laizi.gameObject:SetActive(false)
+    end
+	
+	--下注分数
+    compTbl.xiapao = child(widgetTbl.panel, "Anchor_Center/xiapao")
+	if compTbl.xiapao~=nil then
+		for i=1,5 do
+			local btn_xiapao = child(compTbl.xiapao,tostring(i))
+			addClickCallbackSelf(btn_xiapao.gameObject,
+
+			function ()
+				ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+				local OnAskMultData = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().OnAskMultData
+				local score = OnAskMultData._para.optional
+				niuniu_play_sys.beishu(score[i])
+				this.SetXiaoPao(0)
+			--	this.IsShowBeiShuiBtn(false)
+				this.SetXiaoPaoLabelByStr("请等待其他玩家下注...")
+			end,
+			this)
+		end
+       compTbl.xiapao.gameObject:SetActive(false)
+    end
+	
+		--抢庄
+	compTbl.banker = child(widgetTbl.panel,"Anchor_Center/banker")
+	for i = 0,5 do
+		local btn_banker = child(compTbl.banker,tostring(i))
+		--如果是自由抢庄，只有抢跟不抢两个按钮
+		addClickCallbackSelf(btn_banker.gameObject,function()
+			ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+			local AskRobbanker = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().AskRobbankerData
+			
+			niuniu_play_sys.robbankerReq(AskRobbanker._para.optional[i + 1])
+		--	compTbl.banker.gameObject:SetActive(false)
+			--这里得添加代码显示"请等待其他玩家抢庄"
+			
+			this.SetXiaoPaoLabelByStr("请等待其他玩家抢庄...")
+			
+		end,this)
+		table.insert(bankerBtnList,btn_banker)
+	end
+	compTbl.banker.gameObject:SetActive(false)
+	
+	compTbl.countDownSlider = child(widgetTbl.panel,"Anchor_Center/countdownslider")
+	compTbl.countDownSliderSprite = componentGet(child(widgetTbl.panel,"Anchor_Center/countdownslider/foreground"),"UISprite")
+	compTbl.countDownTimeLabel = componentGet(child(widgetTbl.panel,"Anchor_Center/countdownslider/timeLbl"),"UILabel")
+	compTbl.countDownSlider.gameObject:SetActive(false)
+	
+	--重连未准备解散倒计时
+	widgetTbl.dismiss_timePanel = child(widgetTbl.panel,"Anchor_Center/readyBtns/timeleftlbl")
+	if widgetTbl.dismiss_timePanel ~= nil then
+		widgetTbl.dismiss_timePanel.gameObject:SetActive(false)
+	end
+	widgetTbl.dismiss_timelbl = componentGet(widgetTbl.dismiss_timePanel,"UILabel")
+	
+	this.InitMoreBtnsView()
+
+
+	--iPhoneX适配
+	local delayTimer = Timer.New(function()
+	local widgetPanel = child(this.transform, "Panel")
+	if widgetPanel and data_center.GetCurPlatform() == "IPhonePlayer" and YX_APIManage.Instance:isIphoneX() then
+
+		local Anchor_TopRight = child(widgetPanel, "Anchor_TopRight")
+		if Anchor_TopRight then
+		local localPos = Anchor_TopRight.gameObject.transform.localPosition
+		Anchor_TopRight.gameObject.transform.localPosition = Vector3(localPos.x -60, localPos.y, localPos.z)
+		end
+		local Anchor_Right = child(widgetPanel, "Anchor_Right")
+		if Anchor_Right then
+			local localPos = Anchor_Right.gameObject.transform.localPosition
+			Anchor_Right.gameObject.transform.localPosition = Vector3(localPos.x -60, localPos.y, localPos.z)
+		end
+	end
+	end, 0.1, 1)
+	delayTimer:Start()
+end
+	
+
+local function Onbtn_rewardsBackClick()
+	this.HideRewards()
+	this.ShowReadyBtn()
+end
+
+--复制房号点击事件
+function this.Onbtn_CopyRoomNum(obj1,obj1)
+	str = this.rno
+	Trace("Onbtn_CopyRoomNum:"..tostring(str))
+	YX_APIManage.Instance:onCopy(str,function()UI_Manager:Instance():FastTip(GetDictString(6043))end)
+end
+
+--监听电量及网络信号强度
+function this.InitBatteryAndSignal()
+	--监听电量及网络信号强度
+    -- YX_APIManage.Instance.batteryCallBack = 
+    YX_APIManage.Instance:setBatteryCallback(function(msg)
+      local msgTable = ParseJsonStr(msg)
+      local precent = tonumber(msgTable.percent)  or 0
+      this.SetPowerState(precent/100.0)
+    end)
+
+    YX_APIManage.Instance.signalCallBack = function(msg)
+    	local msgTable = ParseJsonStr(msg)
+    	local precent = tonumber(msgTable.percent)	
+    	Trace("signal:"..precent)		
+		this.SetNetworkState(precent)
+    end
+    local strBattery = YX_APIManage.Instance:GetPhoneBattery()
+    if strBattery and string.len(strBattery) >0 then
+      local msgTable = ParseJsonStr(strBattery)
+      local precent = tonumber(msgTable.percent)  or 0
+      this.SetPowerState(precent/100.0)
+    end
+
+end
+
+function this.UnInitBatteryAndSignal()
+	YX_APIManage.Instance.batteryCallBack = nil
+	YX_APIManage.Instance.signalCallBack = nil
+end
+
+function this.SetNetworkState(value)
+	local spName = ""
+	if value > 0.75 then
+		spName = "paiju_13"
+	elseif value >0.5 then
+		spName = "paiju_14"
+	elseif value >0.25 then
+		spName = "paiju_15"
+	else 
+		spName = "paiju_16"
+	end
+	widgetTbl.sprite_network.spriteName = spName
+end
+
+function this.SetPowerState(value)
+	local spName = ""
+	if value > 0.8 then
+		spName = "dc_1"
+	elseif value >0.6 then
+		spName = "dc_2"
+	elseif value >0.4 then
+		spName = "dc_3"
+	elseif value >0.2 then
+		spName = "dc_4"
+	else 
+		spName = "dc_5"
+	end
+	widgetTbl.sprite_power.spriteName = spName
+end
+
+--定时器每分钟刷新系统时间
+function this.StartGetDateTimer()
+	if widgetTbl.lbl_time then
+		widgetTbl.lbl_time.text = tostring(os.date("%H:%M"))
+	end
+	if not this.getDateTimer then
+		this.getDateTimer = Timer.New(this.OnGetDateTimer_Proc,60,-1)
+		this.getDateTimer:Start()
+	end
+end
+
+function this.OnGetDateTimer_Proc()
+	if widgetTbl.lbl_time then
+		widgetTbl.lbl_time.text = tostring(os.date("%H:%M"))
+	end
+end
+
+--------重连未准备解散倒计时------------
+
+function this.dismissLeftime(time)
+	if(disTimer_Elapse == nil) then
+		this.StartTimer_Dis(time)
+	end
+end
+
+function this.StartTimer_Dis(time)
+	Trace("未准备解散定时器")	
+	if(time <= 0) then
+		widgetTbl.dismiss_timePanel.gameObject:SetActive(false)
+		return
+	end
+	widgetTbl.dismiss_timePanel.gameObject:SetActive(true)
+	widgetTbl.dismiss_timelbl.text = (math.floor(time).."s后解散牌局")
+	leftTime = time		
+	disTimer_Elapse = Timer.New(this.OnTimer_Proc_Dis,1,time)
+	disTimer_Elapse:Start()
+end
+
+function this.OnTimer_Proc_Dis()
+	if(leftTime >= 1) then
+		leftTime = leftTime -1;
+	end
+	widgetTbl.dismiss_timelbl.text = (math.floor(leftTime).."s后解散牌局")
+	if leftTime <= 0 then
+		widgetTbl.dismiss_timePanel.gameObject:SetActive(false)
+		this.StopTime_Dis()
+		return
+	end
+end
+
+function this.StopTime_Dis()
+	if disTimer_Elapse ~= nil then
+		disTimer_Elapse:Stop()
+		Trace("重连解散定时器关")
+		disTimer_Elapse = nil
+	end
+	if(widgetTbl.dismiss_timePanel ~= nil) then
+		widgetTbl.dismiss_timePanel.gameObject:SetActive(false)
+	end
+end
+-------------------------------------
+--[[--
+ * @Description: 更多界面  
+ ]]
+function this.SetMorePanle()
+	if widgetTbl.panel_more.gameObject.activeSelf == true then
+		widgetTbl.panel_more.gameObject:SetActive(false)
+	else
+		widgetTbl.panel_more.gameObject:SetActive(true)
+	end
+end
+
+function this.moreContainerClickAnimation()
+  widgetTbl.btn_more.gameObject:SendMessage("OnClick")
+end
+
+function this.RegisterEvent()
+	Notifier.regist(cmdName.MSG_VOICE_INFO, this.OnMsgVoiceInfoHandler)
+	Notifier.regist(cmdName.MSG_VOICE_PLAY_BEGIN, this.OnMsgVoicePlayBegin)
+	Notifier.regist(cmdName.MSG_VOICE_PLAY_END, this.OnMsgVoicePlayEnd)
+
+	Notifier.regist(cmdName.MSG_CHAT_TEXT, this.OnMsgChatText)
+  	Notifier.regist(cmdName.MSG_CHAT_IMAGA, this.OnMsgChatImaga)
+  	Notifier.regist(cmdName.MSG_CHAT_INTERACTIN, this.OnMsgChatInteractin)
+end
+function this.UnRegisterEvent()
+	Notifier.remove(cmdName.MSG_VOICE_INFO, this.OnMsgVoiceInfoHandler)
+	Notifier.remove(cmdName.MSG_VOICE_PLAY_BEGIN, this.OnMsgVoicePlayBegin)
+	Notifier.remove(cmdName.MSG_VOICE_PLAY_END, this.OnMsgVoicePlayEnd)
+
+	Notifier.remove(cmdName.MSG_CHAT_TEXT, this.OnMsgChatText)
+  	Notifier.remove(cmdName.MSG_CHAT_IMAGA, this.OnMsgChatImaga)
+  	Notifier.remove(cmdName.MSG_CHAT_INTERACTIN, this.OnMsgChatInteractin)
+end
+
+function this.Awake()
+	this.RegisterEvent()
+	this:RegistUSRelation()
+	InitWidgets()
+	InitVoteView()
+	this.InitSettingBgm()
+	this.StartGetDateTimer()
+	msg_dispatch_mgr.SetIsEnterState(true)	
+end
+
+function this.Start()
+	this.InitBatteryAndSignal()
+
+	if(not gvoice_sys.GetIsInit()) then
+		Trace("Init Again--------------------------")
+		--gvoice_sys.GVoiceInit()   --语音服务初始化		
+	end
+	gvoice_engine = gvoice_sys.GetEngine()
+end
+
+--[[
+语音回调检测
+]]
+function this.Update()
+    if(gvoice_engine ~= nil) then
+		gvoice_engine:Poll()
+	end
+	--检测事件输入
+--	if Input.GetTouch(0).phase == TouchPhase.Began
+	-- if Input.GetMouseButtonDown(0) then
+	-- 	Notifier.dispatchCmd(cmdName.MSG_MOUSE_BTN_DOWN,Input.mousePosition)
+	-- end
+end
+
+function this.OnDestroy()
+	this.UnInitBatteryAndSignal()
+	this.playerList = {}
+	widgetTbl = {}
+	compTbl = {}	
+	bankerBtnList = {}
+	special_card_type = {}
+	special_card_type_fengshu = {}
+	special_card_anim = {}
+	glodcoin = {}
+	if this.getDateTimer then
+		this.getDateTimer:Stop()
+		this.getDateTimer = nil
+	end
+
+	this.LimitRecodeSoundHide()
+	this.UnRegisterEvent()
+	gvoice_sys.Uinit()
+	chat_ui.Clear()
+	if(disTimer_Elapse ~= nil) then
+		this.StopTime_Dis()  ----重连解散定时器关
+	end
+	this.StopCountDownTimer()
+end
+
+--是否显示准备按钮
+function this.IsShowReadyBtn(isShow)
+	widgetTbl.btn_ready.gameObject:SetActive(isShow)
+end
+--是否显示我要选庄按钮
+function this.IsShowChooseBanker(isShow)
+	widgetTbl.btn_setBanker.gameObject:SetActive(isShow)
+end
+
+function this.IsShowBankerList(isShow)
+	compTbl.banker.gameObject:SetActive(isShow)
+end
+
+--设置自由抢庄，明牌抢庄的按钮
+function this.SetBankerBtnByMode(mode,data)
+	this.IsShowBankerList(true)
+	for i,v in ipairs(bankerBtnList) do
+		v.gameObject:SetActive(false)
+	end
+	if mode == niuniu_rule_define.SUB_BULL_BANKER.SUB_BULL_BANKER_ROB_FREE then
+		--自由抢庄只显示抢与不抢两个按钮
+		
+		for i,v in ipairs(data._para.optional) do
+			local btn = bankerBtnList[i]
+			btn.gameObject:SetActive(true)
+			local label = child(btn.gameObject.transform,"UILabel")
+			local labelcomp = componentGet(label.gameObject.transform,"UILabel")
+			if v == 0 then
+				labelcomp.text = "不抢"
+			elseif v == 1 then
+				labelcomp.text = "抢庄"
+			end
+			Trace("SetBankerBtnByMode:"..tostring(labelcomp.text))
+		end
+		
+	elseif mode == niuniu_rule_define.SUB_BULL_BANKER.SUB_BULL_BANKER_ROB_LOOK then
+		--明牌抢庄
+		Trace("明牌抢庄")
+		for i,v in ipairs(data._para.optional) do
+			local btn = bankerBtnList[i]
+			btn.gameObject:SetActive(true)
+			local label = child(btn.gameObject.transform,"UILabel")
+			local labelcomp = componentGet(label.gameObject.transform,"UILabel")
+			if v == 0 then
+				labelcomp.text = "不抢"
+			else
+				labelcomp.text = tostring(v).."倍"
+			end
+			Trace("SetBankerBtnByMode:"..tostring(labelcomp.text))
+		end
+	end
+	local gridComp =  compTbl.banker.gameObject:GetComponent(typeof(UIGrid))
+	if gridComp ~= nil then
+		gridComp:Reposition()
+	else
+		Trace("===选择倍数UIGrid为空！===")
+	end
+	--显示时间倒计时
+	this.SetCountDown(compTbl.countDownSlider.gameObject,data.timeo - data.time,this.CountDownByBanker,callback)
+	
+end
+
+function this.IsShowCountDownSlider(isShow)
+	compTbl.countDownSlider.gameObject:SetActive(isShow)
+end
+--抢庄时间的倒计时
+function this.CountDownByBanker(time)
+	local totalTime = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().AskRobbankerData.timeo
+	if totalTime ~= nil then
+		local percent = tonumber(time) / tonumber(totalTime)
+		if compTbl.countDownSliderSprite ~= nil then 
+			compTbl.countDownSliderSprite.fillAmount = tonumber(percent)
+			compTbl.countDownTimeLabel.text = tostring(time)
+		end
+	end
+end
+
+--选择分数倒计时
+function this.CountDownByXiaZhu(time)
+	local totalTime = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().OnAskMultData.timeo
+	if totalTime ~= nil then
+		local percent = tonumber(time) / tonumber(totalTime)
+		if compTbl.countDownSliderSprite ~= nil then 
+			compTbl.countDownSliderSprite.fillAmount = tonumber(percent)
+			compTbl.countDownTimeLabel.text = tostring(time)
+		end
+	end
+end
+
+--[[--
+ * @Description: 右下角的信息显示  
+ * @param:       wanfaStr   RoomNum 
+ * @return:      nil
+ ]]
+function  this.SetGameInfo(wanfaStr,RoomNum)
+	local str = wanfaStr..RoomNum
+	this.rno = RoomNum
+	local configStr = {}
+	
+	local configData = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().roomInfo
+	local takeTurnsMode = configData.GameSetting.takeTurnsMode
+	if takeTurnsMode == 1 then
+		table.insert(configStr,"自由抢庄")
+	elseif takeTurnsMode == 2 then
+		table.insert(configStr,"明牌抢庄")
+	elseif takeTurnsMode == 3 then
+		table.insert(configStr,"固定坐庄")
+	elseif takeTurnsMode == 4 then
+		table.insert(configStr,"轮流坐庄")
+	elseif takeTurnsMode == 5 then
+		table.insert(configStr,"赢家坐庄")
+	elseif takeTurnsMode == 6 then
+		table.insert(configStr,"随机坐庄")
+	end
+	
+	local scoreStr = "底分:"
+	local baseScore = configData.GameSetting.baseScore
+	if baseScore ~= nil then
+		for i,v in ipairs(baseScore) do
+			if i ~= #baseScore then
+				scoreStr = scoreStr..tostring(v).."/"
+			else
+				scoreStr = scoreStr..tostring(v)
+			end
+		end
+		table.insert(configStr,scoreStr)
+		roomdata_center.AddGameSetting("nBaseScoreRule",#baseScore)
+	end
+	--翻倍规则
+	local multipleRule = configData.GameSetting.multipleRule
+	local num = 0
+	if multipleRule ~= nil then
+		for i,v in ipairs (multipleRule) do
+			if v >= 2 then
+				num = num + 1
+			end
+		end
+		if num ~= 0 then
+			roomdata_center.AddGameSetting("nMultipleRule",num)
+		end
+	end
+	
+	this.SetRoomInfo(configStr)
+	local label_roomId_comp = widgetTbl.label_roomId.gameObject:GetComponent(typeof(UILabel))
+	label_roomId_comp.text = str
+end
+
+function this.SetLeftCard()
+	if widgetTbl.leftCard_comp == nil then
+		widgetTbl.leftCard_comp = widgetTbl.leftCard.gameObject:GetComponent(typeof(UILabel))
+	end
+	local data = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance():GetNiuNiuRoomInfo()
+	widgetTbl.leftCard_comp.text = "局数:"..tostring(data.nCurrJu).."/"..tostring(data.nJuNum)
+	Trace("当前局数:"..tostring(data.nCurrJu))
+end
+
+--设置互动表情面板位置
+function this.InitInteractionView(go,tbl)
+  this.InteractionView = require "logic/interaction/InteractionView":
+  create(go,nil,tbl)
+end
+
+--更多面板
+function this.InitMoreBtnsView()
+  this.moreBtnsView = require "logic/mahjong_sys/ui_mahjong/views/MoreBtnsView":
+  create(nil, this.moreContainerClickAnimation, subComponentGet(widgetTbl.panel, "Anchor_TopRight/more/Sprite", typeof(UIRect)))
+  this.moreBtnsView:SetGo(child(widgetTbl.panel, "Anchor_TopRight/morePanel/bg").gameObject)
+  this.moreBtnsView:SetActive(false)
+end
+
+--显示更多面板
+function this.SetMorePanel()
+  this.moreBtnsView:SetActive(not this.moreBtnsView.isActive)
+end
+
+
+--设置用户信息
+function this.SetPlayerInfo(viewSeat, usersdata)
+	if this.playerList[viewSeat] ~= nil then
+		this.playerList[viewSeat]:Show(usersdata,viewSeat)
+	end
+end
+
+--显示抢庄，不抢，搓牌中的状态
+function this.SetState(viewSeat,isShow,str)
+	if this.playerList[viewSeat] ~= nil then
+		this.playerList[viewSeat]:SetState(isShow,str)
+	end
+end
+
+--显示下注中，庄家不显示下注中
+function this.SetXiaZhuZhong(bankViewSeat)
+	if(bankViewSeat ~= nil) then
+		for i,v in ipairs(this.playerList) do
+			if i == bankViewSeat then
+				this.playerList[i]:SetState(false)
+			else
+				this.playerList[i]:SetState(true,niuniu_rule_define.SUB_BULL_STATE.SUB_BULL_STATE_XIAZHUZHONG)
+			end
+		end	
+	end
+end
+
+--重连刷新显示下注中，庄家不显示下注中
+function this.RefreshXiaZhuZhong(bankViewSeat,multState)
+	if(bankViewSeat ~= nil and multState ~= nil) then
+		for i,v in ipairs(this.playerList) do
+			local logicLogicSeat = player_seat_mgr.GetLogicSeatNumByViewSeat(i)
+			if multState[logicLogicSeat] > 0 then
+				this.playerList[i]:SetState(false)
+				if i == 1 then
+					niuniu_ui.SetXiaoPaoLabelByStr("请等待其他玩家下注...")		--自己已下注 显示文本
+				end
+			else
+				if i == bankViewSeat then
+					this.playerList[i]:SetState(false)
+					if i == 1 and bankViewSeat ~= 1 then
+						this.IsShowBeiShuiBtn(true)
+					end
+				else
+					this.playerList[i]:SetState(true,niuniu_rule_define.SUB_BULL_STATE.SUB_BULL_STATE_XIAZHUZHONG)
+				end
+			end
+		end	
+		multState = nil
+	end
+end
+
+--设置赢家金币飞动效果
+function this.glodCoinFlyAnimation(startViewSeate, endViewSeate)
+	local coins = nil
+	for i,v in ipairs(glodcoin) do
+		if v.isPlaying == false then
+			v.isPlaying = true
+			coins = v.coins
+			break
+		end
+	end
+	if coins ~= nil then
+		coroutine.start(function()
+			for i,v in pairs(coins) do
+				local startTrans = this.playerList[startViewSeate].transform
+				local endTrans = this.playerList[endViewSeate].transform
+				v.gameObject.transform.position = startTrans.position
+				v.gameObject:SetActive(true)
+				v.gameObject.transform:DOMove(endTrans.position,0.4,false)
+				Trace("金币飞动")
+				coroutine.wait(0.05)
+			end
+		end)
+	else
+		logError("金币对象为空")
+	end
+end
+
+function this.ReSetAllGoldCoinAnimationState()
+	for i,v in ipairs(glodcoin) do
+		v.isPlaying = false
+		for j,k in pairs(v.coins) do
+			k.gameObject:SetActive(false)
+		end
+	end
+end
+
+function this.SetAllState(isShow,str)
+	for i,v in ipairs(this.playerList) do
+		v:SetState(isShow,str)
+	end
+end
+
+--[[
+隐藏语音消息显示
+]]
+function this.HideVoiceLogo()
+	
+end
+
+local _xiaopaoTime = 0
+local xiaopaoTimer_Elapse = nil
+local xiaopaoCallBack = nil
+--设置水庄倒计时
+function this.SetXiaoPao(time,callback)
+
+	if time==nil or time<=0 then
+		this.ShowXiaoPaoPanel(false)
+		this.IsShowCountDownSlider(false)
+	else
+		this.SetCountDown(compTbl.countDownSlider.gameObject,time,this.CountDownByXiaZhu,callback)
+	end	
+end
+
+function this.SetAskPoenCard(time,callback)
+
+	if time==nil or time<=0 then
+		this.ShowXiaoPaoPanel(false)
+		this.IsShowCountDownSlider(false)
+	else
+		this.SetCountDown(compTbl.countDownSlider.gameObject,time,function(time)
+			local totalTime = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().OnAskOpenCardData.timeo
+			if totalTime ~= nil then
+			local percent = tonumber(time) / tonumber(totalTime)
+			if compTbl.countDownSliderSprite ~= nil then 
+				compTbl.countDownSliderSprite.fillAmount = tonumber(percent)
+				compTbl.countDownTimeLabel.text = tostring(time)
+			end
+	end
+		end,callback)
+	end	
+end
+
+function this.StopCountDownTimer()
+	if xiaopaoTimer_Elapse ~= nil then
+		xiaopaoTimer_Elapse:Stop()
+		xiaopaoTimer_Elapse = nil
+	end
+end
+
+function this.SetXiaoPaoLabelByStr(str)
+	if  widgetTbl.xiaopao_time ~= nil then
+		this.ShowXiaoPaoPanel(true)
+		widgetTbl.xiaopao_time.text = str
+	
+	end
+end
+
+function this.ShowXiaoPaoPanel(state,str)
+	widgetTbl.xiaopao_timePanel.gameObject:SetActive(state)
+	widgetTbl.xiaopao_time.text = str
+end
+
+--通用倒计时接口
+function this.SetCountDown(go,time,disposefun,callback)
+	if time == nil or time <= 0 then
+		go:SetActive(false)
+	elseif xiaopaoTimer_Elapse == nil then
+		go:SetActive(true)
+		_xiaopaoTime =math.floor(time)
+		if disposefun ~= nil then 
+			disposefun(_xiaopaoTime)
+		end
+		xiaopaoTimer_Elapse = Timer.New(function()
+		_xiaopaoTime = _xiaopaoTime -1;
+		if disposefun ~= nil then 
+			disposefun(_xiaopaoTime)
+		end
+		if _xiaopaoTime <= 0 then
+			this.StopCountDownTimer()
+			go:SetActive(false)
+			if xiaopaoCallBack ~= nil then
+				xiaopaoCallBack()
+			end
+		end
+		end,1,time)
+	xiaopaoTimer_Elapse:Start()
+		xiaopaoCallBack = callback
+	end
+end
+
+--设置右下角游戏信息规则
+function this.SetRoomInfoState(state)
+	widgetTbl.ruleInfoPanel.gameObject:SetActive(state)
+end
+
+function this.SetRoomInfo(tbl)
+	if tbl == nil then
+		this.SetRoomInfoState(false)
+	else
+		this.SetRoomInfoState(true)
+		for i=1,3 do
+			local tra = child(widgetTbl.ruleInfoPanel,tostring(i))
+			if i <= (#tbl) then
+				tra.gameObject:SetActive(true)
+				local infoTra = child(tra,"info")
+				infoTra.gameObject:SetActive(false)
+				componentGet(infoTra,"UILabel").text = tbl[i]
+				infoTra.gameObject:SetActive(true)
+			else
+				tra.gameObject:SetActive(false)
+			end
+		end
+		--componentGet(widgetTbl.ruleInfoPanel,"UITable"):Reposition()
+		componentGet(widgetTbl.ruleInfoPanel,"UITable").repositionNow = true
+	end	
+end
+
+function this.HidePlayer(viewSeat)
+	if this.playerList[viewSeat] ~= nil then
+		this.playerList[viewSeat]:Hide()
+	end
+end
+
+function this.ShowPlayerTotalPoints(viewSeat,totalPoint)
+	if this.playerList[viewSeat] ~= nil then
+		this.playerList[viewSeat]:SetTotalPoints(totalPoint)
+	end
+end
+
+function this.IsShowBeiShuiBtn(isShow)
+	compTbl.xiapao.gameObject:SetActive(isShow)
+end
+
+--是否显示抢庄按钮
+function this.IsShowBankerBtn (isShow)
+	compTbl.banker.gameObject:SetActive(isShow)
+end
+
+function this.IsShowOpenCardBtn(IsShow,CardType)
+	widgetTbl.btn_openCard.gameObject:SetActive(IsShow)
+	if CardType ~= nil then
+		widgetTbl.btn_openCardLabel.text = niuniu_rule_define.PT_BULL_Text[CardType]
+	end
+end
+
+function this.IsShowCuoPaiBtn(IsShow)
+	local cuopaiSetting = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().roomInfo.GameSetting.rubCard
+	if cuopaiSetting == 0 then
+		widgetTbl.btnCuoPai.gameObject:SetActive(false)
+		return
+	end
+	widgetTbl.btnCuoPai.gameObject:SetActive(IsShow)
+end
+
+function this.ShowInviteBtn(isShow)
+	if widgetTbl.btn_invite ~= nil then
+		widgetTbl.btn_invite.gameObject:SetActive(isShow)
+	end
+end
+
+function this.SetTiposition(IsShow,posititon)
+	if PlayerPrefs.HasKey("NiuNiuTips")   then
+	   if PlayerPrefs.GetInt("NiuNiuTips") > 3 then
+			widgetTbl.btnTip.gameObject:SetActive(false)
+			return
+		else
+			local count = PlayerPrefs.GetInt("NiuNiuTips")
+			if IsShow == true then
+				PlayerPrefs.SetInt("NiuNiuTips",count + 1)
+			end
+		end
+	else
+		PlayerPrefs.SetInt("NiuNiuTips", 1)
+	end
+	widgetTbl.btnTip.gameObject:SetActive(IsShow)
+	if posititon ~= nil then
+		widgetTbl.btnTip.gameObject.transform.localPosition = posititon
+	end
+end
+
+function this.ShowDissolveRoom(isShow)
+	widgetTbl.btn_dismiss.gameObject:SetActive(isShow)
+end
+
+function this.SetPlayerMachine(viewSeat, isMachine )
+	if this.playerList[viewSeat] ~= nil then
+		this.playerList[viewSeat]:SetMachine(isMachine)
+	end
+end
+
+function this.SetPlayerLineState(viewSeat, isOnLine )
+	if this.playerList[viewSeat] ~= nil then
+		this.playerList[viewSeat]:SetOffline(not isOnLine)
+	end
+end
+
+function this.SetHideTotaPoints()
+	for i,v in ipairs(this.playerList) do
+		v.HideTotalPoints()
+	end
+end
+
+function this.SetPlayerScore(viewSeat,value)
+	if this.playerList[viewSeat] ~= nil then
+		this.playerList[viewSeat]:SetScore(value)
+	end
+end
+
+function this.AddPlayerScore(viewSeat,value)
+	if this.playerList[viewSeat] ~= nil then
+		this.playerList[viewSeat]:AddScore(value)
+	end
+end
+
+function this.SetPlayerReady( viewSeat,isReady )
+	Trace("viewSeat-------------------------------------"..tostring(viewSeat))
+	if this.playerList[viewSeat] ~= nil then
+		this.playerList[viewSeat]:SetReady(isReady)
+	end
+end
+
+function this.SetAllPlayerReady(isReady)
+	for i,v in ipairs(this.playerList) do
+		v:SetReady(isReady)
+	end
+end
+
+function this.SetPlayBianKuang(viewSeatArray,bankerViewSeate,IsShow,callback)
+	coroutine.start(function()
+		if #viewSeatArray == 1 then
+			this.SetBanker(viewSeatArray[1])
+		else
+			local time = 0.16
+			for i = 1,3 do
+				for j,v in ipairs(viewSeatArray) do
+					this.playerList[v]:SetBianKuang(IsShow)
+					coroutine.wait(time)
+					this.playerList[v]:SetBianKuang(not IsShow)
+				end
+				if i == 1 then
+					time = time - 0.07
+				elseif i == 2 then
+					time = time - 0.05
+				end
+			end
+			this.SetBanker(bankerViewSeate)
+		end
+		if callback ~= nil then
+			callback()
+		end
+	end)
+end
+
+--设置头像的光圈
+this.lightFrameObj = nil
+function this.SetPlayerLightFrame(viewSeat)
+	if this.lightFrameObj ~= nil then
+		animations_sys.StopPlayAnimation(this.lightFrameObj)
+	end
+	local Player = this.playerList[viewSeat]
+	if Player ~= nil then
+		if this.playerList[viewSeat].transform == nil then 
+			Trace("+++++++++AnimationError!!!!!!!")
+		end
+		Trace("当前桌面对应的座位号"..tostring(Player.viewSeat).."transformName"..tostring(Player.transform.name))
+		animations_sys.PlayAnimationByScreenPosition(child(Player.transform,"winFrame"), 0,0,data_center.GetResRootPath().."/effects/niuniu_win", "shengli", 110, 110, false,nil,3014,true)
+	end
+end
+
+function this.DisablePlayerLightFrame()
+	if this.lightFrameObj ~= nil then
+		animations_sys.StopPlayAnimation(this.lightFrameObj)
+	end
+end
+
+--播放游戏开始动画效果
+function this.PlayGameStartAnimation()
+	animations_sys.PlayAnimation(this.gameObject.transform,data_center.GetResRootPath().."/effects/gamestart","begin_3",100,100,false,nil,1401)
+end
+
+--通杀动画效果
+function this.PlayTongShaAnimation()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/cardtype_audio/tongsha")
+	animations_sys.PlayAnimation(this.gameObject.transform,data_center.GetResRootPath().."/effects/tongsha","tongsha",100,100,false,nil,4000)
+end
+
+--[[--
+ * @Description: ????o?  
+ * @param:       viewSeat è§?????o§?????· 
+ * @return:      nil
+ ]]
+function this.SetBanker( viewSeat )
+	if this.playerList[viewSeat] ~= nil then
+		this.playerList[viewSeat]:SetBanker(true)
+	end
+end
+
+function this.HideAllBanker()
+	for i,v in ipairs(this.playerList) do
+		v:SetBanker(false)
+	end
+end
+
+function this.ResetAll()
+	for i=1,#this.playerList do
+		
+		this.playerList[i]:HideTotalPoints()
+		this.playerList[i]:HideBeiShu()
+	--	this.playerList[i]:SetState(false)  
+	end
+--	this.ReSetReadCard(false)
+	this.IsShowReadyBtn(false)
+	this.HideSpecialCardIcon()
+	this.HideSpecialCardAnim()
+	this.IsShowOpenCardBtn(false)
+	this.IsShowCuoPaiBtn(false)
+	this.SetTiposition(false)
+	this.ShowXiaoPaoPanel(false)
+	this.IsShowBeiShuiBtn(false)
+	this.StopCountDownTimer()
+	this.StopTime_Dis()
+	this.IsShowBankerList(false)
+	this.IsShowChooseBanker(false)
+	this.IsShowCountDownSlider(false)
+--	this.SetAllState(false)
+	widgetTbl.finish.gameObject:SetActive(false)
+	this.ReSetAllGoldCoinAnimationState()
+--	this.voteView:Hide()
+	
+	local configData = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().roomInfo
+	local takeTurnsMode = configData.GameSetting.takeTurnsMode
+	if takeTurnsMode ~= niuniu_rule_define.SUB_BULL_BANKER.SUB_BULL_BANKER_FIXED then
+		this.HideAllBanker()
+	end
+end
+
+function this.InitSettingBgm()
+	ui_sound_mgr.SceneLoadFinish() 
+    ui_sound_mgr.PlayBgSound("hall_bgm")	
+end
+
+--显示特殊牌型的图标
+function this.ShowSpecialCardIcon(tbl)
+	local iconImage = special_card_type["special_card_type_"..tbl.viewSeat]
+	iconImage.gameObject.transform.localPosition = tbl.position
+	iconImage.gameObject:SetActive(false)
+	local fengshuObj = special_card_type_fengshu[tbl.viewSeat]
+	local sprite = componentGet(iconImage.gameObject.transform,"UISprite")
+	local spriteName = "niu_"..tostring(tbl.nCardType).."_"..tostring(tbl.nBeishu)
+	sprite.spriteName = spriteName
+	Trace("!!!!!!!!!!!!!!!!!cardType"..tostring(sprite.spriteName))
+	sprite:MakePixelPerfect()
+	local scale = 1
+	if tbl.nCardType > 11  then
+		if tbl.viewSeat == 1 then
+			scale = 1.2
+			sprite.gameObject.transform.localScale = Vector3(scale,scale,scale)
+		else
+			scale = 0.8
+			sprite.gameObject.transform.localScale = Vector3(scale,scale,scale)
+		end
+	else
+		if tbl.viewSeat == 1 then
+			scale = 1.2
+			sprite.gameObject.transform.localScale = Vector3(scale,scale,scale)
+		else
+			scale = 0.8
+			sprite.gameObject.transform.localScale = Vector3(scale,scale,scale)
+		end
+	end
+	iconImage.gameObject.transform.localPosition = Vector3(tbl.position.x + 15.5*scale ,tbl.position.y - 4.6*scale,tbl.position.z)
+	iconImage.gameObject:SetActive(true)
+end
+
+function this.ShowSpecialCardAnimation(tbl)
+	Trace("!!!!!!!!!!!!!!!!!!播特殊牌型动画"..GetTblData(tbl))
+	local iconImage = special_card_anim["special_card_type_"..tbl.viewSeat]
+	local Image = special_card_type["special_card_type_"..tbl.viewSeat]
+	Image.gameObject:SetActive(false)
+	iconImage.gameObject.transform.localPosition = tbl.position
+	iconImage.gameObject:SetActive(true)
+	local aminationName = "niu_"..tostring(tbl.nCardType).."_"..tostring(tbl.nBeishu)
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/cardtype_audio/"..tostring(niuniu_rule_define.PT_BULL_SpriteName[tbl.nCardType]))  ---按键声音
+	local scale = 1.2
+	if tbl.viewSeat == 1 then
+		animations_sys.PlayAnimationByScreenPosition(iconImage.gameObject.transform, 0,0,data_center.GetResRootPath().."/effects/niuniu_special_card", aminationName, 100*scale, 100*scale, false,function ()
+			
+			Notifier.dispatchCmd(cmd_shisanshui.SpecialCardType, tbl)
+		end
+			,1401,true)
+	else
+		scale = 0.8
+		 animations_sys.PlayAnimationByScreenPosition(iconImage.gameObject.transform, 0,0,data_center.GetResRootPath().."/effects/niuniu_special_card", aminationName, 100*scale, 100*scale, false,function ()
+			
+			Notifier.dispatchCmd(cmd_shisanshui.SpecialCardType, tbl)
+		end,1401,true)
+	end
+end
+
+function this.HideSpecialCardIcon()
+	for i =1 , 6 do
+		special_card_type["special_card_type_"..i].gameObject:SetActive(false)
+		special_card_type_fengshu[i].gameObject:SetActive(false)
+	end
+end
+
+function this.HideSpecialCardAnim()
+	
+	for i =1 , 6 do
+		special_card_anim["special_card_type_"..i].gameObject:SetActive(false)
+	end
+end
+
+function this.SetBeiShuBtnCount()
+	local OnAskMultData = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().OnAskMultData
+	for i = 1,5 do
+		local childs =  child( compTbl.xiapao,tostring(i))
+		if childs ~= nil then
+			if tonumber(i) <= #OnAskMultData._para.optional then
+				childs.gameObject:SetActive(true)
+				local label = componentGet(child(childs.gameObject.transform,"UILabel"),"UILabel")
+				label.text = tostring(OnAskMultData._para.optional[i]).."分"
+				
+			else
+				childs.gameObject:SetActive(false)
+			end
+		end
+	end
+	local gridComp =  compTbl.xiapao.gameObject:GetComponent(typeof(UIGrid))
+	if gridComp ~= nil then
+		gridComp:Reposition()
+	else
+		Trace("===选择倍数UIGrid为空！===")
+	end
+end
+
+--显示闲家倍数
+function this.SetBeiShu(viewSeat, beishu)
+	if this.playerList[viewSeat] ~= nil then
+		this.playerList[viewSeat]:SetBeiShu(beishu)
+	end 
+end
+
+--设置庄家开牌完成标志
+function this.SetFinishState(isFinsh,position)
+	
+	widgetTbl.finish.gameObject:SetActive(isFinsh)
+	if position ~= nil then
+		widgetTbl.finish.gameObject.transform.localPosition = Vector3.New(position.x -40,position.y - 35,position.z)
+	end
+	if isFinsh == true then
+		--coroutine.start(function() 
+		local scale = 0.8
+		 animations_sys.PlayAnimationByScreenPosition(widgetTbl.finish.transform, 0,0,data_center.GetResRootPath().."/effects/niuniu_special_card", "wancheng", 70, 70, false,function ()
+			widgetTbl.finishIcon.gameObject:SetActive(true)
+			widgetTbl.finishIcon.gameObject.transform.localPosition = Vector3(0,0,0)
+			local position = widgetTbl.finishIcon.gameObject.transform.localPosition
+			widgetTbl.finishIcon.gameObject.transform.localPosition = Vector3(position.x + 15.5*scale ,position.y - 4.6*scale,position.z)
+		end,1401,true)
+
+	else
+		widgetTbl.finishIcon.gameObject:SetActive(false)
+	end
+end
+
+--语音聊天模块
+function this.InitChatSound()
+	widgetTbl.SoundPanel = child(widgetTbl.panel, "Anchor_Center/sound")
+	if widgetTbl.SoundPanel~=nil then
+	widgetTbl.SoundPanel.gameObject:SetActive(false)
+	end
+	widgetTbl.SoundSendPanel = child(widgetTbl.SoundPanel,"send")
+	if widgetTbl.SoundSendPanel~=nil then
+	widgetTbl.SoundSendPanel.gameObject:SetActive(true)
+	end
+	widgetTbl.SoundSendQuan = child(widgetTbl.SoundSendPanel,"quan")
+	if widgetTbl.SoundSendQuan~=nil then
+	widgetTbl.SoundSendQuan.gameObject:SetActive(false)   
+	widgetTbl.spriteQuan = componentGet(widgetTbl.SoundSendQuan.transform,"UISprite")
+	end
+
+	widgetTbl.SoundCancelSendPanel = child(widgetTbl.SoundPanel,"cancelSend")
+	if widgetTbl.SoundCancelSendPanel~=nil then
+	widgetTbl.SoundCancelSendPanel.gameObject:SetActive(false)
+	end
+end
+
+function this.SetSoundPanel(state)
+	widgetTbl.SoundPanel.gameObject:SetActive(state)
+end
+
+function this.SetSoundSendPanel(state)
+	widgetTbl.SoundSendPanel.gameObject:SetActive(state)
+end
+
+function this.SetSoundCancelSendPanel(state)
+	widgetTbl.SoundCancelSendPanel.gameObject:SetActive(state)
+end
+
+function this.SetSoundSendQuanAnimation(time,callback)
+  coroutine.start(function()
+      if widgetTbl.spriteQuan~=nil then
+        widgetTbl.spriteQuan.fillAmount = 1
+      end      
+      if callback ~= nil then
+        callback()
+        callback = nil
+      end
+    end)
+end
+
+  local fillInternalTime = 0.3
+  local timerSoundSend_Elapse = nil --消息时间间隔  
+  local fillSize = 0
+  function this.LimitRecodeSoundShow()
+    this.LimitRecodeSoundHide()
+    
+    this.SetSoundPanel(true)
+    this.SetSoundSendPanel(true)
+    this.SetSoundCancelSendPanel(false)
+    widgetTbl.SoundSendQuan.gameObject:SetActive(true)
+    widgetTbl.spriteQuan.fillAmount=0
+    fillSize = 0
+
+    timerSoundSend_Elapse = Timer.New(this.OnTimerSoundSend_Proc , fillInternalTime, -1)
+    timerSoundSend_Elapse:Start()
+  end
+
+  function this.LimitRecodeSoundHide()
+    if timerSoundSend_Elapse ~= nil then
+        timerSoundSend_Elapse:Stop()  
+        timerSoundSend_Elapse = nil     
+    end
+  end
+
+  function this.OnTimerSoundSend_Proc()
+    fillSize = fillSize + fillInternalTime/gvoice_sys.GetMaxRecordTime()
+    if fillSize < 1 then
+      if widgetTbl.spriteQuan~=nil then
+        widgetTbl.spriteQuan.fillAmount=fillSize
+      end
+    else
+      this.isMaxTimeSend = true
+      this.RecodeSoundEnd()
+    end
+  end
+
+  --录音结束
+  function this.RecodeSoundEnd()
+    this.LimitRecodeSoundHide()
+    this.SetSoundPanel(false)
+    Trace("录音结束，执行后续逻辑-------------------------------")
+
+    gvoice_sys.StopRecording()        -- 结束录音
+    gvoice_sys.AddRecordedFileLst()   -- 上传文件
+  end
+
+  --开始录音
+  function this.RecodeSoundStart()
+  	Trace("录音开始,执行开始录音逻辑-------------------------------")
+  	local ret = gvoice_sys.StartRecording(global_define.recordFilePath)   --开始录音
+
+  	Trace("ret ----------------------"..tostring(ret))
+  	if ret then
+    	this.LimitRecodeSoundShow()    	
+	end
+	return ret
+  end
+
+  --取消录音
+  function this.RecodeSoundCancel()
+    this.LimitRecodeSoundHide()
+    this.SetSoundPanel(false)
+    Trace("录音取消,执行取消录音逻辑-------------------------------")
+    gvoice_sys.StopRecording()   -- 结束录音
+  end
+
+this.isCancel = false
+this.isMaxTimeSend = false
+local isStart = false
+--[[
+语音按钮长按
+]]
+function this.Onbtn_voicePressed(self, go, isPress)
+  --Trace("isPress:"..tostring(isPress))
+  if isPress and (not isStart)then
+  	isStart = true
+    this.isCancel = false
+    this.isMaxTimeSend = false
+    this.RecodeSoundStart()
+  else
+    if this.isCancel == false and this.isMaxTimeSend == false then
+      if fillSize*gvoice_sys.GetMaxRecordTime() < gvoice_sys.GetMinRecordTime() then
+        UI_Manager:Instance():FastTip("说话时间过短，请重新说话")
+        this.RecodeSoundCancel()
+      else
+        this.RecodeSoundEnd()
+      end
+    end
+    isStart = false
+  end
+end
+
+this.isDrag = false
+function this.AddSoundDragEventListener(trans)
+  if not IsNil(trans) then
+    addDragCallbackSelf(trans, function (go, delta)
+      if not this.isDrag then
+        if delta.y > 3 then 
+          this.isDrag = true      
+        end
+      else
+        if widgetTbl.SoundSendPanel.gameObject.activeSelf == true then
+          widgetTbl.SoundSendPanel.gameObject:SetActive(false)
+        end
+        if widgetTbl.SoundCancelSendPanel.gameObject.activeSelf == false then
+          widgetTbl.SoundCancelSendPanel.gameObject:SetActive(true)
+        end
+      end
+    end)
+
+    addDragEndCallbackSelf(trans, function (go)
+        if this.isDrag then
+          if Input.mousePosition.y > 2*Screen.height/5 then           
+            this.isCancel = true
+            if this.isMaxTimeSend ==false then
+              this.RecodeSoundCancel()
+            end
+          end
+          this.isDrag = false
+        end
+    end)
+  end
+end
+
+function this.OnMsgVoiceInfoHandler(fileID)
+  Trace("fileID---------------------"..tostring(fileID))
+  niuniu_play_sys.ChatReq(3, tostring(fileID), nil)
+end
+
+function this.OnMsgVoicePlayEnd(viewSeat)
+ 	this.playerList[viewSeat]:SetSoundTextureState(false)
+end
+
+function this.OnMsgVoicePlayBegin(viewSeat)
+	this.playerList[viewSeat]:SetSoundTextureState(true)
+end
+
+function this.OnMsgChatText(para)
+  viewSeat = para["viewSeat"]
+  contentType = para["contentType"]
+  content = para["content"]
+  givewho = para["givewho"]
+  this.playerList[viewSeat]:SetChatText(content)
+end
+
+function this.OnMsgChatImaga(para)
+  viewSeat = para["viewSeat"]
+  contentType = para["contentType"]
+  content = para["content"]
+  givewho = para["givewho"]
+  this.playerList[viewSeat]:SetChatImg(content)
+end
+
+function this.OnMsgChatInteractin(para)
+  viewSeat = para["viewSeat"]
+  contentType = para["contentType"]
+  content = para["content"]
+  givewho = para["givewho"]
+  this.playerList[givewho]:ShowInteractinAnimation(viewSeat,content)
+end

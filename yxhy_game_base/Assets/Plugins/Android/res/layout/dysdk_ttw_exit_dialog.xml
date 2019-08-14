@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl_exit"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/dysdk_sdk_logout_bg"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:src="@drawable/dysdk_notice_logo" />
+        
+        <View 
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            android:layout_marginBottom="30dp"
+            android:background="@drawable/dysdk_sdk_line" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/dysdk_ui_white"
+            android:text="确定退出当前游戏?"
+            android:textSize="20sp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_margin="20dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/btn_resume"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:gravity="center"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/dysdk_sdk_cyan_btn_bg"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:text="继续游戏"
+            android:textColor="@color/dysdk_ui_white" />
+        
+        <Button
+            android:id="@+id/btn_exit"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:gravity="center"
+            android:layout_marginLeft="20dp"
+            android:background="@drawable/dysdk_sdk_orange_btn_bg"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:text="确定退出"
+            android:textColor="@color/dysdk_ui_white" />
+    </LinearLayout>
+
+</LinearLayout>

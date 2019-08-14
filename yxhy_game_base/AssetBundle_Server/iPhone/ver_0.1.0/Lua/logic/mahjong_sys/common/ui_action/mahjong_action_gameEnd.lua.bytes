@@ -1,0 +1,14 @@
+local base = require "logic/mahjong_sys/common/mahjong_action_base"
+local mahjong_action_gameEnd = class("mahjong_action_gameEnd", base)
+
+local mahjong_ui = mahjong_ui
+
+function mahjong_action_gameEnd:Execute(tbl)
+	roomdata_center.isStart = false
+	roomdata_center.beginSendCard = false
+	mahjong_ui:GameEnd()
+	--roomdata_center.ClearData()
+	--mahjong_ui:HideHeadEffect()
+end
+
+return mahjong_action_gameEnd

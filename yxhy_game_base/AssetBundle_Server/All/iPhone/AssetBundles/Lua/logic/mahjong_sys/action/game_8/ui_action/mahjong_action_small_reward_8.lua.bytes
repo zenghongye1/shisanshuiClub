@@ -1,0 +1,358 @@
+----河南麻将小结算
+local base = require "logic.mahjong_sys.action.common.mahjong_action_base"
+local mahjong_action_small_reward_8 = class("mahjong_action_small_reward_8", base)
+local reward_ui_path = "logic.mahjong_sys.ui_mahjong.window.mahjong_small_reward_ui"
+
+local data_class = require "logic/mahjong_sys/data/mahjong_data_class/mahjong_small_reward_data"
+local player_data_class = require "logic/mahjong_sys/data/mahjong_data_class/mahjong_small_reward_player_data"
+
+local lib_hupai_score = require "logic/mahjong_sys/action/common_2/lib/lib_hupai_score"
+local lib_gang_score = require "logic/mahjong_sys/action/common_2/lib/lib_gang_score"
+local lib_beishu = require "logic/mahjong_sys/action/common_2/lib/lib_beishu"
+local lib_common = require "logic/mahjong_sys/action/common_2/lib/lib_common"
+local lib_common_c = nil
+
+function mahjong_action_small_reward_8:CleanUp()
+	require(reward_ui_path)
+end
+
+function mahjong_action_small_reward_8:Execute(tbl)	
+	Trace("tbl------------------------------"..GetTblData(tbl))
+	self:CleanUp()
+
+	local para = tbl._para
+	local banker = para.banker
+	local curr_ju = para.curr_ju
+	local ju_num = para.ju_num
+	local dice = para.dice
+	local rewards = para.rewards --包含4个玩家信息的table
+	local who_win = para.who_win[1]
+	local win_type = para.win_type
+	local rid = para.rid
+	local bGangAddNoWin = para.bGangAddNoWin   -- 是否计算杠分
+	local isHadHangFen = false	
+
+	local win_viewSeat = 0
+ 	if who_win~=nil and who_win>0 and who_win<5 then
+ 		win_viewSeat = self.gvblnFun(who_win)
+ 	end
+ 	local data = data_class:create()
+ 	data = self:GetTitleInfo(data, win_type, win_viewSeat)
+ 	data.specialCardType = self.cfg.specialCardSpriteName
+ 	data.specialCardValues = roomdata_center.specialCard or {}
+
+ 	lib_common_c = lib_common:create(self.mode)
+
+	data.playersInfo ={}
+ 	for i=1, roomdata_center.MaxPlayer() do
+ 		local viewSeat = self.gvblnFun(i)
+ 		local playerInfo = player_data_class:create()
+ 		data.playersInfo[viewSeat] = self:GetPlayerInfo(playerInfo, rewards, i, banker, win_type, who_win, bGangAddNoWin)
+ 	end 	
+
+ 	local win_info
+ 	local byFanNumber = 0
+	local byFanType = 0
+	local byCount = 0
+ 	if who_win~=nil and who_win>0 and who_win<5 then
+ 		win_info = rewards[who_win].win_info
+ 		if win_info then
+ 			local fanInfo = win_info.nFanDetailInfo
+		 	if fanInfo then
+			 	for i,v in ipairs(fanInfo) do
+			 		if v.byFanType > byFanType then
+			 			if v.byFanNumber > byFanNumber then
+			 				byFanNumber = v.byFanNumber
+			 				byFanType = v.byFanType
+			 				byCount = v.byCount
+			 			end
+			 		end
+			 	end
+			end
+		else
+ 			logError("win_info nil")
+ 		end
+ 	end
+	--现在加番类型不播报牌型  后续有需要再播  
+ 	self:PlayAnimationAndShowUI(data, win_type, byFanType, win_viewSeat, function(_data)
+		UI_Manager:Instance():ShowUiForms("mahjong_small_reward_ui",UiCloseType.UiCloseType_CloseNothing,nil,_data)
+ 	end)
+end
+
+
+function mahjong_action_small_reward_8:GetHandCard(rewards,win_viewSeat,viewSeat)
+	local handCards = rewards.cards
+	local win_card = rewards.win_card[1]
+	local win_type = rewards.win_type
+
+	if (win_type == "selfdraw" and win_viewSeat==viewSeat) then
+		local lastItem = nil
+		for j,v in ipairs(handCards) do
+			if v == win_card then
+				lastItem = table.remove(handCards,j)
+				break
+			end
+		end
+		if lastItem == nil then
+			logError("自摸手牌找不到胡的牌")
+		end
+		table.sort(handCards)
+		--金前置
+		for j=1,#handCards do
+		  if roomdata_center.CheckIsSpecialCard(handCards[j]) then
+		      local index = j-1
+		      while index > 0 and not roomdata_center.CheckIsSpecialCard(handCards[index]) do 
+		          local temp = handCards[index]
+		          handCards[index] = handCards[index+1]
+		          handCards[index+1] = temp
+		          index = index -1
+		      end
+		  end
+		end
+		table.insert(handCards,lastItem)
+	else
+		table.sort(handCards)
+		--金前置
+		for j=1,#handCards do
+		  if roomdata_center.CheckIsSpecialCard(handCards[j]) then
+		      local index = j-1
+		      while index > 0 and not roomdata_center.CheckIsSpecialCard(handCards[index]) do 
+		          local temp = handCards[index]
+		          handCards[index] = handCards[index+1]
+		          handCards[index+1] = temp
+		          index = index -1
+		      end
+		  end
+		end
+      	if win_viewSeat==viewSeat then
+			table.insert(handCards,win_card)
+		end
+	end
+	return handCards
+end
+function mahjong_action_small_reward_8:CheckIsBank(win_type,who_win,i,rewards,banker) 
+    if win_type=="gunwin" then
+        if who_win==banker or rewards[banker].nJiePao==1 then
+            if i==banker or who_win==i or rewards[i].nJiePao==1 then
+                return true
+            end
+        else
+            return false
+        end
+    else
+        if who_win==banker then
+            return true
+        else
+            if i==banker or who_win==i then
+                return true
+            else
+                return false 
+            end
+        end
+    end
+end
+
+function mahjong_action_small_reward_8:GetTitleInfo(data, win_type, win_viewSeat)
+	data.isWinBG = false
+ 	data.winViewSeat = win_viewSeat
+ 	if win_type == "huangpai" then
+		data.titleIndex = 10003
+		data.isHuang = true
+	elseif win_viewSeat == 1 then
+		data.titleIndex = 10001
+		data.isWinBG = true
+	else
+		data.titleIndex = 10002
+	end
+	return data
+end
+
+function mahjong_action_small_reward_8:GetPlayerInfo(playerInfo, rewards, i, banker, win_type, who_win, bGangAddNoWin)
+	local win_viewSeat = self.gvblnFun(who_win)
+
+	local isBanker = i==banker
+	local viewSeat = self.gvblnFun(i)
+	playerInfo.nickname = room_usersdata_center.GetUserByLogicSeat(i).name
+	playerInfo.totalScore = rewards[i].all_score
+	if isBanker then
+		playerInfo.isBanker = true
+	else
+		playerInfo.isBanker = false
+	end
+	playerInfo.headUrl = room_usersdata_center.GetUserByLogicSeat(i).headurl
+	playerInfo.headType = room_usersdata_center.GetUserByLogicSeat(i).imagetype
+	playerInfo.handCards = self:GetHandCard(rewards[i], win_viewSeat, viewSeat)
+	playerInfo.valueList = self:GetOperValueList(rewards[i].combineTile)
+    if win_type == "huangpai" then
+        playerInfo.isHuang=true
+    else
+        playerInfo.isHuang=false
+    end
+	if rewards[i].nJiePao then
+		playerInfo.nJiePao = rewards[i].nJiePao
+	end
+	local scoreItem = self:GetScoreItem(rewards, win_type, who_win, i, banker, bGangAddNoWin)
+ 	playerInfo.scoreItem = scoreItem
+ 	playerInfo.pao = self:GetPaoInfo(rewards, i)
+ 	playerInfo.point = tostring(rewards[i].all_score)
+ 	return playerInfo
+end
+
+function mahjong_action_small_reward_8:GetPaoInfo(rewards, i)
+	local paoInfo = nil
+ 	if lib_common_c:GetSupportXiaPao() and rewards[i].xiapao and rewards[i].xiapao >= 0 then
+ 		paoInfo = rewards[i].xiapao
+ 	end
+ 	return paoInfo
+end
+
+function mahjong_action_small_reward_8:GetOperValueList( combineTile )
+	local list = {}
+	for i,operData in ipairs(combineTile) do
+		local valueList = {}
+		if operData.ucFlag == 16 then
+			table.insert(valueList,operData.card)
+	        table.insert(valueList,operData.card+1)
+	        table.insert(valueList,operData.card+2)
+		elseif operData.ucFlag == 17 then
+			table.insert(valueList,operData.card)
+	        table.insert(valueList,operData.card)
+	        table.insert(valueList,operData.card)
+		elseif operData.ucFlag == 18 then
+			table.insert(valueList,operData.card)
+	        table.insert(valueList,operData.card)
+	        table.insert(valueList,operData.card)
+	        table.insert(valueList,operData.card)
+		elseif operData.ucFlag == 19 then
+			table.insert(valueList,0)
+	        table.insert(valueList,0)
+	        table.insert(valueList,0)
+	        table.insert(valueList,operData.card)
+		elseif operData.ucFlag == 20 then
+			table.insert(valueList,operData.card)
+	        table.insert(valueList,operData.card)
+	        table.insert(valueList,operData.card)
+	        table.insert(valueList,operData.card)
+		end
+		table.insert(list,valueList)
+	end
+	return list
+end
+
+function mahjong_action_small_reward_8:GetScoreItem(rewards, win_type, who_win, i, banker, bGangAddNoWin)
+	local scoreItem = {}
+
+	local base = 0
+	local pao_type = 1
+	-- local lib_beishu_c = lib_beishu:create(self.mode)
+	-- local beishu = lib_beishu_c:CaculateBeishuByWinType(win_type)
+	-- if who_win ~= nil then	
+	-- 	if beishu == 1 then
+	-- 		local fanshu = lib_beishu_c:CaculateBeishuByWinInfo(rewards[who_win].win_info)
+	-- 		if fanshu > 0 then
+	-- 			beishu = beishu * fanshu
+	-- 		end
+	-- 	else
+	-- 		beishu = beishu + lib_beishu_c:CaculateBeishuByWinInfo(rewards[who_win].win_info)		
+	-- 	end			
+	-- end 
+	local isBaoci = false       -- 是否存在包次玩家
+	local maxPlayer = roomdata_center.MaxPlayer()
+	local isHadHangFen = false
+
+ 	if lib_common_c:GetSupportDealerAdd() then
+ 		--if win_type ~= "gunwin" or (rewards[i].nJiePao and rewards[i].nJiePao == 1) then
+        if self:CheckIsBank(win_type,who_win,i,rewards,banker)  then 
+		 	local item_dealer = {}
+		 	item_dealer.des = "庄家加底" 				 	
+		 	table.insert(scoreItem, item_dealer) 
+        end
+ 		--end
+ 	end	
+
+ 	local paoInfo = self:GetPaoInfo(rewards, i)
+ 	if paoInfo and paoInfo > 0 then
+ 		local item_pao = {}
+ 		item_pao.des = "跑分"..paoInfo.."分"
+ 		table.insert(scoreItem,item_pao)
+ 	end
+
+	local lib_hupai_score_c = lib_hupai_score:create(self.mode)
+	if win_type == "huangpai" then
+		ui_sound_mgr.PlaySoundClip(mahjong_path_mgr.GetMjCommonSoundPath("audio_liuju"))  
+		local item_huang = lib_hupai_score_c:GetHuangpaiScore(bGangAddNoWin)		
+		if item_huang ~= nil then
+			table.insert(scoreItem, item_huang)
+		end		
+		isHadGangFen = lib_common_c:GetGangAddNoWin(bGangAddNoWin)
+	else	
+		isHadGangFen = true	
+	 	local item_hu = lib_hupai_score_c:GetHuPaiScore(rewards, banker, who_win, win_type, i, base, beishu, pao_type)
+	 	if item_hu ~= nil then
+	 		table.insert(scoreItem, item_hu)
+	 	end
+ 	end
+
+ 	------------------------------------------杠分结算-----------------------------------------------
+ 	local lib_gang_score_c = lib_gang_score:create(self.mode)
+ 	local gangScoreTbl = lib_gang_score_c:GetGangScore(isHadGangFen, rewards, banker, i, base, 1, pao_type) 	
+ 	for i,v in ipairs(gangScoreTbl) do
+ 		table.insert(scoreItem, v)
+ 	end
+
+ 	return scoreItem
+end
+
+
+function mahjong_action_small_reward_8:PlayAnimationAndShowUI(data, win_type, byFanType,win_viewSeat,callback)
+ 	if win_type == "huangpai" then
+		mahjong_effectMgr:PlayUIEffectById(10003,mahjong_ui.playerList[1].transform.parent)
+		self.showUI_c = coroutine.start(function ()
+		 	coroutine.wait(1)
+			callback(data)
+		end)
+ 	else
+		if byFanType>0 then
+
+			if self.config.byFanType[byFanType] then
+				byFanType = self.config.byFanType[byFanType]
+			end
+
+			for i=1,1 do			
+				local hutypeConfig = config_mgr.getConfig("cfg_hutypehenan",byFanType)
+				if hutypeConfig == nil then
+					logError("byFanType "..byFanType)
+					break
+				end
+				local artId = hutypeConfig.artId
+				if artId == nil then
+					logError("artId "..artId)
+					break
+				end
+
+				if not self.config.ignoreSound[byFanType] then
+					local fanSound
+					local fanConfig = config_mgr.getConfig("cfg_artconfig",artId)
+					if fanConfig then
+						fanSound = fanConfig.soundName
+					end
+
+					if fanSound then
+						ui_sound_mgr.PlaySoundClip(mahjong_path_mgr.GetMjSoundPath(fanSound))
+					end
+				end
+
+	 			mahjong_effectMgr:PlayUIEffectById(artId,mahjong_ui.playerList[win_viewSeat].transform.parent)
+ 			end
+			self.showUI_c = coroutine.start(function ()
+			 	coroutine.wait(1.5)
+				callback(data)
+			end)
+ 		else
+			callback(data)
+		end
+ 	end
+end
+
+return mahjong_action_small_reward_8
+

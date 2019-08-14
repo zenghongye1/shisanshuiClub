@@ -1,0 +1,801 @@
+local ClubModel = class("ClubModel")
+require ("logic/club_sys/ClubUtil")
+local http_request_interface = http_request_interface
+local HttpCmdName = HttpCmdName
+local UIManager = UI_Manager:Instance()
+local ClubMemberState = ClubMemberState
+local FirstKey = "CLUB_FRIST_PLAY"
+local LastClubIDKey = "LAST_CLUB_ID"
+local UIManager = UI_Manager:Instance() 
+
+function ClubModel:ctor()
+	self.locationTab = {}
+	-- 第一版使用，用于遍历显示
+	self.locationList = {}
+	-- 代理商
+	self.agentInfo = nil
+	self.firstPlay = false
+
+	self.clubList = {}
+	self.clubMap = {}
+	-- 上次登录id
+	self.lastClubId = nil
+	self.currentClubInfo = nil
+	self.currentClubRoomInfos = nil -- 当前俱乐部的开房信息
+
+	-- 只保留一份
+	self.currentClubMemberList = {}
+	self.currentApplyMemberList = {}
+
+	-- 新加入的俱乐部
+	self.newCidMap = {}
+	-- cid ---> true     俱乐部是否有新人加入
+	self.newApplyMap = {}
+end
+
+function ClubModel:Init()
+	self.control = ControlManager:GetCtrl("ClubControl")
+	Notifier.regist(HttpCmdName.ClubBindAgent, self.OnResBindAgent, self)
+	Notifier.regist(HttpCmdName.ClubGetAgentInfo, self.OnResGetAgentInfo, self)
+	Notifier.regist(HttpCmdName.ClubCreate, self.OnResCreateClub, self)
+	-- Notifier.regist(HttpCmdName.ClubApply, self.OnResApplyClub, self)
+	Notifier.regist(HttpCmdName.ClubGetApplyList, self.OnResGetClubApplyList, self)
+	Notifier.regist(HttpCmdName.ClubGetClubUser, self.OnResGetClubUser, self)
+	-- Notifier.regist(HttpCmdName.ClubGetUserClubList, self.OnResGetUserClubList, self)
+	-- Notifier.regist(HttpCmdName.ClubGetAgentClubList, self.OnResGetAgentClubList, self)
+	Notifier.regist(HttpCmdName.ClubSetManager, self.OnResSetManager, self)
+	Notifier.regist(HttpCmdName.ClubKickClubUser, self.OnResKickClubUser, self)
+	-- Notifier.regist(HttpCmdName.ClubQuitClub, self.OnResQuitClub, self)
+	Notifier.regist(HttpCmdName.ClubEditClub, self.OnResEditClub, self)
+	-- Notifier.regist(HttpCmdName.ClubGetRoomList, self.OnResGetRoomList, self)
+	Notifier.regist(HttpCmdName.ClubGetUserAllClubList, self.OnResGetUserAllClubList, self)
+	Notifier.regist(HttpCmdName.ClubSearchClubList, self.OnResSearchClubList, self)
+
+	Notifier.regist(GameEvent.LoginSuccess, self.OnLoginSuccess, self)
+	Notifier.regist(GameEvent.OnPushMsg, self.OnPushMsg, self)
+	Notifier.regist(GameEvent.OnChangeScene, self.OnChangeScene, self)
+end
+
+function ClubModel:Clear()
+	self.agentInfo = nil
+	self.firstPlay = true
+
+	self.clubList = {}
+	self.clubMap = {}
+	-- 上次登录id
+	self.lastClubId = nil
+	self.currentClubInfo = nil
+	self.currentClubRoomInfos = nil -- 当前俱乐部的开房信息
+
+	-- 只保留一份
+	self.currentClubMemberList = {}
+	self.currentApplyMemberList = {}
+
+	
+	self.newApplyMap = {}
+	self.newCidMap = {}
+end
+
+
+function ClubModel:OnPushMsg(table)
+	if table.type == 10010 then	-- 俱乐部房间信息变化
+		self:ReqGetRoomList()
+	elseif table.type == 10011 then		-- 申请结果处理
+		if table.data.type == 1 then
+			-- UIManager:FastTip("恭喜你加入俱乐部" .. table.data.cname)
+			-- self:ResGetUserAllClubList(true)
+			-- if table.data.ctype == 1 then
+			-- 	UIManager:CloseUiForms("ClubInfoUI")
+			-- 	UIManager:CloseUiForms("ClubSelectUI")
+			-- end
+			self.newCidMap[table.data.cid] = true
+			self:DealClubAccept(table.data.cid, table.data.ctype, table.data.cname)
+			if table.data.ctype == 1 then
+				UIManager:CloseUiForms("ClubInputUI")
+				-- UIManager:CloseUiForms("ClubInfoUI")
+				-- UIManager:CloseUiForms("ClubSelectUI")
+			end
+			Notifier.dispatchCmd(GameEvent.OnEnterNewClub)
+		end
+		self:CheckClearFristState()
+
+	elseif table.type == 10012 then		-- 自己被踢出
+		UIManager:FastTip("你被" .. table.data.cname .. "踢出")
+		self:RemoveClub(table.data.cid)
+	elseif table.type == 10013 then   -- 请求所有俱乐部信息
+		self:ResGetUserAllClubList(true)
+	elseif table.type == 10014 then
+		self.newApplyMap[table.data.cid] = true
+		if self.currentClubInfo ~= nil and self.currentClubInfo.cid == table.data.cid then
+			Notifier.dispatchCmd(GameEvent.OnPlayerApplyClubChange)
+		end
+	end
+end
+
+function ClubModel:RemovePlayerApply(cid)
+	self.newApplyMap[cid] = nil
+	Notifier.dispatchCmd(GameEvent.OnPlayerApplyClubChange)
+end
+
+function ClubModel:CheckShowApplyHint()
+	if self.currentClubInfo == nil then
+		return false
+	end
+	if not self:IsClubManager() then
+		return false
+	end
+	return self.newApplyMap[self.currentClubInfo.cid] == true
+end
+
+function ClubModel:DealClubAccept(cid, ctype ,cname)
+	self:ReqGetClubInfoByCid(cid, function(clubInfo) 
+		if game_scene.getCurSceneType() ~= scene_type.HALL then
+			return
+		end
+		local func = function ()
+			self:SetCurrentClubInfo(clubInfo)
+			UIManager:CloseUiForms("ClubInfoUI")
+			UIManager:CloseUiForms("ClubSelectUI")
+			hall_ui:ShowClub()
+		end
+		if ctype == 0 then
+			MessageBox.ShowYesNoBox(LanguageMgr.GetWord(10081, cname), function() 
+				func()		
+			end)
+		else
+			func()
+		end
+	end)
+end
+
+
+function ClubModel:OnChangeScene()
+	if game_scene.getCurSceneType() == scene_type.LOGIN then
+		self:Clear()
+	end
+end
+
+
+function ClubModel:OnLoginSuccess()
+	ClubUtil.InitLocations()
+	self.selfPlayerId = data_center.GetLoginUserInfo().uid
+	self:LoadNewPlayerState()
+	self:LoadLastClubId()
+	self:ReqGetAgentInfo()
+	self:ResGetUserAllClubList()
+end
+
+function ClubModel:LoadNewPlayerState()
+	if PlayerPrefs.HasKey(FirstKey .. self.selfPlayerId) then
+		self.firstPlay = false
+	end
+end
+
+function ClubModel:LoadLastClubId()
+	if PlayerPrefs.HasKey(LastClubIDKey .. self.selfPlayerId) then
+		self.lastClubId = PlayerPrefs.GetInt(LastClubIDKey .. self.selfPlayerId)
+	else
+		self.lastClubId = nil
+	end
+end
+
+function ClubModel:SaveLastClubId(id)
+	if self.lastClubId == id then
+		return
+	end
+	self.lastClubId = id
+	PlayerPrefs.SetInt(LastClubIDKey .. self.selfPlayerId, id)
+end
+
+function ClubModel:CheckClearFristState()
+	if self.firstPlay == false then
+		return
+	end
+	self.firstPlay = false
+	PlayerPrefs.SetInt(FirstKey .. self.selfPlayerId, 1) 
+	Notifier.dispatchCmd(GameEvent.OnClearFristState)
+end
+
+--绑定代理商   "exid":推广码
+function ClubModel:ReqBindAgent(exid)
+	local param = {}
+	param.exid = exid
+	http_request_interface.SendHttpRequest(HttpCmdName.ClubBindAgent, param)
+end
+-- agentInfo 暂时不抽成类
+--{"uid":2322989,"appid":4,"bid":1,"name":"","status":1,"ctime":1511968543,"parentid":0,"agtype":1,"sharerate":50,"naid":0}
+function ClubModel:OnResBindAgent(msgTab)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	UIManager:FastTip(LanguageMgr.GetWord(10045))
+	UIManager:CloseUiForms("ClubInputUI")
+	self:CheckClearFristState()
+	if msgTab.agent == 0 then
+		self.agentInfo = nil
+	else
+		self.agentInfo = msgTab.agent
+	end
+	Notifier.dispatchCmd(GameEvent.OnClubAgentChange)
+	-- 显示俱乐部创建界面
+	UIManager:ShowUiForms("ClubCreateUI")
+end
+
+-- 获取代理商信息
+function ClubModel:ReqGetAgentInfo()
+	http_request_interface.SendHttpRequest(HttpCmdName.ClubGetAgentInfo, nil)
+end
+
+function ClubModel:OnResGetAgentInfo(msgTab)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	if msgTab.agentInfo == 0 then
+		self.agentInfo = nil
+	else
+		self.agentInfo = msgTab.agent
+	end
+	Notifier.dispatchCmd(GameEvent.OnClubAgentChange)
+end
+
+
+-- 创建俱乐部
+function ClubModel:ReqCreateClub(name, gidList, content, locationId, icon)
+	local param = {}
+	param.cname = name
+	param.content = content
+	param.position = locationId
+	param.gids = gidList
+	param.icon = icon
+	http_request_interface.SendHttpRequest(HttpCmdName.ClubCreate, param)
+end
+
+function ClubModel:OnResCreateClub(msgTab)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	UIManager:FastTip(LanguageMgr.GetWord(10021, msgTab.club.cname))
+	self:CheckClearFristState()
+	self:AddOrUpdateClub(msgTab.club)
+	self:SetCurrentClubInfo(msgTab.club)
+end
+
+
+-- 加入俱乐部
+function ClubModel:ReqApplyClub(shid, ctype)
+	local param = {}
+	param.shid = shid 
+	http_request_interface.SendHttpRequestWithCallback(HttpCmdName.ClubApply, param, 
+		function(msgTab)
+			self:OnResApplyClub(msgTab, ctype)
+		end, nil)
+end
+
+function ClubModel:OnResApplyClub(msgTab, ctype)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	UIManager:CloseUiForms("ClubInputUI")
+	if ctype == nil or ctype == 0 then
+		UIManager:FastTip(LanguageMgr.GetWord(10042))
+	end
+	self:CheckClearFristState()
+	-- addplayer -> 
+end
+
+-- 获得俱乐部申请列表
+function ClubModel:ReqGetClubApplyList(cid, dontShow)
+	if dontShow == nil then
+		dontShow = true
+	end
+	local param = {}
+	param.cid = cid 
+	http_request_interface.SendHttpRequest(HttpCmdName.ClubGetApplyList, param, dontShow)
+end
+
+function ClubModel:OnResGetClubApplyList(msgTab)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	self.currentApplyMemberList = msgTab.applylist 
+	Notifier.dispatchCmd(GameEvent.OnClubApplyMemberUpdate, nil)
+end
+
+--处理俱乐部申请信息  {"cpid":申请id,"type":处理类型0拒绝1同意}
+function ClubModel:ReqDealClubApply(cpid, type)
+	local param = {}
+	param.cpid = cpid
+	param.type = type
+	http_request_interface.SendHttpRequestWithCallback(HttpCmdName.ClubDealClubApply, param, 
+		function(tab) 
+			self:OnResDealClubApply(tab, cpid, type)
+		end, nil)
+end
+
+function ClubModel:OnResDealClubApply(msgTab, cpid, type)
+	if self.currentApplyMemberList == nil then
+		return 
+	end
+	local player = nil
+	for i = 1, #self.currentApplyMemberList do
+		if self.currentApplyMemberList[i].cpid == cpid then
+			player = self.currentApplyMemberList[i]
+			player.cpid = nil
+			player.logintime = player.atime
+			table.remove(self.currentApplyMemberList, i)
+			break
+		end
+	end
+	if player == nil then
+		return
+	end
+	if type == 1 then
+		if self.currentClubMemberList == nil then
+			self.currentClubMemberList = {}
+		end
+		table.insert(self.currentClubMemberList, player)
+		Notifier.dispatchCmd(GameEvent.OnClubMemberUpdate)
+	end
+	Notifier.dispatchCmd(GameEvent.OnClubApplyMemberUpdate)
+end
+
+--获得俱乐部成员列表 {"cid":俱乐部真实id}
+function ClubModel:ReqGetClubUser(cid, dontShow)
+	if dontShow == nil then
+		dontShow = true
+	end
+	local param = {}
+	param.cid = cid
+	http_request_interface.SendHttpRequest(HttpCmdName.ClubGetClubUser, param, dontShow)
+end
+
+function ClubModel:OnResGetClubUser(msgTab)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	self.currentClubMemberList = msgTab.userlist
+	table.sort(self.currentClubMemberList, function(a, b) return self:MemberSortFunc(a,b) end)
+	Notifier.dispatchCmd(GameEvent.OnClubMemberUpdate, nil)
+end
+
+function ClubModel:MemberSortFunc(playerA, playerB)
+	if self.currentClubInfo == nil then
+		return false
+	end
+	if playerA.uid == playerB.uid then
+		return false
+	end
+	if self:CheckIsClubCreater(nil, playerA.uid) then
+		return true
+	end
+	if self:CheckIsClubCreater(nil, playerB.uid) then
+		return false
+	end
+
+	if self:IsClubManager(nil, playerA.uid) then
+		return true
+	end
+
+	if self:IsClubManager(nil, playerB.uid) then
+		return false
+	end
+
+	return false
+end
+
+-- --获得用户的俱乐部列表  (参加的俱乐部)
+-- function ClubModel:ReqGetUserClubList()
+-- 	http_request_interface.SendHttpRequest(HttpCmdName.ClubGetUserClubList, nil)
+-- end
+
+-- function ClubModel:OnResGetUserClubList(msgTab)
+-- 	if not self:CheckMsgRet(msgTab) then
+-- 		return
+-- 	end
+-- 	self.joinedClubList = msgTab.userclublist
+-- end
+
+-- -- 获得代理商创建的俱乐部列表
+-- function ClubModel:ReqGetAgentClubList()
+-- 	http_request_interface.SendHttpRequest(HttpCmdName.ClubGetAgentClubList, nil)
+-- end
+
+-- function ClubModel:OnResGetAgentClubList(msgTab)
+-- 	if not self:CheckMsgRet(msgTab) then
+-- 		return
+-- 	end
+-- 	self.createdclubList = msgTab.userclublist
+-- 	if #self.createdclubList > 0 then
+-- 		UIManager:ShowUiForms("ClubInfoUI", nil, nil, self.createdclubList[1])
+-- 	end
+-- end
+
+--设置管理员 {"cid":俱乐部真实id,"m_uid":要设置的用户id,"ptype":操作类型(0设置为管理员,1去除管理员身份)}
+function ClubModel:ReqSetManager(cid, uid, type)
+	local param = {}
+	param.cid = cid
+	param.m_uid = uid
+	param.ptype = type
+	http_request_interface.SendHttpRequest(HttpCmdName.ClubSetManager, param)
+end
+
+function ClubModel:OnResSetManager(msgTab)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	self:AddOrUpdateClub(msgTab.club)
+end
+
+--俱乐部T人 {"cid":俱乐部真实id,"k_uid":要T的用户id}
+function ClubModel:ReqKickClubUser(cid, uid)
+	local param = {}
+	param.cid = cid
+	param.k_uid = uid
+	http_request_interface.SendHttpRequestWithCallback(HttpCmdName.ClubKickClubUser, param, function (msgTab)
+		self:OnResKickClubUser(msgTab, cid, uid)
+	end)
+end
+
+function ClubModel:OnResKickClubUser(msgTab, cid, uid)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	local clubInfo = self.clubMap[cid]
+	if clubInfo ~= nil then
+		for i = 1, #clubInfo.muids do
+			if uid == clubInfo.muids[i] then
+				table.remove(clubInfo.muids, i)
+				break
+			end
+		end
+	end
+	self:ReqGetClubUser(self.currentClubInfo.cid)
+end
+
+--玩家退出俱乐部 {"cid":俱乐部真实id}
+function ClubModel:ReqQuitClub(cid)
+	local param = {}
+	param.cid = cid
+	http_request_interface.SendHttpRequestWithCallback(HttpCmdName.ClubQuitClub, param, function(msgTab) self:OnResQuitClub(cid, msgTab)end, nil)
+end
+
+function ClubModel:OnResQuitClub(cid, msgTab)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	UIManager:FastTip("您已成功退出俱乐部")
+	self:RemoveClub(cid)
+end
+
+--编辑修改俱乐部 {"cid":俱乐部真实id必传,"cname":俱乐部名称,"content":内容简介,"position":位置地址}
+function ClubModel:ReqEditClub(cid, name, content, gids, icon, position)
+	local  param = {}
+	param.cid = cid
+	param.cname = name
+	param.content = content
+	param.gids = gids
+	param.icon = icon
+	param.position = position
+	http_request_interface.SendHttpRequest(HttpCmdName.ClubEditClub, param)
+end
+
+function ClubModel:OnResEditClub(msgTab)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	self:AddOrUpdateClub(msgTab.club)
+end
+
+--获得俱乐部房间列表 {"cid":俱乐部真实id必传}
+function ClubModel:ReqGetRoomList(force)
+	if self.currentClubInfo == nil then
+		return
+	end
+	if not force  and not self.control:CheckCanRequsetRoomList() then
+		return
+	end
+	local  param = {}
+	param.cid = self.currentClubInfo.cid
+	local cid = self.currentClubInfo.cid
+	http_request_interface.SendHttpRequestWithCallback(HttpCmdName.ClubGetRoomList, param,
+	function(msgTab, str) 
+		self:OnResGetRoomList(cid, msgTab) 
+	end, nil, true)
+end
+
+function ClubModel:OnResGetRoomList(cid, msgTab)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	if self.currentClubInfo == nil or self.currentClubInfo.cid ~= cid then
+		return
+	end
+	self:FilterRoomList( msgTab.roomlist)
+	self.currentClubRoomInfos = msgTab.roomlist
+	table.sort(self.currentClubRoomInfos, ClubUtil.RoomListSortFunc)
+	Notifier.dispatchCmd(GameEvent.OnClubRoomListUpdate)
+end
+
+function ClubModel:FilterRoomList(roomList)
+	if roomList == nil then 
+		return
+	end
+	for i = #roomList, 1, -1 do
+		if roomList[i].cfg.ishide == 1 and roomList[i].uid ~= self.selfPlayerId then
+			table.remove(roomList, i)
+		end
+	end
+end
+--获得官方俱乐部列表
+function ClubModel:ReqSearchClubList(gid, position)
+	local param = {}
+	param.position = position
+	param.gid = gid
+	http_request_interface.SendHttpRequest(HttpCmdName.ClubSearchClubList, param)
+end
+
+function ClubModel:OnResSearchClubList(msgTab)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	self.searchClubList = msgTab.clublist 
+	table.sort(self.searchClubList,ClubUtil.SearchClubSortFunc)
+	Notifier.dispatchCmd(GameEvent.OnSearchClubListReturn, nil)
+end
+
+function ClubModel:ReqGetClubInfoByCid(cid, callback)
+	local param = {}
+	param.cid = cid
+	http_request_interface.SendHttpRequestWithCallback(HttpCmdName.getUserClubByCid, param, 
+	function(msgtab) 
+		self:OnResGetClubInfoByCid(msgtab, cid, callback)
+	end, nil, true)
+end
+
+function ClubModel:OnResGetClubInfoByCid(msgTab, cid, callback)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	-- 返回不存在 请求全部俱乐部信息
+	if msgTab.clublist == nil or #msgTab.clublist == 0 then
+		self:ResGetUserAllClubList()
+		return
+	end
+	local clubInfo = msgTab.clublist[1]
+	self:AddOrUpdateClub(clubInfo)
+	if callback ~= nil then
+		callback(clubInfo)
+	end
+end
+
+
+function ClubModel:CheckClubIsNew(cid)
+	return self.newCidMap[cid] == true
+end
+
+
+--获得用户所有俱乐部,加入的和创建的
+function ClubModel:ResGetUserAllClubList(dontShow)
+	http_request_interface.SendHttpRequest(HttpCmdName.ClubGetUserAllClubList, nil, dontShow)
+end
+
+function ClubModel:OnResGetUserAllClubList(msgTab)
+	if not self:CheckMsgRet(msgTab) then
+		return
+	end
+	local count = 0
+	if self.clubList ~= nil then
+		count = #self.clubList
+	end
+	if msgTab.clublist ~= nil then
+		self.clubList = msgTab.clublist
+		for i = 1, #self.clubList do
+			self.clubMap[self.clubList[i].cid] = self.clubList[i]
+		end
+	else
+		self.clubList = {}
+		self.clubMap = {}
+	end
+
+	if self:HasClub() then
+		self:CheckClearFristState()
+		if self.lastClubId ~= nil and self.clubMap[self.lastClubId] ~= nil then
+			self:SetCurrentClubInfo(self.clubMap[self.lastClubId], nil, true)
+		else
+			self:SetCurrentClubInfo(self.clubList[1], nil, true)
+		end
+	end
+	if count ~= #self.clubList then
+		Notifier.dispatchCmd(GameEvent.OnSelfClubNumUpdate)
+	else
+		Notifier.dispatchCmd(GameEvent.OnClubInfoUpdate)
+	end
+end
+
+function ClubModel:GetClubState(cid)
+	local club = self.clubMap[cid]
+	if club == nil then
+		return ClubMemberState.none 
+	end
+	if club.uid == self.selfPlayerId then
+		return ClubMemberState.agent
+	end
+	return ClubMemberState.member
+end
+
+function ClubModel:GetClubListByType(type)
+	local tab = {}
+	for i = 1, #self.clubList do
+		if self:GetClubState(self.clubList[i].cid) == type then
+			table.insert(tab, self.clubList[i])
+		end
+	end
+	return tab
+end
+
+function ClubModel:AddOrUpdateClub(clubInfo)
+	if self.clubMap[clubInfo.cid] ~= nil then
+		ClubUtil.CopyClubInfo(self.clubMap[clubInfo.cid], clubInfo)
+		if self.currentClubInfo ~= nil and self.currentClubInfo.cid == clubInfo.cid then
+			self.currentClubInfo = clubInfo
+		end
+		Notifier.dispatchCmd(GameEvent.OnClubInfoUpdate, clubInfo.cid)
+	else
+		table.insert(self.clubList, clubInfo)
+		self.clubMap[clubInfo.cid] = clubInfo
+		if self.currentClubInfo == nil then
+			self:SetCurrentClubInfo(clubInfo)
+		end
+		Notifier.dispatchCmd(GameEvent.OnSelfClubNumUpdate, nil)
+	end
+	-- 清理查询列表
+	self.searchClubList = nil
+end
+
+function ClubModel:CanCreateClub()
+	return self.agentInfo ~= nil and self.agentInfo ~= 0
+end
+
+function ClubModel:SetCurrentClubInfo(info, needRefresh ,force)
+	if info == nil then
+		return
+	end
+	if not force and self.currentClubInfo ~= nil and info.cid == self.currentClubInfo.cid then
+		return
+	end
+	if self.currentClubInfo ~= nil and info.cid ~= self.currentClubInfo.cid  then
+		self:ClearCurrentClubInfo()
+	end
+	self.currentClubInfo = info
+	self:SortClubList()
+	self:SaveLastClubId(info.cid)
+	self:ReqGetRoomList(true)
+	if needRefresh then
+		self:ReqGetClubInfoByCid(info.cid)
+	end
+	Notifier.dispatchCmd(GameEvent.OnCurrentClubChange)
+end
+
+function ClubModel:SortClubList()
+	-- for i = 1, #self.clubList do
+	-- 	if self.clubList[i] == self.currentClubInfo then
+	-- 		if i == 1 then
+	-- 			return
+	-- 		else
+	-- 			table.remove(self.clubList, i)
+	-- 			table.insert(self.clubList, 1, self.currentClubInfo)
+	-- 			return
+	-- 		end
+	-- 	end
+	-- end
+end
+
+
+function ClubModel:RemoveClub(cid)
+	if self.clubMap[cid] == nil then
+		return
+	end
+	for i = 1, #self.clubList do
+		if self.clubList[i].cid == cid then
+			table.remove(self.clubList, i)
+			break
+		end
+	end
+	self.clubMap[cid] = nil
+
+	if self.currentClubInfo.cid == cid then
+		UIManager:CloseUiForms("ClubInfoUI")
+		-- UIManager:CloseUiForms("ClubMemberUI")
+		if self.clubList ==nil or #self.clubList == 0 then
+			self:ClearCurrentClubInfo()
+		else
+			local clubInfo = self.clubList[1]
+			self:SetCurrentClubInfo(clubInfo, true)
+		end
+	end
+
+	Notifier.dispatchCmd(GameEvent.OnSelfClubNumUpdate, nil)
+
+end
+
+function ClubModel:ClearCurrentClubInfo()
+	self.currentClubInfo = nil
+	self.currentClubRoomInfos = nil
+	self.currentClubMemberList = {}
+	self.currentApplyMemberList = {}
+
+end
+
+function ClubModel:HasClub()
+	return self.clubList ~= nil and #self.clubList > 0  
+end
+
+function ClubModel:ClearMemberData()
+	self.currentApplyMemberList = nil
+	self.currentClubMemberList = nil
+end
+
+function ClubModel:GetMemberListByType(type)
+	if type == ClubMemberEnum.member then
+		return self.currentClubMemberList
+	else
+		return self.currentApplyMemberList
+	end
+	-- body
+end
+
+function ClubModel:IsClubCreater(cid)
+	return self:GetClubState(cid) == ClubMemberState.agent
+end
+
+function ClubModel:CheckIsClubCreater(cid, uid)
+	if cid == nil then
+		cid = self.currentClubInfo.cid
+	end
+	local club = self.clubMap[cid]
+	if club == nil then
+		return false
+	end
+	return club.uid == uid
+end
+
+function ClubModel:IsClubMember(cid)
+	if not self:HasClub() then
+		return false
+	end
+	return self.clubMap[cid] ~= nil
+end
+
+
+-- 查询uid是不是俱乐部管理员，uid为空时，查询自己是不是管理员
+function ClubModel:IsClubManager(cid, uid)
+	cid = cid or self.currentClubInfo.cid
+	uid = uid or self.selfPlayerId
+	local clubInfo = self.clubMap[cid]
+	if clubInfo == nil then
+		return false
+	end
+	if clubInfo.uid == uid then
+		return true
+	end
+	for i = 1, #clubInfo.muids do
+		if clubInfo.muids[i] == uid then
+			return true
+		end
+	end
+	return false
+end
+
+-- 通用检测ret
+function ClubModel:CheckMsgRet(msgTab)
+	if msgTab.ret ~= 0 then
+		if msgTab.ret >= 100 and msgTab.ret <= 200 then
+			if msgTab.msg ~= nil and msgTab.msg ~= "" then
+				UIManager:FastTip(msgTab.msg)
+			end
+		end
+		return false
+	end
+	return true
+end
+return ClubModel

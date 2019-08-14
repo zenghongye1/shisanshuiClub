@@ -1,0 +1,69 @@
+require "logic/poker_sys/yingsanzhang_sys/network/yingsanzhang_request_protocol"
+require "logic/network/messagedefine"
+
+yingsanzhang_request_interface = {}
+local this = yingsanzhang_request_interface
+
+--选庄(固定庄家)
+function this.ChooseBankerReq(_tableId,_seat)
+	local pkgBuffer = yingsanzhang_request_protocol.ChooseBankerReq(_tableId,_seat)
+	Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+
+--闲家选择倍数
+function this.beishuReq(beishu,tableID,seat)
+    local pkgBuffer = yingsanzhang_request_protocol.requestMult(beishu,tableID,seat);
+    Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+
+--抢庄
+function this.robbankerReq(beishu,tableID,seat)
+	local pkgBuffer = yingsanzhang_request_protocol.robbankerReq(beishu,tableID,seat);
+    Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+
+--亮牌
+function this.OpenCardReq()
+	local pkgBuffer = yingsanzhang_request_protocol.OpenCardReq();
+    Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+
+--加注
+function this.RaiseReq(nBetCoin)
+	local pkgBuffer = yingsanzhang_request_protocol.RaiseReq(nBetCoin)
+	Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+--跟注
+function this.CallReq()
+	local pkgBuffer = yingsanzhang_request_protocol.CallReq()
+	Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+--弃牌
+function this.FoldReq()
+	local pkgBuffer = yingsanzhang_request_protocol.FoldReq()
+	Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+--比牌
+function this.CompareReq(nWhoChair)
+	local pkgBuffer = yingsanzhang_request_protocol.CompareReq(nWhoChair)
+	Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+
+
+
+
+
+
+
+
+
+
+

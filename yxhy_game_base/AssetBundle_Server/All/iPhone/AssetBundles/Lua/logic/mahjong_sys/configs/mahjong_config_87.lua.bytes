@@ -1,0 +1,37 @@
+--[[--
+ * @Description: 衡水麻将玩法配置
+ ]]
+local config_common = require "logic/mahjong_sys/configs/mahjong_config_common":create()
+
+local mahjong_config_50087 = {}
+setmetatable(mahjong_config_50087, {__index = config_common})
+
+mahjong_config_50087.MahjongDunCount = 17				-- 一排多少墩
+
+mahjong_config_50087.wallDunCountMap = 
+{
+	17,17,17,17
+}
+
+mahjong_config_50087.big_settlement_show = {}
+mahjong_config_50087.big_settlement_show.win_type = {
+	["selfdraw"] = "selfdraw", 		-- 自摸
+	["gunwin"] = "gunwin", 		-- 点炮
+	["gangflower"] = "gangflower", 	-- 杠上花
+	["huangpai"] = "huangpai" -- 荒庄
+}
+
+mahjong_config_50087.beishu_wintype_dic = 
+{
+	["nSelfDraw"] = 2,
+	["nGun"] = 1,
+}
+
+mahjong_config_50087.mahjongActionCfg.game_playStart = {15, "mahjong_mjAction_gamePlayStart"}
+mahjong_config_50087.mahjongActionCfg.game_laiZi = {50087, "mahjong_mjAction_gameLaiZi"}
+mahjong_config_50087.uiActionCfg.game_tingInfo = {24, "mahjong_action_gameTingInfo"}
+mahjong_config_50087.uiActionCfg.small_reward = {87, "mahjong_action_small_reward_87"}
+mahjong_config_50087.uiActionCfg.total_reward = {24, "mahjong_action_totalreward_24"} 
+mahjong_config_50087.uiActionCfg.game_askBlock = {15,"mahjong_action_gameAskBlock"}
+
+return mahjong_config_50087

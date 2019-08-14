@@ -1,0 +1,91 @@
+local base = require("logic.framework.ui.uibase.ui_window")
+local inviteCode_ui = class("inviteCode_ui",base)
+
+function inviteCode_ui:ctor()
+	base.ctor(self)
+	--self.inputNumList = {}
+end
+
+function inviteCode_ui:OnInit()
+    self:InitView()
+end
+
+function inviteCode_ui:OnOpen() 
+	self.inputNumList = {}
+	self:UpdateView()
+end
+
+function inviteCode_ui:InitView()
+    local btn_close = child(self.gameObject.transform,"inviteCode_panel/Panel_Top/btn_close")
+    if btn_close ~= nil then
+        addClickCallbackSelf(btn_close.gameObject,self.CloseWin,self)
+    end
+    self.grid_input = child(self.gameObject.transform,"inviteCode_panel/Panel_Middle/grid_input")
+	self.gird_number = child(self.gameObject.transform, "inviteCode_panel/Panel_Middle/gird_number")
+
+    local tipLabel = subComponentGet(self.gameObject.transform, "inviteCode_panel/Panel_Middle/lab_warn", typeof(UILabel))
+    tipLabel.text = "提示：输入邀请码后即可购买，如未获得，请咨询客服"
+	
+	local btn_ask = child(self.gameObject.transform,"inviteCode_panel/Panel_Right/middle/askBtn")
+	if btn_ask ~= nil then
+		addClickCallbackSelf(btn_ask.gameObject,self.AskService,self)
+	end
+end
+
+function inviteCode_ui:UpdateView()
+	self:InitCommonInput()
+end
+
+function inviteCode_ui:InitCommonInput()
+	self.input_ui = require "logic/hall_sys/CommonInput/CommonInput":create(self.grid_input,self.gird_number,slot(self.Certain,self))
+	self.input_ui:InitView()
+end
+
+function inviteCode_ui:Certain()
+	self.inputNumList = self.input_ui:GetNumList()
+	self.input_ui:ClearNumList()
+	if #self.inputNumList == 0 then
+		UI_Manager:Instance():FastTip("请输入邀请码")
+		return
+	elseif #self.inputNumList ~= 6 then
+		UI_Manager:Instance():FastTip("您输入的邀请码不存在")
+		return
+	end
+    local num = table.concat(self.inputNumList)
+    http_request_interface.BindAgent(num, function(ret) 
+		ret = tonumber(ret)
+		if ret == 0 or ret == 102 then
+			hall_data.BindAgent()
+		  	UI_Manager:Instance():ShowUiForms("shop_ui")
+			self.CloseWin()
+		elseif ret == 100 then
+			UI_Manager:Instance():FastTip("用户ID不存在")
+		elseif ret == 101 then
+			UI_Manager:Instance():FastTip("请输入邀请码")
+		-- elseif ret == 102 then
+		--     UI_Manager:Instance():FastTip("用户已绑定邀请码")
+		elseif ret == 103 then
+			UI_Manager:Instance():FastTip("您输入的邀请码不存在")
+		elseif ret == 104 then
+			UI_Manager:Instance():FastTip("您输入的邀请码已过期")
+		elseif ret == 105 then
+			UI_Manager:Instance():FastTip("绑定邀请码失败")
+		elseif ret == 106 then
+			UI_Manager:Instance():FastTip("您已是代理商，无需绑定")
+		elseif ret == 107 then
+			UI_Manager:Instance():FastTip("请勿自我绑定")
+		end
+	end)
+end
+
+function inviteCode_ui:AskService()
+	--咨询代理商待处理
+end
+
+function  inviteCode_ui:CloseWin()
+    ui_sound_mgr.PlayCloseClick()
+	--self.inputNumList = {}
+	UI_Manager:Instance():CloseUiForms("inviteCode_ui")
+end
+
+return inviteCode_ui

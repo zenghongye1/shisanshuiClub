@@ -1,0 +1,625 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.20506</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7608EE2F-0C99-D7CF-CBC2-EB11F32FBD42}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Assembly-CSharp-firstpass</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
+    <CompilerResponseFile></CompilerResponseFile>
+    <UnityProjectGenerator>VSTU</UnityProjectGenerator>
+    <UnityProjectType>GamePlugins:3</UnityProjectType>
+    <UnityBuildTarget>Android:13</UnityBuildTarget>
+    <UnityVersion>5.4.3f1</UnityVersion>
+    <RootNamespace></RootNamespace>
+    <LangVersion>4</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Temp\UnityVS_bin\Debug\</OutputPath>
+    <IntermediateOutputPath>Temp\UnityVS_obj\Debug\</IntermediateOutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DefineConstants>DEBUG;TRACE;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_4_3;UNITY_5_4;UNITY_5;ENABLE_NEW_BUGREPORTER;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_EDITOR_RETINA;ENABLE_RETINA_GUISTYLES;ENABLE_FRAME_DEBUGGER;ENABLE_GENERICS;ENABLE_HOME_SCREEN;ENABLE_IMAGEEFFECTS;ENABLE_LIGHT_PROBES_LEGACY;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_PLUGIN_INSPECTOR;ENABLE_SHADOWS;ENABLE_SPRITERENDERER_FLIPPING;ENABLE_SPRITES;ENABLE_SPRITE_POLYGON;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;INCLUDE_DYNAMIC_GI;INCLUDE_GI;INCLUDE_IL2CPP;INCLUDE_DIRECTX12;PLATFORM_SUPPORTS_MONO;INCLUDE_PUBNUB;ENABLE_LOCALIZATION;ENABLE_ANDROID_ATLAS_ETC1_COMPRESSION;ENABLE_EDITOR_TESTS_RUNNER;UNITY_ANDROID;UNITY_ANDROID_API;ENABLE_SUBSTANCE;UNITY_ANDROID_API;ENABLE_TEXTUREID_MAP;ENABLE_EGL;ENABLE_NETWORK;ENABLE_RUNTIME_GI;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYWEBREQUEST;PLATFORM_SUPPORTS_ADS_ID;UNITY_CAN_SHOW_SPLASH_SCREEN;ENABLE_UNITYADS_RUNTIME;UNITY_UNITYADS_API;ENABLE_MONO;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;UNITY_TEAM_LICENSE;ENABLE_VSTU;UNITY_PRO_LICENSE;ASYNC_MODE;</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Temp\UnityVS_bin\Release\</OutputPath>
+    <IntermediateOutputPath>Temp\UnityVS_obj\Release\</IntermediateOutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DefineConstants>TRACE;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_4_3;UNITY_5_4;UNITY_5;ENABLE_NEW_BUGREPORTER;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_EDITOR_RETINA;ENABLE_RETINA_GUISTYLES;ENABLE_FRAME_DEBUGGER;ENABLE_GENERICS;ENABLE_HOME_SCREEN;ENABLE_IMAGEEFFECTS;ENABLE_LIGHT_PROBES_LEGACY;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_PLUGIN_INSPECTOR;ENABLE_SHADOWS;ENABLE_SPRITERENDERER_FLIPPING;ENABLE_SPRITES;ENABLE_SPRITE_POLYGON;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_UNET;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;INCLUDE_DYNAMIC_GI;INCLUDE_GI;INCLUDE_IL2CPP;INCLUDE_DIRECTX12;PLATFORM_SUPPORTS_MONO;INCLUDE_PUBNUB;ENABLE_LOCALIZATION;ENABLE_ANDROID_ATLAS_ETC1_COMPRESSION;ENABLE_EDITOR_TESTS_RUNNER;UNITY_ANDROID;UNITY_ANDROID_API;ENABLE_SUBSTANCE;UNITY_ANDROID_API;ENABLE_TEXTUREID_MAP;ENABLE_EGL;ENABLE_NETWORK;ENABLE_RUNTIME_GI;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYWEBREQUEST;PLATFORM_SUPPORTS_ADS_ID;UNITY_CAN_SHOW_SPLASH_SCREEN;ENABLE_UNITYADS_RUNTIME;UNITY_UNITYADS_API;ENABLE_MONO;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;UNITY_TEAM_LICENSE;ENABLE_VSTU;UNITY_PRO_LICENSE;ASYNC_MODE;</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Core" />
+    <Reference Include="Boo.Lang" />
+    <Reference Include="UnityScript.Lang" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="UnityEngine">
+      <HintPath>D:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Networking">
+      <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+    </Reference>
+    <Reference Include="Debugger">
+      <HintPath>Assets/Plugins/Debugger.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <HintPath>Assets/Plugins/System.Drawing.dll</HintPath>
+    </Reference>
+    <Reference Include="UniWebViewWP">
+      <HintPath>Assets/Plugins/UniWebViewWP.dll</HintPath>
+    </Reference>
+    <Reference Include="UWAWrapper_Android">
+      <HintPath>Assets/UWA/Libs/UWAWrapper_Android.dll</HintPath>
+    </Reference>
+    <Reference Include="DemiLib">
+      <HintPath>Assets/XY_Plugins/Demigiant/DemiLib/Core/DemiLib.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween">
+      <HintPath>Assets/XY_Plugins/Demigiant/DOTween/DOTween.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween43">
+      <HintPath>Assets/XY_Plugins/Demigiant/DOTween/DOTween43.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween46">
+      <HintPath>Assets/XY_Plugins/Demigiant/DOTween/DOTween46.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween50">
+      <HintPath>Assets/XY_Plugins/Demigiant/DOTween/DOTween50.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTweenPro">
+      <HintPath>Assets/XY_Plugins/Demigiant/DOTweenPro/DOTweenPro.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor">
+      <HintPath>D:/Program Files/Unity/Editor/Data/Managed/UnityEditor.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Assets\Plugins\ToLua\LuaAttributes.cs" />
+    <Compile Include="Assets\Plugins\UniWebViewEventProcessor.cs" />
+    <Compile Include="Assets\Plugins\UniWebViewPluginAndroid.cs" />
+    <Compile Include="Assets\Plugins\UniWebViewPluginMacEditor.cs" />
+    <Compile Include="Assets\Plugins\UniWebViewPluginWP.cs" />
+    <Compile Include="Assets\Plugins\UniWebViewPluginiOS.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\BclHelpers.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\BufferExtension.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\BufferPool.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\CallbackAttributes.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Compiler\CompilerContext.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Compiler\CompilerDelegates.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Compiler\Local.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\DataFormat.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Extensible.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ExtensibleUtil.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\GlobalSuppressions.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Helpers.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\IExtensible.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\IExtension.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ImplicitFields.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\KeyValuePairProxy.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Meta\AttributeMap.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Meta\BasicList.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Meta\CallbackSet.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Meta\MetaType.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Meta\RuntimeTypeModel.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Meta\SubType.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Meta\TypeFormatEventArgs.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Meta\TypeModel.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Meta\ValueMember.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\NetObjectCache.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\PrefixStyle.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Properties\AssemblyInfo.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ProtoContractAttribute.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ProtoConverterAttribute.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ProtoEnumAttribute.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ProtoException.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ProtoIgnoreAttribute.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ProtoIncludeAttribute.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ProtoMemberAttribute.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ProtoReader.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ProtoWriter.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\SerializationContext.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\ArrayDecorator.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\BlobSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\BooleanSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\ByteSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\CharSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\CompiledSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\DateTimeSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\DecimalSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\DefaultValueDecorator.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\DoubleSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\EnumSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\FieldDecorator.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\GuidSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\IProtoSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\IProtoTypeSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\ISerializerProxy.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\ImmutableCollectionDecorator.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\Int16Serializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\Int32Serializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\Int64Serializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\KeyValuePairDecorator.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\ListDecorator.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\MemberSpecifiedDecorator.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\NetObjectSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\NullDecorator.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\ParseableSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\PropertyDecorator.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\PropertyGetMethod.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\ProtoDecoratorBase.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\SByteSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\SingleSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\StringSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\SubItemSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\SurrogateSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\SystemTypeSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\TagDecorator.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\TimeSpanSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\TupleSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\TypeSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\UInt16Serializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\UInt32Serializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\UInt64Serializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\Serializers\UriDecorator.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ServiceModel\ProtoBehaviorAttribute.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ServiceModel\ProtoBehaviorExtensionElement.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ServiceModel\ProtoEndpointBehavior.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ServiceModel\ProtoOperationBehavior.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\ServiceModel\XmlProtoSerializer.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\SubItemToken.cs" />
+    <Compile Include="Assets\Plugins\protobuf-net\WireType.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\AssetBundles\ver_app_4.txt" />
+    <None Include="Assets\AssetBundles\ver_game_11.txt" />
+    <None Include="Assets\AssetBundles\ver_game_18.txt" />
+    <None Include="Assets\AssetBundles\ver_game_27.txt" />
+    <None Include="Assets\AssetBundles\ver_game_92.txt" />
+    <None Include="Assets\BuildReport\BuildReportToolOptions.xml" />
+    <None Include="Assets\BuildReport\README.txt" />
+    <None Include="Assets\BuildReport\Scripts\Editor\FuzzyString\License.txt" />
+    <None Include="Assets\BuildReport\VERSION.txt" />
+    <None Include="Assets\Effect\有闲特效调用说明.txt" />
+    <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
+    <None Include="Assets\Plugins\Android\res\anim\dysdk_sdk_anim_enter.xml" />
+    <None Include="Assets\Plugins\Android\res\anim\dysdk_sdk_anim_exit.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable-hdpi\jpush_richpush_btn_selector.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable-hdpi\jpush_richpush_progressbar.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_exit_dialog_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_kd_circle_bg1.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_btn_selector.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_btn_selector2.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_btn_selector_exit.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_btn_selector_logout.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_circle_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_circle_hollowwhite.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_cyan_btn_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_dialog_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_edit_one_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_edit_three_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_edit_two_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_green_btn_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_green_stroke.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_img_selector.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_img_selector2.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_login_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_login_edit_text.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_login_in.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_logout_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_orange_btn_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_orange_stroke.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_phonelogin_in.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_pink_btn_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_progress_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_spalns_login.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_sure_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_sure_bg_press.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_toolbar_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_sdk_verify_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_btn_selector.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_circle_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_edit_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_edit_two_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_giftdialog_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_gv_normal.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_login_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_login_in.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_login_onekey_register.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_menu_item_press.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_menu_item_selector.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_mygamelist_normal.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_order_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_progressbar_style.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_pw_list_selector.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_sure_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_sure_bg_press.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_ttw_userinfo_bg_top.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\dysdk_xs_reg_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_account_common_btn_text_color.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_account_smscode_btn_text_color.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_bg_4_1.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_bg_btn_color_2.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_bg_charge_input_color_stroke_2.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_bg_charge_input_color_stroke_7.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_bg_select_charge_color_7.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_bg_select_charge_item_color_1.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_border_style.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_common_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_common_btn_bg_color.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_common_btn_disable.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_common_btn_normal.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_common_btn_pressed.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_common_btn_text_color.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_common_checkbox_selector.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_common_slash_bg.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_edit_cursor_color_bottom.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_edit_cursor_color_top.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_fillet_border_color_8.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_loading.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_recharge_bg_style.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_ui_back_selector.xml" />
+    <None Include="Assets\Plugins\Android\res\drawable\ipay_ui_title_right_button_selector.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_float_layout.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_certificate_dialog.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_charge_item.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_charge_one.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_charge_two.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_float_web.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_install_tip.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_notice.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_progress_dialog.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_ptb_pay.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_ptb_pay_portrait.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_splash.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_tell_service.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_update_dialog.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_sdk_wxpay.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_alipay_pay.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_bank_pay.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_charge_list.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_cz_navigation.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_exit_dialog.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_gift.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_kefu.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_load_more.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_login.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_logout_dialog.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_menu_list.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_menu_list_item.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_mobliecard_pay.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_money_list.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_money_list_item.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_notification.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_order_account.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_order_dealing.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_order_item.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_order_item_fail.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_order_item_null.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_order_item_sucess.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_order_item_wait.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_pay_onekeyzifu_next.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_pd.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_pw_list.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_pw_list_item.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_register.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_sdk.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\dysdk_ttw_user_agreement.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_common_webview_layout.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_layout_common_alert_dialog.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_layout_dialog_bg_round_rectangle.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_layout_person_center.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_loading_dialog.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_single_select_dialog.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_single_select_dialog_item.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_sub_game_pay_common_layout.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_sub_game_pay_v.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_ui_charge_layout.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_ui_charge_type_item.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_ui_login_layout.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_ui_pay_hub_layout_h.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_ui_pay_hub_layout_v.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_ui_pay_type_item.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_ui_select_amount_item.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_ui_select_amount_layout.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\ipay_ui_title_bar_normal.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\jpush_popwin_layout.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\jpush_webview_layout.xml" />
+    <None Include="Assets\Plugins\Android\res\layout\webviewlayout.xml" />
+    <None Include="Assets\Plugins\Android\res\values-zh-rCN\strings.xml" />
+    <None Include="Assets\Plugins\Android\res\values\dysdk_color.xml" />
+    <None Include="Assets\Plugins\Android\res\values\dysdk_config.xml" />
+    <None Include="Assets\Plugins\Android\res\values\dysdk_float_dimens.xml" />
+    <None Include="Assets\Plugins\Android\res\values\dysdk_strings.xml" />
+    <None Include="Assets\Plugins\Android\res\values\dysdk_styles.xml" />
+    <None Include="Assets\Plugins\Android\res\values\jpush_style.xml" />
+    <None Include="Assets\Plugins\Android\res\values\values.xml" />
+    <None Include="Assets\Plugins\iOS\WechatSDK\README.txt" />
+    <None Include="Assets\Plugins\protobuf-net\Web\TODO.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\article\fwtk.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\article\mzsm.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\article\yszc.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\location\location.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\anyangmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\baodingmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\barensss.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\cangzhoumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\chengdemj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\chunsesss.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\daximj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\duoguisss.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\fuanmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\fudingmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\fuqingmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\fuzhoumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\guiyangzhuojimj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\handanmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\hengshuimj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\hongzhongmj (2河北).txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\hongzhongmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\jiaozuomj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\kaifengmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\kawuxingmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\langfangmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\longyanmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\luoyangmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\nanyangmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\ningdemj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\niuniu.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\pingdingshanmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\pingtanmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\pingtansss.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\putianmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\puxiansss.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\puyangmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\qinhuangdaomj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\quanzhoumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\sangong.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\sanmingmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\shangqiumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\shijiazhuangmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\shisanshui.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\shuizhuangsss.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\songyuanmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\tangshanmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\tongliaomj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\tuidaohumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\xiamenmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\xianyoumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\xiapumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\xinganmengmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\xinganmengqionghumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\xinganmengtuidaohumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\xingtaimj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\xinxiangmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\xuchangmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\yingsanzhang.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\zhangjiakoumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\zhangzhoumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\zhengzhoumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\zhoukoumj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\config\txt\rules\zhumadianmj.txt" />
+    <None Include="Assets\Res_XYHY\app_4\shaders\Unlit - Transparent Colored.shader" />
+    <None Include="Assets\Res_XYHY\app_4\shaders\custom_fire.shader" />
+    <None Include="Assets\Res_XYHY\app_4\shaders\skeleton.shader" />
+    <None Include="Assets\Resources\Fonts\configText.txt" />
+    <None Include="Assets\StreamingAssets\Android\AssetBundles\ver_app_4.txt" />
+    <None Include="Assets\StreamingAssets\Android\AssetBundles\ver_game_11.txt" />
+    <None Include="Assets\StreamingAssets\Android\AssetBundles\ver_game_18.txt" />
+    <None Include="Assets\StreamingAssets\Android\AssetBundles\ver_game_27.txt" />
+    <None Include="Assets\StreamingAssets\Android\AssetBundles\ver_game_92.txt" />
+    <None Include="Assets\StreamingAssets\Android\AssetBundles\ver_game_93.txt" />
+    <None Include="Assets\StreamingAssets\config\app_config.txt" />
+    <None Include="Assets\StreamingAssets\config\atlas_config.txt" />
+    <None Include="Assets\StreamingAssets\config\channel_config.txt" />
+    <None Include="Assets\ToLua\readme.txt" />
+    <None Include="Assets\UWA\Libs\UWAWrapper_Android.XML" />
+    <None Include="Assets\XY_Plugins\Apshai Arts\CodeGuard\Editor\Compatibility.txt" />
+    <None Include="Assets\XY_Plugins\Apshai Arts\CodeGuard\Editor\Mobile.txt" />
+    <None Include="Assets\XY_Plugins\Apshai Arts\CodeGuard\Editor\Quick Start.txt" />
+    <None Include="Assets\XY_Plugins\Apshai Arts\CodeGuard\Editor\Read Me.txt" />
+    <None Include="Assets\XY_Plugins\Apshai Arts\CodeGuard\Editor\Web Player.txt" />
+    <None Include="Assets\XY_Plugins\Best HTTP (Pro)\ReleaseNotes.txt" />
+    <None Include="Assets\XY_Plugins\Best HTTP (Pro)\link.xml" />
+    <None Include="Assets\XY_Plugins\Best HTTP (Pro)\link_android_subset.xml" />
+    <None Include="Assets\XY_Plugins\Demigiant\DOTween\DOTween.XML" />
+    <None Include="Assets\XY_Plugins\Demigiant\DOTween\DOTween43.xml" />
+    <None Include="Assets\XY_Plugins\Demigiant\DOTween\DOTween46.xml" />
+    <None Include="Assets\XY_Plugins\Demigiant\DOTween\DOTween50.xml" />
+    <None Include="Assets\XY_Plugins\Demigiant\DOTween\Editor\DOTweenEditor.XML" />
+    <None Include="Assets\XY_Plugins\Demigiant\DOTween\readme.txt" />
+    <None Include="Assets\XY_Plugins\Demigiant\DOTweenPro\DOTweenPro.XML" />
+    <None Include="Assets\XY_Plugins\Demigiant\DOTweenPro\Editor\DOTweenProEditor.XML" />
+    <None Include="Assets\XY_Plugins\Demigiant\DOTweenPro\readme.txt" />
+    <None Include="Assets\XY_Plugins\Demigiant\DemiLib\Core\DemiLib.xml" />
+    <None Include="Assets\XY_Plugins\Demigiant\DemiLib\Core\Editor\DemiEditor.xml" />
+    <None Include="Assets\XY_Plugins\Demigiant\readme_DOTweenPro.txt" />
+    <None Include="Assets\XY_Plugins\ETC+Alpha\Shader\For NGUI\Unlit - Transparent Colored (B) 1.shader" />
+    <None Include="Assets\XY_Plugins\ETC+Alpha\Shader\For NGUI\Unlit - Transparent Colored (B) 2.shader" />
+    <None Include="Assets\XY_Plugins\ETC+Alpha\Shader\For NGUI\Unlit - Transparent Colored (B) 3.shader" />
+    <None Include="Assets\XY_Plugins\ETC+Alpha\Shader\For NGUI\Unlit - Transparent Colored (G) 1.shader" />
+    <None Include="Assets\XY_Plugins\ETC+Alpha\Shader\For NGUI\Unlit - Transparent Colored (G) 2.shader" />
+    <None Include="Assets\XY_Plugins\ETC+Alpha\Shader\For NGUI\Unlit - Transparent Colored (G) 3.shader" />
+    <None Include="Assets\XY_Plugins\ETC+Alpha\Shader\For NGUI\Unlit - Transparent Colored (R) 1.shader" />
+    <None Include="Assets\XY_Plugins\ETC+Alpha\Shader\For NGUI\Unlit - Transparent Colored (R) 2.shader" />
+    <None Include="Assets\XY_Plugins\ETC+Alpha\Shader\For NGUI\Unlit - Transparent Colored (R) 3.shader" />
+    <None Include="Assets\XY_Plugins\ETC+Alpha\Shader\For NGUI\Unlit - Transparent Colored_B.shader" />
+    <None Include="Assets\XY_Plugins\ETC+Alpha\Shader\For NGUI\Unlit - Transparent Colored_G.shader" />
+    <None Include="Assets\XY_Plugins\ETC+Alpha\Shader\For NGUI\Unlit - Transparent Colored_R.shader" />
+    <None Include="Assets\XY_Plugins\FingerGestures\FingerGestures\Readme.txt" />
+    <None Include="Assets\XY_Plugins\NGUI\ReadMe - 3.8.2.txt" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Premultiplied Colored (TextureClip).shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Premultiplied Colored 1.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Premultiplied Colored 2.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Premultiplied Colored 3.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Premultiplied Colored.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Premultiplied Colored_ETC 1.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Premultiplied Colored_ETC 2.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Premultiplied Colored_ETC 3.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Premultiplied Colored_ETC.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Text (TextureClip).shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Text 1.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Text 2.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Text 3.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Text.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Colored (Packed) (TextureClip).shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Colored (TextureClip).shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Colored 1.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Colored 2.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Colored 3.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Colored_ETC 1.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Colored_ETC 2.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Colored_ETC 3.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Colored_ETC.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Colored_ETC_Gray 1.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Colored_ETC_Gray.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Masked 1.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Masked 2.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Masked 3.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Masked.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Packed 1.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Packed 2.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Packed 3.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent Packed.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent WhiteFont 1.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent WhiteFont 2.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent WhiteFont 3.shader" />
+    <None Include="Assets\XY_Plugins\NGUI\Resources\Shaders\Unlit - Transparent WhiteFont.shader" />
+    <None Include="Assets\XY_Plugins\UniWebView\ChangeLog.txt" />
+    <None Include="Assets\XY_Plugins\UniWebView\Readme.txt" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\GlowPerObj\xft_glow_blend.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\GlowPerObj\xft_glow_perobj_additive.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\GlowPerObj\xft_glow_perobj_alpha_blend.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\GlowPerObj\xft_glow_replacement.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\xf_heat_distortion.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\xft_color_inverse.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\xft_distort_additive.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\xft_glow_compose.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\xft_glow_conetap.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\xft_glow_downsample.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\xft_mask.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\xft_radial_blur.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\xft_radial_blur_mask.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\xft_radial_blur_new.shader" />
+    <None Include="Assets\XY_Plugins\Xffect\Res_Raw\Shaders\xft_volume_fog.shader" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\2chi\2chi.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\Dragon\dragon.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\Dragon\license.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\Eyes\eyes.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\FootSoldier\Equipment\Equipment.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\FootSoldier\FS_White.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\FootSoldier\license.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\Gauge\Gauge.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\Goblins\goblins.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\Hero\hero-mesh.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\Hero\license.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\Raggedy Spineboy\Raggedy Spineboy.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\Raptor\raptor.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\Spineboy\spineboy.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\Spineunitygirl\Doi.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\Strechyman\stretchyman-diffuse-pma.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\chipai\chipai.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\Examples\Spine\chipengganghu\chipengganghu.atlas.txt" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Editor\Resources\SpineAssetDatabaseMarker.txt" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\CustomMaterials\SkeletonRendererCustomMaterials.txt" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Ghost\Shaders\SkeletonGhost.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\SkeletonTint.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\CGIncludes\ShaderMaths.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\CGIncludes\ShaderShared.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\CGIncludes\SpriteLighting.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\CGIncludes\SpritePixelLighting.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\CGIncludes\SpriteShadows.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\CGIncludes\SpriteSpecular.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\CGIncludes\SpriteUnlit.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\CGIncludes\SpriteVertexLighting.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\CameraDepthNormalsTexture.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\CameraDepthTexture.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\CameraNormalsTexture.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\ShaderShared.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\SpriteDepthNormalsTexture.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\SpriteLighting.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\SpritePixelLighting.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\SpriteShadows.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\SpriteUnlit.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\SpriteVertexLighting.cginc" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\SpritesPixelLit.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\SpritesUnlit.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\Shaders\Sprite\SpritesVertexLit.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\SkeletonGraphic\Shaders\SkeletonGraphic.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Modules\SkeletonRenderSeparator\SkeletonRenderSeparator.txt" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Shaders\Bones.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Shaders\HiddenPass.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\Shaders\SkeletonLit.shader" />
+    <None Include="Assets\XY_Plugins\spine\spine-unity\version.txt" />
+    <None Include="Assets\XY_Scripts\BasicSystem\ABSystem\link.xml" />
+    <None Include="Assets\YX_app_4\XY_Animations\buhua\hua.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\chi_peng_gang_hu_anim\special effects_7.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\circle\circle.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\emoticon\emoticon.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\emoticon2\emoticon_2.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\expression_new\expression_new.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\game_start_anim\startgame01.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\hall\dating.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\hall\hudie\hudie_1.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\hall\hudie\hudie_2.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\head_effect\touxiangquang.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\hua_eff\hua_1.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\kaiqiang_jin\word effects.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\loading\loading.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\majhong_special_card_type\majhong_special_card_type.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\niuniu_animation\card_type\card_2.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\niuniu_animation\gamestart\begin_3.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\niuniu_animation\niu_zhuang\niu_zhuang.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\niuniu_animation\tongsha\tongsha.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\niuniu_animation\win\shengli.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\role\juese02.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\shisanshui_animation\daqiang_hongzhaji\quanleida.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\shisanshui_animation\daqiang_quanleida\effects1.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\shisanshui_animation\daqiang_zhadan\zhadan.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\shisanshui_animation\gun_kuang\bomb box.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\shisanshui_animation\kaishibipai\kaishibipai.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\shisanshui_animation\shoot\Shoot.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Animations\special_card_type\special_card_type.atlas.txt" />
+    <None Include="Assets\YX_app_4\XY_Fonts\blue.fnt" />
+    <None Include="Assets\YX_app_4\XY_Fonts\genzhuang\gen_zhuang_font.txt" />
+    <None Include="Assets\YX_app_4\XY_Fonts\green.fnt" />
+    <None Include="Assets\YX_app_4\XY_Fonts\myfont\followBanker.fnt" />
+    <None Include="Assets\YX_app_4\XY_Fonts\myfont\font_00000.fnt" />
+    <None Include="Assets\YX_app_4\XY_Fonts\myfont\font_ui.fnt" />
+    <None Include="Assets\YX_app_4\XY_Fonts\myfont\myfonts_1.fnt" />
+    <None Include="Assets\YX_app_4\XY_Fonts\myfont\myfonts_2.fnt" />
+    <None Include="Assets\YX_app_4\XY_Fonts\orange.fnt" />
+    <None Include="Assets\YX_app_4\XY_Fonts\red.fnt" />
+    <None Include="Assets\YX_app_4\XY_Location\location_全国_不包含县.txt" />
+    <None Include="Assets\YX_app_4\XY_Location\location_全国_包含县.txt" />
+    <None Include="Assets\YX_app_4\XY_Models\Poker\models\Shaders\Unlit - TextureColored.shader" />
+    <None Include="Assets\YX_app_4\XY_Models\mahjong\Mahjong\Shaders\DMJ-Mahjong.shader" />
+    <None Include="Assets\YX_app_4\XY_Shaders\LogoShader.shader" />
+    <None Include="Assets\YX_app_4\XY_Shaders\custom_fresnel.shader" />
+    <None Include="Assets\YX_app_4\XY_Shaders\custom_sfshader.shader" />
+    <None Include="Assets\YX_app_4\XY_Shaders\shanguang.shader" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="GenerateTargetFrameworkMonikerAttribute" />
+</Project>

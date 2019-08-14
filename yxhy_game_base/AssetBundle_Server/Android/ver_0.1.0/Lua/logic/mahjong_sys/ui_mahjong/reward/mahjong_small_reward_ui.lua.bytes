@@ -1,0 +1,176 @@
+mahjong_small_reward_ui = ui_base.New()
+local reward_player_item_view = require "logic/mahjong_sys/ui_mahjong/reward/reward_player_item_view"
+local reward_title_view = require "logic/mahjong_sys/ui_mahjong/reward/reward_title_view"
+local mahjong_opercard_view = require "logic/mahjong_sys/ui_mahjong/reward/mahjong_opercard_view"
+local mahjong_handcard_view = require "logic/mahjong_sys/ui_mahjong/reward/mahjong_handcard_view"
+
+local this = mahjong_small_reward_ui
+local data 
+
+function this.Show(_data)
+	data = _data
+
+	if IsNil(this.gameObject) then
+		this.gameObject = newNormalUI(data_center.GetResMJCommPath().."/ui/reward/mahjong_reward_ui")
+    	this.gameObject.transform:SetParent(mahjong_ui.transform, false)
+    	this.transform = this.gameObject.transform
+	else
+		this.gameObject:SetActive(true)
+    	this.SetRewards(_data)
+	end
+end
+
+function this.Hide()
+	if not IsNil(this.gameObject) then
+ 		this.gameObject:SetActive(false)
+ 	end
+ 	data = nil
+end
+
+function this.Awake()
+	this.CreatePlayers()
+	this.InitView()
+end
+
+function this.Start()
+	if data ~=nil then
+		this.SetRewards(data)
+	end
+end
+
+function this.OnDestroy()
+end
+
+function this.CreatePlayers()
+	local player_type = data.type
+	local path = data_center.GetResMJCommPath().."/ui/reward/playerInfoItem"
+	local playerInfoItem = newNormalObjSync(path..tostring(player_type),typeof(GameObject))
+	local p = child(this.transform, "reward_panel/Panel_Middle/infoList")
+	for i=1,4 do
+		local obj
+		obj = newobject(playerInfoItem)
+		obj.name = "playerInfoItem"..i
+		obj.transform:SetParent(p)
+		obj.transform.localScale = Vector3.one
+		obj.transform.localPosition = Vector3(0,-123*(i-1),0)
+	end
+end
+
+function this.InitView()
+	this.titleView = reward_title_view:create(child(this.transform, "reward_panel/Panel_Top/titleView").gameObject)
+	this.btnGo = child(this.transform, "reward_panel/Panel_Middle/button").gameObject
+	this.operItemList_EX = child(this.transform, "reward_panel/Panel_Middle/infoList/operItemList").gameObject
+	this.cardItemList_EX = child(this.transform, "reward_panel/Panel_Middle/infoList/cardItemList").gameObject
+	this.itemList = {}
+
+	for i = 1, 4 do
+		local item = reward_player_item_view:create(child(this.transform, "reward_panel/Panel_Middle/infoList/playerInfoItem" .. i).gameObject)
+		table.insert(this.itemList, item)
+	end
+	addClickCallbackSelf(this.btnGo, this.OnBtnClick, this)
+end
+
+function this.OnBtnClick()
+	if roomdata_center.totalRewardData then
+	    Notifier.dispatchCmd(cmdName.GAME_SOCKET_LUMP_SUM)
+	    this.Hide()
+	else
+		ui_sound_mgr.PlaySoundClip(mahjong_path_mgr.GetMjCommonSoundPath("audio_ready"))
+		mahjong_play_sys.ReadyGameReq()
+	end
+end
+
+
+function this.SetRewards(data)
+	this.SetTitleView(data)
+	local tbl = data.playersInfo
+	local firstSeat = data.winViewSeat
+	local specialCardValues = data.specialCardValues
+	if #tbl == 0 then
+		return
+	end
+	-- 胡牌人是第一个，否则庄在第一个
+	if not data.isHuang then
+		this.itemList[1]:SetInfo(tbl[firstSeat],true, firstSeat,specialCardValues,self)
+		this.itemList[1]:ShowWin(true)
+	else
+		for i = 1, #tbl do
+			if tbl[i].isBanker then
+				firstSeat = i
+				break
+			end
+		end
+		this.itemList[1]:SetInfo(tbl[firstSeat],false, firstSeat,specialCardValues,self)
+		this.itemList[1]:ShowWin(false)
+	end
+
+	local itemIndex = 2
+	for i=1,#tbl-1 do
+		local seat = firstSeat + i
+		if seat > #tbl then
+			seat = seat - #tbl
+		end
+
+		this.itemList[itemIndex]:ShowWin(false)
+		this.itemList[itemIndex]:SetInfo(tbl[seat],false, seat,specialCardValues,self)
+		itemIndex = itemIndex + 1
+	end
+
+	-- 隐藏多余item
+	for i = roomdata_center.MaxPlayer() + 1, 4 do
+		this.itemList[i]:SetActive(false)
+	end
+
+	-- this.SetSelfIcon(#tbl)
+end
+
+function this.SetSelfIcon(length)
+	for i = 1, length do
+		if room_usersdata_center.GetViewSeatByLogicSeatNum(i) == 1 then
+			this.selectIconTr.gameObject:SetActive(true)
+			this.selectIconTr.position = this.itemList[i].infoView:GetSelfIconPosition()
+			return
+		end
+	end
+	this.selectIconTr.gameObject:SetActive(false)
+end
+
+-- 添加胡牌类型枚举？
+function this.SetTitleView(data)
+ 	this.titleView:SetResult(data)
+end
+
+local opercardList = {}
+--local handcardList = {}
+
+function this.GetOperCard()
+	local opercard = nil
+	if 0 == #opercardList then
+		local go = newobject(this.operItemList_EX)
+		opercard = mahjong_opercard_view:create(go)
+		return opercard
+	else
+		while(#opercardList > 0)
+		do
+			if not IsNil(opercardList[#opercardList].gameObject) then
+				return table.remove(opercardList)
+			else
+				table.remove(opercardList)
+			end
+		end
+		return this.GetOperCard()
+	end
+end
+
+function this.RecycleOperCard(item)
+	if not IsNil(item.gameObject) then
+		table.insert(opercardList,item)
+		item:SetActive(false)
+	end
+end
+
+function this.GetHandCard()
+	local go = newobject(this.cardItemList_EX)
+	local handcard = mahjong_handcard_view:create(go)
+	return handcard
+end

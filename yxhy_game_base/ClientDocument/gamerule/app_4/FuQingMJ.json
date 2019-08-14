@@ -1,0 +1,127 @@
+﻿[
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+	[
+    {
+      "multiterm": true,
+      "title": "玩法:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -80,
+	  "itemWidth": 232,
+	  "maxPerLine": 3, 
+      "id": [
+        "bSupGroundWin",
+		"nOneColor",
+        "bSupNonPingHu"
+      ],
+      "data": [
+		"地胡",
+        "清一色",
+		"无平胡"
+      ],
+      "selectIndex": [
+        1,
+        2
+      ]
+    }
+  ],
+  [
+    {
+      "exData": [
+	  4,
+	  3,
+	  2
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4人",
+        "3人",
+        "2人"
+      ],
+      "type": 1,
+      "itemHeight": -80,
+	  "itemWidth": 232,
+      "group": 21,
+      "title": "人数:",
+      "id": "pnum"
+    }
+  ],
+  [
+    {
+	 "exData": [
+	  4,
+	  8,
+	  16
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4局",
+        "8局",
+        "16局"
+      ],
+      "type": 1,
+      "group": 22,
+      "itemHeight": -80,
+      "itemWidth": 232,
+      "maxPerLine": 3,
+      "title": "局数:",
+      "id": "rounds"
+    }
+  ], 
+  [ 
+    {
+	 "exData": [
+	   1,
+	   0,
+	   2
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "点炮全赔",
+        "点炮单赔",
+		"点炮2倍单赔"
+      ],
+      "type": 1,
+      "group": 23,
+      "itemHeight": -160,
+	  "itemWidth": 232,
+      "title": "结算:",
+      "id": "bSupGunDouble"
+    } 
+  ] ,
+  [
+    {
+      "multiterm": true,
+      "title": "加注:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -80,
+	  "itemWidth": 232,
+      "id": [
+        "bSupportXiaPao"
+      ],
+      "data": [
+        "下注"
+      ],
+      "selectIndex": [
+      ]
+    }
+  ]
+]

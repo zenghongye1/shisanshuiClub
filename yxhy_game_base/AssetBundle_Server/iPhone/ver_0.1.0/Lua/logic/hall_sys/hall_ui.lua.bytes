@@ -1,0 +1,849 @@
+ --[[--
+ * @Description: 大厅ui组件
+ * @Author:      shine
+ * @FileName:    hall_ui.lua
+ * @DateTime:    2017-05-19 14:33:25
+ ]]
+ 
+require "logic/hall_sys/hall_data"
+require "logic/hall_sys/hall_ui_ctrl"  
+require "logic/network/http_request_interface"
+require "logic/hall_sys/shop/shop_ui"  
+--require "logic/hall_sys/certification_ui"
+require "logic/network/majong_request_protocol" 
+require "logic/hall_sys/openroom/openroom_main_ui"
+require "logic/hall_sys/setting_ui/setting_ui"
+--require "logic/hall_sys/record_ui/record_ui"
+--require "logic/hall_sys/join_room/join_room_ui"
+require "logic/hall_sys/record_ui/recorddetails_ui"
+--require "logic/hall_sys/share/share_ui"
+require "logic/hall_sys/help_ui" 
+require "logic/common/join_room_ctrl"
+--require "logic/hall_sys/record_ui/openrecord_ui"
+require "logic/mahjong_sys/utils/ShareStrUtil"
+require "logic/hall_sys/feedback_ui/feedback_ui"
+
+local base = require("logic.framework.ui.uibase.ui_window")
+local BaseClass = class("hall_ui",base)
+
+local HallClubBtnsView = require "logic/club_sys/View/HallClubBtnsView"
+local HallClubView = require "logic/club_sys/View/HallClubView"
+local HallClubRoomsView = require "logic/club_sys/View/HallClubRoomsView"
+local HallClubSelectView = require "logic/club_sys/View/HallClubSelectView"
+local UIManager = UI_Manager:Instance() 
+
+local uitable = {}
+
+local HallUIKind = {
+  hall = 1,
+  club = 2,
+  clubCreate = 3,
+  firstBlank = 4,
+}
+
+local isShowManage = false
+local isShowAuth = true
+
+local isFirstEnter = true
+
+function BaseClass:OnInit()
+  --OnInit
+  self.clubModel = model_manager:GetModel("ClubModel")
+  self.clubBtnsView = HallClubBtnsView:create(self:GetGameObject("Panel_Middle/Panel_club_new"))
+  self.clubBtnsView:SetActive(false)
+  self.clubView = HallClubView:create(self:GetGameObject("Panel_Left/hallClubsView"))
+  self.clubView:SetCallback(self.OnClubViewMoveComplete, self)
+  self.clubView:SetActive(false)
+  self.clubRoomsView = HallClubRoomsView:create(self:GetGameObject("Panel_Middle/hallClubEnterRoomView"))
+  self.clubRoomsView:SetActive(false)
+  self.clubSelectView = HallClubSelectView:create(self:GetGameObject("Panel_Bottom_club/clubSelectView"))
+  self.clubSelectView:SetCallback(self.OnClubSelectActiveChange, self)
+  self.clubSelectView:SetActive(false)
+
+  self.redIconGo = self:GetGameObject("Panel_Left/clubListBtn/redIcon")
+  self.redIconGo:SetActive(false)
+  self.isShowRed = false
+
+  self.clubListBtnGo = self:GetGameObject("Panel_Left/clubListBtn")
+  addClickCallbackSelf(self.clubListBtnGo, self.OnClubListBtnClick, self)
+
+  self.clubIconSp = self:GetComponent("Panel_Bottom_club/Sprite_club/bg/icon", typeof(UISprite))
+  self.Texture_avatarGo = self:GetGameObject("Panel_Middle/Texture_avatar")
+
+  self:preloadWeb()
+end
+
+function BaseClass:preloadWeb( ... )
+  
+  local url = global_define.GetUrlData()
+  if not self.webCom and url then
+    UI_Manager:Instance():ShowUiForms("activity_ui"):InitWebView()
+    UI_Manager:Instance():CloseUiForms("activity_ui")
+    -- local WebComponent = require "logic/common/WebComponent"
+    -- local activityPath = data_center.GetAppConfDataTble().appPath.."/ui/activity_ui/activity_ui"
+    -- local uiPrefab = newNormalObjSync(activityPath, typeof(GameObject))
+    -- self.webCom = WebComponent:create(child(uiPrefab.transform, "panel_activity/Panel_Middle/WebComponent").gameObject, url)
+  end
+end
+
+function BaseClass:setUIActive(_uiName, _active)
+  local uiObj = child(self.transform, _uiName)
+  if uiObj then
+    uiObj.gameObject:SetActive(_active)
+  end
+end
+function BaseClass:enterUIEffect(_uiName, _offsetX, _offsetY, _time)
+  
+  local uiObj = child(self.transform, _uiName)
+  if uiObj then
+    local isMoveEnd = false
+    local curValue = uiObj.gameObject.transform.localPosition
+    curValue = Vector3(curValue.x, curValue.y, curValue.z)
+    uiObj.gameObject.transform.localPosition = Vector3(curValue.x +_offsetX, curValue.y +_offsetY, curValue.z)
+
+    local animTweener = uiObj.gameObject.transform:DOLocalMove(curValue, _time, true)
+    animTweener:SetEase(DG.Tweening.Ease.Linear):OnComplete(function()
+      isMoveEnd = true
+
+      -- local startTimer = FrameTimer.New(function()
+      --     self:enterUIEffect(_uiName, _offsetX, _offsetY, _time)
+      -- end, 51, 1)
+      -- startTimer:Start()
+
+    end)
+    animTweener:OnKill(function()
+      -- 销毁动画对象
+      if uiObj and not isMoveEnd then
+        -- destroy(uiObj)
+        uiObj.gameObject.transform.localPosition = curValue
+        uiObj = nil
+      end
+    end)
+  end
+end
+function BaseClass:enterUIEffect2(_uiName, _offsetX, _offsetY, _time)
+  
+  local uiObj = child(self.transform, _uiName)
+  if uiObj then
+    local isMoveEnd = false
+    local curValue = uiObj.gameObject.transform.localScale
+    curValue = Vector3(curValue.x, curValue.y, curValue.z)
+    uiObj.gameObject.transform.localScale = Vector3(curValue.x +_offsetX, curValue.y +_offsetY, curValue.z)
+
+    local animTweener = uiObj.gameObject.transform:DOScale(curValue, _time)
+    animTweener:SetEase(DG.Tweening.Ease.OutElastic, 0.2):OnComplete(function()
+      isMoveEnd = true
+    end)
+    animTweener:OnKill(function()
+      -- 销毁动画对象
+      if uiObj and not isMoveEnd then
+        -- destroy(uiObj)
+        uiObj.gameObject.transform.localScale = curValue
+        uiObj = nil
+      end
+    end)
+  end
+end
+
+function BaseClass:OnClubSelectActiveChange(value)
+  if self.iKind == HallUIKind.club then
+    self.Texture_avatarGo:SetActive(not value)
+  end
+end
+
+function BaseClass:SetTextureAvatar(value)
+  if self.Texture_avatar_Tex == nil then
+    self.Texture_avatar_Tex = componentGet(self.Texture_avatarGo.transform,"UITexture")
+  end
+  if IsNil(self.avatarGo) then
+    local prefab = newNormalObjSync("app_4/poker_common/role/roleprefab", typeof(GameObject))
+    self.avatarGo = newobject(prefab)
+    GameObject.DontDestroyOnLoad(self.avatarGo)
+  end
+  self.avatarGo:SetActive(value)
+  if self.Texture_avatar_Tex.mainTexture == nil then
+    self.Texture_avatar_Tex.mainTexture = newNormalObjSync("app_4/poker_common/role/roleRenderTexture", typeof(UnityEngine.Texture))
+  end
+end
+
+function BaseClass:OnOpen(data)
+  if not self.updateTimer then
+      self.updateTimer = FrameTimer.New(function()
+          self:ShowUI()
+          self:UpdateKind(true)
+          self:RegistEvent()
+          self.updateTimer = nil
+        end,1,1)
+      self.updateTimer:Start()
+  end
+end
+
+function BaseClass:OnClose()
+  self:SetTextureAvatar(false)
+  self:UnregistEvent()
+  self.clubView:Hide(true)
+end
+
+--[[--
+ * @Description: 逻辑入口  
+ ]]
+function BaseClass:ShowUI()
+
+  --用于苹果审核
+  -- if LuaHelper.isAppleVerify ~= nil and LuaHelper.isAppleVerify then
+  --   self:AppleVerifyHandler()
+  -- end
+
+  --注册按钮事件
+  self:RegisterUI()
+
+  hall_data.checkIdCard()
+  hall_data.checkInviteroom()
+  hall_data.Init()
+  self:InitInfo()
+
+  -- self:OpenUI(HallUIKind.hall)
+
+  --苹果审核隐藏界面
+  if G_isAppleVerifyInvite then
+    local btn_share=child(self.transform, "Panel_TopRight/Grid_TopRight/btn_share")
+    if btn_share then
+      btn_share.gameObject:SetActive(false)
+    end
+  end
+
+  self:OnClubAgentChange()
+
+  --首次进入打开活动界面
+  -- if isFirstEnter then
+  --   self:activity()
+  --   isFirstEnter = false
+  -- end
+  
+  self:SetTextureAvatar(true)
+
+  ui_sound_mgr.PlayBgSound("hall_bgm")
+end
+
+function BaseClass:RegistEvent()
+  Notifier.regist(GameEvent.OnClearFristState, self.UpdateKind, self)
+  Notifier.regist(GameEvent.OnSelfClubNumUpdate, self.OnClubNumUpdate, self)
+  Notifier.regist(GameEvent.OnClubInfoUpdate, self.OnClubInfoUpdate, self)
+  Notifier.regist(GameEvent.OnClubRoomListUpdate, self.OnClubRoomListUpdate, self)
+  Notifier.regist(GameEvent.OnCurrentClubChange, self.OnCurrentClubChange, self)
+  Notifier.regist(GameEvent.OnClubAgentChange, self.OnClubAgentChange, self)
+  Notifier.regist(cmdName.MSG_MOUSE_BTN_DOWN, self.OnMouseBtnDown, self)
+  Notifier.regist(GameEvent.OnEnterNewClub, self.OnEnterNewClub, self)
+  Notifier.regist(GameEvent.OnPlayerApplyClubChange, self.OnPlayerApplyClubChange, self)
+end
+
+function BaseClass:UnregistEvent()
+  Notifier.remove(GameEvent.OnClearFristState, self.UpdateKind, self)
+  Notifier.remove(GameEvent.OnSelfClubNumUpdate, self.OnClubNumUpdate, self)
+  Notifier.remove(GameEvent.OnClubRoomListUpdate, self.OnClubRoomListUpdate, self)
+  Notifier.remove(GameEvent.OnClubInfoUpdate, self.OnClubInfoUpdate, self)
+  Notifier.remove(GameEvent.OnCurrentClubChange, self.OnCurrentClubChange, self)
+  Notifier.remove(GameEvent.OnClubAgentChange, self.OnClubAgentChange, self)
+  Notifier.remove(cmdName.MSG_MOUSE_BTN_DOWN, self.OnMouseBtnDown, self)
+  Notifier.remove(GameEvent.OnEnterNewClub, self.OnEnterNewClub, self)
+  Notifier.regist(GameEvent.OnPlayerApplyClubChange, self.OnPlayerApplyClubChange, self)
+end
+
+
+function BaseClass:OnPlayerApplyClubChange()
+  self.clubRoomsView:UpdateHintInfo()
+end
+
+function BaseClass:OnEnterNewClub()
+  self.isShowRed = true
+  self.redIconGo:SetActive(true)
+end
+
+function BaseClass:OnCurrentClubChange()
+  self:RefreshClubIcon()
+  self.clubRoomsView:UpdateDatas()
+  self.clubView:UpdateDatas()
+end
+
+function BaseClass:OnClubAgentChange()
+  if not self.clubModel then
+    return
+  end
+  isShowManage = self.clubModel:CanCreateClub()
+  local Grid_authentication = child(self.transform, "Panel_Middle/Grid_authentication")
+  if Grid_authentication then
+    local Sprite_manage = child(Grid_authentication, "Sprite_manage")
+    if Sprite_manage then
+      Sprite_manage.gameObject:SetActive(isShowManage)
+    end
+    componentGet(Grid_authentication,"UIGrid"):Reposition()
+  end
+end
+
+function BaseClass:OnMouseBtnDown(pos)
+  self.clubView:OnMouseBtnDown(pos)
+end
+
+
+function BaseClass:SetAuthShow(_show)
+  isShowAuth = _show
+  local Grid_authentication = child(self.transform, "Panel_Middle/Grid_authentication")
+  if Grid_authentication then
+    local Sprite_auth = child(Grid_authentication, "Sprite_auth")
+    if Sprite_auth then
+      Sprite_auth.gameObject:SetActive(isShowAuth)
+    end
+    componentGet(Grid_authentication,"UIGrid"):Reposition()
+  end
+end
+
+
+function BaseClass:OnClubRoomListUpdate()
+  -- if self.iKind == HallUIKind.club then
+    self.clubRoomsView:UpdateDatas()
+  -- end
+end
+
+function BaseClass:OnClubNumUpdate()
+  self:UpdateKind()
+  self:OnClubInfoUpdate()
+end
+
+function BaseClass:OnClubInfoUpdate()
+  self:RefreshClubIcon()
+  self.clubView:UpdateDatas()
+  self.clubRoomsView:UpdateDatas()
+end
+
+
+
+function BaseClass:UpdateKind(force)
+  local kind = nil
+  if self.clubModel.firstPlay and not self.clubModel:HasClub() then
+    kind = HallUIKind.firstBlank
+  elseif not self.clubModel:HasClub() then
+    kind = HallUIKind.clubCreate
+    self.clubView:Hide(true)
+  else
+    -- 在大厅不强制转换为俱乐部
+    if iKind ~=  HallUIKind.clubCreate then
+      kind = HallUIKind.club
+    end
+  end
+
+  if self.iKind == kind and not force then
+    return
+  end
+
+  if kind == HallUIKind.club then
+    self:RefreshClubIcon()
+  end
+  -- self.clubView:UpdateDatas()
+  self.clubRoomsView:UpdateDatas()
+  self:OpenUI(kind)
+end
+
+function BaseClass:RefreshClubIcon()
+  if self.clubModel:HasClub() then
+    self.clubIconSp.spriteName = ClubUtil.GetClubIconName(self.clubModel.currentClubInfo.icon)
+  end
+end
+
+function BaseClass:ShowClub()
+  if not self.clubModel:HasClub() then
+    return
+  end
+  if self.iKind ~= HallUIKind.club then
+    self:OpenUI(HallUIKind.club)
+  else
+    self.clubRoomsView:UpdateDatas()
+  end
+end
+
+function BaseClass:OpenUI(_iKind)
+  self.iKind = _iKind
+  local Panel_TopLeft = "Panel_TopLeft"
+  local Panel_TopRight = "Panel_TopRight"
+  -- local Panel_TopRight = "Panel_TopRight/Grid_TopRight/btn_share"
+
+  -- local Sprite_goClub = "Panel_TopLeft/Sprite_club"
+  -- local Sprite_goHall = "Panel_TopLeft/Sprite_hall"
+  local Texture_avatar = "Panel_Middle/Texture_avatar"
+  local Panel_Bottom = "Panel_Bottom"
+  local Panel_Bottom_club = "Panel_Bottom_club"
+
+  local Grid_authentication = "Panel_Middle/Grid_authentication"
+  -- local Sprite_auth = "Panel_Middle/Grid_authentication/Sprite_auth"
+  local Sprite_auth = "Panel_TopRight/Grid_TopRight/btn_auth"
+  local Sprite_manage = "Panel_Middle/Grid_authentication/Sprite_manage"
+
+  local Sprite_toLogin = "Sprite_toLogin"
+
+  if _iKind ==HallUIKind.firstBlank then
+    --第一次进入空白页
+    self:setUIActive(Panel_TopLeft, false)
+    self:setUIActive(Panel_TopRight, false)
+    self:setUIActive(Panel_Bottom, false)
+    self:setUIActive(Panel_Bottom_club, false)
+
+    self:setUIActive(Texture_avatar, false)
+    self.clubBtnsView:SetActive(true)
+
+    self:setUIActive(Grid_authentication, false)
+    self:setUIActive(Sprite_toLogin, true)
+
+  else
+    self:setUIActive(Panel_TopLeft, true)
+    self:setUIActive(Panel_TopRight, true)
+    self:setUIActive(Sprite_toLogin, false)
+
+    -- if _iKind ==HallUIKind.club then
+    --   --俱乐部
+    --   self:setUIActive(Sprite_goClub, false)
+    --   self:setUIActive(Sprite_goHall, true)
+
+    --   self:setUIActive(Texture_avatar, true)
+
+    --   self:setUIActive(Panel_Bottom, false)
+    --   self:setUIActive(Panel_Bottom_club, true)
+
+    --   self.clubBtnsView:SetActive(false)
+
+    --   self:setUIActive(Grid_authentication, true)
+    --   self:setUIActive(Sprite_auth, false)
+    --   self:setUIActive(Sprite_manage, isShowManage)
+
+    -- elseif _iKind ==HallUIKind.clubCreate then
+    --   --创建俱乐部
+    --   self:setUIActive(Sprite_goClub, true)
+    --   self:setUIActive(Sprite_goHall, false)
+
+    --   self:setUIActive(Texture_avatar, false)
+      
+    --   self:setUIActive(Panel_Bottom, true)
+    --   self:setUIActive(Panel_Bottom_club, false)
+    --   self.clubBtnsView:SetActive(true)
+
+    --   self:setUIActive(Grid_authentication, true)
+    --   self:setUIActive(Sprite_auth, isShowAuth)
+    --   self:setUIActive(Sprite_manage, false)
+
+    -- else
+      --大厅
+      -- self:setUIActive(Sprite_goClub, true)
+      -- self:setUIActive(Sprite_goHall, false)
+
+      self:setUIActive(Texture_avatar, _iKind == HallUIKind.club)
+
+      self:setUIActive(Panel_Bottom, true)
+      self:setUIActive(Panel_Bottom_club, false)
+      self.clubBtnsView:SetActive(_iKind ~= HallUIKind.club)
+
+      self:setUIActive(Grid_authentication, true)
+      self:setUIActive(Sprite_auth, isShowAuth)
+      self:setUIActive(Sprite_manage, isShowManage)
+    -- end
+  end
+
+  self.clubRoomsView:SetActive(_iKind == HallUIKind.club)
+  self.clubView:SetActive(_iKind == HallUIKind.club)
+  self.clubListBtnGo:SetActive(_iKind == HallUIKind.club)
+  if _iKind ~= HallUIKind.club then
+    self.clubSelectView:SetActive(false)
+  end
+
+  local Grid_authentication = child(self.transform, "Panel_Middle/Grid_authentication")
+  if Grid_authentication then
+    componentGet(Grid_authentication,"UIGrid"):Reposition()
+  end
+end
+
+
+function BaseClass:AppleVerifyHandler()
+ -- uitable.btn_shopicon.gameObject:SetActive(false)  
+ --[[ local sp_fk = child(uitable.btn_photo.transform, "sp_fkBackground/Sprite")
+  if sp_fk ~= nil then
+    sp_fk.gameObject:SetActive(false)
+  end
+
+  local sp_bg = child(uitable.btn_photo.transform, "sp_fkBackground")
+  if sp_bg ~= nil then
+    sp_bg.gameObject:SetActive(false)
+  end
+  uitable.btn_share.gameObject:SetActive(false) 
+  uitable.btn_activity.gameObject:SetActive(false)  
+  uitable.btn_shop.gameObject:SetActive(false)   
+
+  local btnBottom = child(self.transform, "Panel_BottomRight/btn_bottom")
+  if btnBottom ~= nil then
+    btnBottom.gameObject:SetActive(false)
+  end--]]
+end
+
+function BaseClass:OnClubViewMoveComplete()
+  if self.clubView.isShow == false and self.iKind == HallUIKind.club then
+      self.clubListBtnGo:SetActive(true)
+  end
+end
+
+function BaseClass:OnClubListBtnClick()
+  if self.isShowRed then
+    self.isShowRed = false
+    self.redIconGo:SetActive(false)
+  end
+  ui_sound_mgr.PlayButtonClick()
+  self.clubListBtnGo:SetActive(false)
+  self.clubView:Show()
+end
+
+--[[--
+ * @Description: 销毁  
+ ]]
+ function BaseClass:OnDestroy()
+   hall_ui_ctrl.UInit() 
+   hall_data.Unregister()
+end
+ 
+function BaseClass:RegisterUI() 
+
+    -- 注册按钮事件
+    local btnEventTbl = {
+      {"Panel_TopRight/Grid_TopRight/btn_share", self.share}, -- 分享
+      {"Panel_TopRight/Grid_TopRight/btn_setting", self.setting}, -- 设置
+      {"Panel_TopLeft/btn_photo/sp_fkBackground/btn_shop", self.shop}, -- +号商城
+
+      -- 游戏大厅
+      {"Panel_TopLeft/btn_photo", self.OpenPersonInfo}, -- 个人信息
+      {"Panel_TopLeft/Sprite_club", function( ... )
+        if self.clubModel:HasClub() then
+          self:OpenUI(HallUIKind.club)
+        else
+          UIManager:FastTip("你还没有加入俱乐部")
+        end
+
+      end}, -- 俱乐部
+      {"Panel_Bottom/Sprite_record", self.OnFreshrecordClick}, -- 战绩按钮
+      {"Panel_Bottom/Grid/Sprite_store", self.shop}, -- 商城
+      {"Panel_Bottom/Grid/Sprite_active", self.activity}, -- 活动
+      {"Panel_Bottom/Grid/Sprite_mail", self.mail}, -- 邮箱
+      {"Panel_Bottom/Grid/Sprite_feedback", self.service}, -- 反馈
+      {"Panel_Bottom/Sprite_quickJoin", function( ... )
+        ui_sound_mgr.PlayButtonClick()
+        UIManager:ShowUiForms("joinRoom_ui")
+      end}, -- 快速加入
+
+      -- 俱乐部主界面
+      {"Panel_TopLeft/Sprite_hall", function( ... )
+        self:OpenUI(HallUIKind.clubCreate)
+
+      end}, -- 游戏大厅
+      {"Panel_Bottom_club/Sprite_club", function( ... )
+        self.clubSelectView:Show()
+      end}, -- 俱乐部
+      {"Panel_Bottom_club/Grid/Sprite_member", function( ... )
+        if self.clubModel.currentClubInfo ~= nil then
+           -- UIManager:ShowUiForms("ClubMemberUI", nil, nil, self.clubModel.currentClubInfo.cid)
+        end
+      end}, -- 成员
+      {"Panel_Bottom_club/Grid/Sprite_boon", function( ... )
+        UIManager:FastTip(LanguageMgr.GetWord(10060))
+      end}, -- 福利
+      -- {"Panel_Bottom_club/Grid/Sprite_info", function( ... )
+      -- {"Panel_Middle/hallClubEnterRoomView/topPanel/clubName", function( ... )
+      --   -- Trace("信息---")
+      --   -- if self.clubModel.currentClubInfo ~= nil then
+      --   --   UIManager:ShowUiForms("ClubInfoUI", nil, nil, self.clubModel.currentClubInfo)
+      --   -- end
+      -- end}, -- 信息
+      {"Panel_Bottom_club/Sprite_quickJoin", function( ... )
+        UIManager:ShowUiForms("joinRoom_ui")
+
+      end}, -- 快速加入
+
+      {"Panel_TopRight/Grid_TopRight/btn_auth", self.certification}, -- 认证
+      
+      {"Panel_Middle/Grid_authentication/Sprite_manage", self.openManagementUI}, -- 管理
+
+      {"Sprite_toLogin", function( ... )
+        MessageBox.ShowYesNoBox(GetDictString(6029), function()
+            game_scene.gotoLogin()
+            game_scene.GoToLoginHandle()
+          end)
+      end}, -- 退回登录界面
+    }
+    uitable.grid_authentication = componentGet(child(self.gameObject.transform,"Panel_Middle/Grid_authentication"),"UIGrid")
+    for k,v in pairs(btnEventTbl) do
+      local evtFun = v[2]
+      local btnObj = AddListener(self.transform, v[1], evtFun, self)
+
+      if self.activity == evtFun then
+        uitable.btn_activity = btnObj
+
+      elseif self.mail == evtFun then
+        uitable.btn_mail = btnObj
+
+      elseif self.service == evtFun then
+        uitable.btn_customerservice = btnObj
+      
+      elseif self.certification == evtFun then
+        uitable.btn_certification = btnObj
+		  
+      end
+    end
+
+end 
+
+
+
+function BaseClass:PlayOpenAmination()
+
+  --进场ui效果
+  local Panel_over = child(self.transform, "Panel_over")
+  if Panel_over then
+    Panel_over.gameObject.gameObject:SetActive(true)
+  end
+
+  local startTimer = FrameTimer.New(function()
+
+    if Panel_over then
+      Panel_over.gameObject:SetActive(false)
+    end
+
+    local time = 0.3
+    local length = 150
+    self:enterUIEffect("Panel_TopLeft", 0, length, time)
+    self:enterUIEffect("Panel_TopRight", 0, length, time)
+    self:enterUIEffect("Panel_Bottom", 0, -length, time)
+    self:enterUIEffect("Panel_Bottom_club", 0, -length, time)
+
+    self:enterUIEffect("Panel_Middle/Grid_authentication", -length, 0, 0.35)
+    self:enterUIEffect2("Panel_Middle/hallClubEnterRoomView", -0.3, -0.3, 0.5)
+  end, 1.2, 1)
+  startTimer:Start()
+
+end
+
+function BaseClass:OnRefreshDepth()
+
+  local effectNameTbl = {
+      "Panel_Middle/Panel_club_new/Grid/Sprite_create/Effect_chuangjianjulebu",
+      "Panel_Middle/Panel_club_new/Grid/Sprite_recommend/Effect_tuijianjulebu",
+      "Panel_Middle/Panel_club_new/Grid/Sprite_join/Effect_jiarujulebu",
+
+      "Panel_Bottom/Sprite_record/Effect_zhanji",
+      "Panel_Bottom/Sprite_quickJoin/Effect_kuaishujiaru",
+
+      "Panel_Bottom_club/Sprite_club/Effect_julebu",
+      "Panel_Bottom_club/Sprite_quickJoin/Effect_kuaishujiaru",
+
+      "Panel_TopLeft/btn_photo/sp_fkBackground/Sprite/Effect_xiaofangka",
+      "Panel_TopLeft/btn_photo/sp_fkBackground/btn_shop/Effect_btn_shop",
+    }
+  for k,v in pairs(effectNameTbl) do
+    local uiEffect = child(self.gameObject.transform, v)
+    if uiEffect and self.sortingOrder then
+      local topLayerIndex = self.sortingOrder +self.m_subPanelCount +1
+      Utils.SetEffectSortLayer(uiEffect.gameObject, topLayerIndex)
+    end
+  end
+
+  local Panel_over = child(self.transform, "Panel_over")
+  if Panel_over and self.sortingOrder then
+    local panel = componentGet(Panel_over.gameObject.transform,"UIPanel")
+    panel.sortingOrder = self.sortingOrder +self.m_subPanelCount +10
+  end
+end
+
+--------------------------------------按钮相关逻辑----------------------------------------- 
+
+function BaseClass:OpenPersonInfo()
+	ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+	local uid = data_center.GetLoginUserInfo().uid	
+	UI_Manager:Instance():ShowUiForms("personInfo_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+	end,uid)	  
+end
+
+function BaseClass:share()
+   --share_ui.Show()
+    ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+    report_sys.EventUpload(7)
+	UI_Manager:Instance():ShowUiForms("share_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+	end)
+end
+
+function BaseClass:activity(obj1,obj2) 
+    ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+	report_sys.EventUpload(9)
+	UI_Manager:Instance():ShowUiForms("activity_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+	end)
+end
+
+function BaseClass:shop()    
+    ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+    UI_Manager:Instance():ShowUiForms("shop_ui")
+end
+
+
+function BaseClass:service()
+   ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+   report_sys.EventUpload(4)
+   --service_ui.Show()
+   UI_Manager:Instance():ShowUiForms("feedback_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+						end)
+end
+
+function BaseClass:help() 
+    ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+	report_sys.EventUpload(2)
+    -- help_ui.Show(ENUM_GAME_TYPE.TYPE_SHISHANSHUI) 
+
+    UI_Manager:Instance():ShowUiForms("help_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+                          end, ENUM_GAME_TYPE.TYPE_SHISHANSHUI)
+end
+
+function BaseClass:OpenRoomClick() 
+    ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+	report_sys.EventUpload(23) 
+  UI_Manager:Instance():ShowUiForms("openroom_ui")
+
+end
+
+function BaseClass:setting()
+	ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+	report_sys.EventUpload(1)
+	UI_Manager:Instance():ShowUiForms("setting_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+	end)
+  --setting_ui.Show() 
+end
+
+function BaseClass:mail()
+	ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click") 
+	report_sys.EventUpload(3)
+	UI_Manager:Instance():ShowUiForms("mail_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+	end)
+end
+
+function BaseClass:joinroom()
+    ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+    report_sys.EventUpload(24)
+	UI_Manager:Instance():ShowUiForms("joinRoom_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+	end)
+   --join_room_ui.Show()
+end
+
+function BaseClass:certification()
+	ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+	report_sys.EventUpload(5)
+	UI_Manager:Instance():ShowUiForms("certification_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+	end)
+   --certification_ui.Show()
+end
+
+function BaseClass:openManagementUI()
+  ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+  local infoTbl = http_request_interface.GetTable()
+  if not infoTbl then
+    return
+  end
+
+  local clientConfData = data_center.GetClientConfData()
+  if not clientConfData then
+    return
+  end
+  local reqUrl = clientConfData.clubagenturl --"http://intest.dstars.cc/club/youxianqipai/club/index.html"
+  if reqUrl then
+    reqUrl = reqUrl.."?appid="..global_define.appConfig.appId .."&session_key="..infoTbl.session_key
+    -- Trace("openManagementUI: "..reqUrl)
+    
+    local webpage= SingleFullWeb.Instance:InitWebPage(reqUrl, -1,-1, -1,-1, true)
+    if webpage then
+      webpage:Show()
+    end
+  end
+end
+
+--------------------------------------更新用户信息-----------------------------------------
+function BaseClass:InitInfo()
+   local useinfo=data_center.GetLoginUserInfo()
+   local allinfo=data_center.GetUserInfoTbl()
+   local redpoint=child(uitable.btn_mail,"sp_red")  
+   if tonumber(allinfo["hasEmail"])==0 then
+       redpoint.gameObject:SetActive(false)
+   else
+       redpoint.gameObject:SetActive(true)
+   end 
+    
+   local aredpoint=child(uitable.btn_activity.transform,"sp_red")
+   if tonumber(allinfo.hasact)==1 then
+       aredpoint.gameObject:SetActive(true)
+   else
+       aredpoint.gameObject:SetActive(false)
+   end
+   local lab_name=child(self.transform,"Panel_TopLeft/btn_photo/sp_nameBackground/lab_name")
+   if lab_name~=nil and useinfo.nickname~=nil then
+       componentGet(lab_name.gameObject,"UILabel").text=useinfo.nickname
+   end
+   local lab_id=child(self.transform,"Panel_TopLeft/btn_photo/sp_nameBackground/lab_id")
+   if lab_id~=nil and useinfo.uid~=nil then
+      componentGet(lab_id.gameObject,"UILabel").text="ID:"..useinfo.uid
+   end
+   local lab_card=child(self.transform,"Panel_TopLeft/btn_photo/sp_fkBackground/lab_id")
+   if lab_card~=nil and useinfo.card~=nil then
+      componentGet(lab_card.gameObject,"UILabel").text=useinfo.card
+   end
+   local tx_photo=child(self.transform,"Panel_TopLeft/btn_photo/sp_photo/tex_photo")
+   if lab_name~=nil then 
+      hall_data.getuserimage(componentGet(tx_photo, "UITexture"))
+   end
+   local xlb=allinfo["xlb"]
+   if xlb~=nil and xlb.data~=nil and  xlb.data[1]~=nil then
+    UIManager:ShowUiForms("notice_ui", nil, nil,xlb.data[1].msg,5)
+   end  
+
+  -- 是否弹出活动界面
+  if allinfo and tonumber(allinfo.is_pop) ==1 then
+    self:activity()
+    allinfo.is_pop = 0
+  end
+end
+
+--------------------------------------滑动战绩事件----------------------------------------- 
+function BaseClass:OnFreshrecordClick(obj1,obj2) 
+    ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+	report_sys.EventUpload(11)
+
+  UI_Manager:Instance():ShowUiForms("record_ui")
+end
+
+
+function BaseClass:Getuitable()
+  return uitable 
+end
+
+-- function this.ExtraUIHandler()
+--   if not IsNil(message_box.gameObject) then
+--     UI_Manager:Instance():CloseUiForms("message_box") 
+--   end
+-- end
+function BaseClass:ShowMoreRedPoint()
+	-- local moreRedPoint = child(uitable.btn_more,"sp_red")
+	-- local feedbackRedPoint = child(uitable.btn_customerservice,"sp_red")
+	-- local emailRedPoint = child(uitable.btn_mail,"sp_red")
+	-- if feedbackRedPoint.gameObject.activeSelf == true or emailRedPoint.gameObject.activeSelf == true then
+	-- 	moreRedPoint.gameObject:SetActive(true)
+	-- else
+	-- 	moreRedPoint.gameObject:SetActive(false)
+	-- end
+end
+
+function BaseClass:ShowFeedBackRedPoint(status)
+	local sp_red = child(uitable.btn_customerservice,"sp_red")
+	sp_red.gameObject:SetActive(status)
+end
+
+function BaseClass:ShowEmailRedPoint(status)
+	local sp_red = child(uitable.btn_mail,"sp_red")
+	sp_red.gameObject:SetActive(status)
+end
+
+return BaseClass

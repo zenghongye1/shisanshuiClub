@@ -1,0 +1,78 @@
+{
+"skeleton": { "hash": "St8KpuIHe8pFunndKe3tt/bCsTE", "spine": "3.3.07", "width": 313.5, "height": 145.2, "images": "./image/" },
+"bones": [
+	{ "name": "root" },
+	{ "name": "bone", "parent": "root", "length": 88.9, "rotation": -91.7, "x": 169.74, "y": -11.5, "scaleX": 1.1, "scaleY": 1.1 }
+],
+"slots": [
+	{ "name": "1111", "bone": "root" },
+	{ "name": "s1 (1)2", "bone": "bone", "attachment": "s1 (4)" }
+],
+"skins": {
+	"default": {
+		"s1 (1)2": {
+			"s1 (1)": { "x": -0.49, "y": -0.25, "rotation": 91.7, "width": 96, "height": 38 },
+			"s1 (2)": { "x": -0.49, "y": -0.25, "rotation": 91.7, "width": 247, "height": 99 },
+			"s1 (3)": { "x": -0.49, "y": -0.25, "rotation": 91.7, "width": 277, "height": 128 },
+			"s1 (4)": { "x": -0.49, "y": -0.25, "rotation": 91.7, "width": 285, "height": 132 },
+			"s1 (5)": { "x": -0.49, "y": -0.25, "rotation": 91.7, "width": 287, "height": 137 },
+			"s1 (6)": { "x": -0.49, "y": -0.25, "rotation": 91.7, "width": 303, "height": 145 }
+		}
+	}
+},
+"animations": {
+	"chipai": {
+		"slots": {
+			"s1 (1)2": {
+				"attachment": [
+					{ "time": 0, "name": "s1 (1)" },
+					{ "time": 0.1, "name": "s1 (2)" },
+					{ "time": 0.2, "name": "s1 (3)" },
+					{ "time": 0.3, "name": "s1 (4)" },
+					{ "time": 0.4, "name": "s1 (5)" },
+					{ "time": 0.5, "name": "s1 (6)" },
+					{ "time": 0.6, "name": null }
+				]
+			}
+		},
+		"bones": {
+			"bone": {
+				"rotate": [
+					{ "time": 0, "angle": 0, "curve": "stepped" },
+					{ "time": 0.6, "angle": 0 }
+				],
+				"translate": [
+					{ "time": 0, "x": -170.16, "y": 12.15, "curve": "stepped" },
+					{ "time": 0.6, "x": -170.16, "y": 12.15 }
+				],
+				"scale": [
+					{ "time": 0, "x": 1, "y": 1, "curve": "stepped" },
+					{ "time": 0.6, "x": 1, "y": 1 }
+				],
+				"shear": [
+					{ "time": 0, "x": 0, "y": 0, "curve": "stepped" },
+					{ "time": 0.6, "x": 0, "y": 0 }
+				]
+			},
+			"root": {
+				"rotate": [
+					{ "time": 0, "angle": 0 }
+				],
+				"translate": [
+					{ "time": 0, "x": 0, "y": 0 }
+				],
+				"scale": [
+					{ "time": 0, "x": 1, "y": 1 }
+				],
+				"shear": [
+					{ "time": 0, "x": 0, "y": 0 }
+				]
+			}
+		},
+		"drawOrder": [
+			{ "time": 0 },
+			{ "time": 0.6 }
+		]
+	}
+}
+}

@@ -1,0 +1,147 @@
+local base = require "logic.mahjong_sys.action.common.mahjong_action_base"
+local mahjong_action_totalreward_84 = class("mahjong_action_totalreward_84", base)
+
+local mahjong_ui = mahjong_ui
+
+local winTypeName = {
+	["selfdraw"] = "自摸胡", 		-- 自摸
+	["gunwin"] = "点炮胡", 		-- 点炮
+	["gangflower"] = "杠上花", 	-- 杠上花
+	["huangpai"] = "荒庄",	--	荒庄
+}
+
+local gangTypeName = {
+	["conceled_gang_count"] = "暗杠",
+	["revealed_gang_count"] = "明杠",
+	["beiming_gang"] = "被明杠",
+	["beian_gang"] = "被暗杠",
+}
+
+function mahjong_action_totalreward_84:Execute(tbl)
+	Trace(GetTblData(tbl))
+	local para = tbl._para
+	if para == nil then
+		return 
+	end
+	local rid = para.rid
+	local user_list = para.user_list
+	local owner_uid = para.owner_uid
+	local rno = para.rno
+	local ju_num = para.ju_num
+	local scoreLog = para.scoreLog
+
+	local show_win_type = self.config.big_settlement_show.win_type
+	--local show_byFanType = self.config.big_settlement_show.byFanType
+
+	local totalrewardData = {}
+
+	for i,v in pairs(user_list) do
+		local totalrewardData_one = {}
+		totalrewardData_one.all_score = 0
+		totalrewardData_one.tList = {}
+		totalrewardData_one.gangList = {}
+		table.insert(totalrewardData, totalrewardData_one)
+	end
+
+	-- 计算详细信息
+	for i,v in ipairs(scoreLog) do
+		local win_type = v.win_type
+		local who_win = v.who_win
+		local gangTimes = v.GangTimes
+
+		for j,w in ipairs(totalrewardData) do
+			local pStr = "p"..j
+			-- 总分
+			if v[pStr] then
+				w.all_score = w.all_score + v[pStr]
+			else
+				logError("获取玩家p失败，"..pStr)
+			end
+
+			-- 细目
+			if IsTblIncludeValue(j, who_win) then
+				-- 胡牌类型
+				local w_type = show_win_type[win_type]
+				if w_type then
+					if w.tList[w_type] then
+						w.tList[w_type] = w.tList[w_type] + 1
+					else
+						w.tList[w_type] = 1
+					end
+				end
+			end
+
+			--明杠、暗杠次数
+			if w.tList["conceled_gang_count"] and gangTimes[j]["conceled_gang_count"] then
+				w.tList["conceled_gang_count"] = w.tList["conceled_gang_count"] + gangTimes[j]["conceled_gang_count"]
+			else
+				if gangTimes[j]["conceled_gang_count"] and gangTimes[j]["conceled_gang_count"]~=0 then
+					w.tList["conceled_gang_count"] = gangTimes[j]["conceled_gang_count"]
+				end
+			end
+
+			if w.tList["revealed_gang_count"] and gangTimes[j]["revealed_gang_count"] then
+				w.tList["revealed_gang_count"] = w.tList["revealed_gang_count"] + gangTimes[j]["revealed_gang_count"]
+			else
+				if gangTimes[j]["revealed_gang_count"] and gangTimes[j]["revealed_gang_count"]~=0 then
+					w.tList["revealed_gang_count"] = gangTimes[j]["revealed_gang_count"]
+				end
+			end
+
+			--	被明杠，暗杠
+			if w.tList["beiming_gang"] and gangTimes[j]["beiming_gang"] then
+				w.tList["beiming_gang"] = w.tList["beiming_gang"] + gangTimes[j]["beiming_gang"]
+			else
+				if gangTimes[j]["beiming_gang"] and gangTimes[j]["beiming_gang"]~=0 then
+					w.tList["beiming_gang"] = gangTimes[j]["beiming_gang"]
+				end
+			end
+
+			if w.tList["beian_gang"] and gangTimes[j]["beian_gang"] then
+				w.tList["beian_gang"] = w.tList["beian_gang"] + gangTimes[j]["beian_gang"]
+			else
+				if gangTimes[j]["beian_gang"] and gangTimes[j]["beian_gang"]~=0 then
+					w.tList["beian_gang"] = gangTimes[j]["beian_gang"]
+				end
+			end
+		end
+	end
+	for i,v in ipairs(totalrewardData) do
+		local d = {}
+		for k,u in pairs(v.tList) do
+			local o = {}
+			o.name = k
+			o.score = u
+			table.insert(d,o)
+		end
+		local translateInfo = self:SetInfo(d)
+		v.tList = translateInfo
+	end
+	roomdata_center.totalRewardData = totalrewardData
+end
+
+-- 郑州麻将:自摸胡x、点炮胡x、杠上花x、四混胡x、明杠x、暗杠x、七小对x
+function mahjong_action_totalreward_84:SetInfo(data)
+	local tList = {}
+	if data == nil or #(data) == 0 then
+		return tList
+	end
+	for k, info in ipairs(data) do
+		if winTypeName[info.name] then
+			local item = {}
+			item.name = winTypeName[info.name]
+			item.num = info.score
+			table.insert(tList, item)
+		end
+		if gangTypeName[info.name] then
+			local item = {}
+			item.name = gangTypeName[info.name]
+			item.num = info.score
+			table.insert(tList, item)			
+		end
+	end
+	return tList
+end
+
+
+return mahjong_action_totalreward_84

@@ -1,0 +1,149 @@
+[
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+	[{
+		"multiterm": true,
+		"title": "玩法:",
+		"id": [
+			"wind",
+			"hun",
+			"hutype"
+		],
+		"data": [
+			"带风牌",
+			"带混牌",
+			"可点炮胡"
+		],
+		"selectIndex": [3],
+		"itemHeight": -80,
+		"type": 0,
+		"group": 0,
+		"connecttype": [1],
+		"connect": [{
+			"wind": {
+				"disable": [],
+				"enable": [{
+					"bWindGangHu": 1
+				}]
+			},
+			"hun": {
+				"disable": [{
+					"bWindGangHu": 1,
+					"bJiangHu": 1,
+					"bBKDAdd": 1,
+					"bMQDMAdd": 1
+				}],
+				"enable": []
+			}
+		}],
+		"Isconnect": [{
+			"lowrun": {
+				"select": []
+			},
+			"wind": {
+				"select": []
+			},
+			"hun": {
+				"select": []
+			}
+		}]
+	}],
+	[{
+		"exData": [4, 8, 16],
+		"selectIndex": [1],
+		"data": [
+			"4局(房卡x2)",
+			"8局(房卡x4)",
+			"16局(房卡x8)"
+		],
+		"type": 1,
+		"group": 22,
+		"itemHeight": -110,
+		"maxPerLine": 3,
+		"title": "局数:",
+		"id": "rounds"
+	}],
+	[{
+		"exData": [4, 3, 2],
+		"selectIndex": [1],
+		"data": [
+			"4人",
+			"3人",
+			"2人"
+		],
+		"type": 1,
+		"itemHeight": -110,
+		"group": 21,
+		"title": "人数:",
+		"id": "pnum"
+	}],
+	[{
+		"multiterm": true,
+		"title": "特殊:",
+		"id": [
+			"lowrun",
+			"gangrun",
+			"bJiangHu",
+			"bWindGangHu"
+		],
+		"data": [
+			"带下跑",
+			"带杠跑",
+			"258将",
+			"风杠胡"
+		],
+		"selectIndex": [1, 2],
+		"itemHeight": -80,
+		"type": 0,
+		"group": 0,
+		"connecttype": [1],
+		"connect": [{
+			"lowrun": {
+				"disable": [],
+				"enable": [{
+					"gangrun": 1
+				}]
+			}
+		}],
+		"Isconnect": [{
+			"lowrun": {
+				"select": []
+			}
+		}]
+	}],
+	[{
+		"multiterm": true,
+		"title": "结算:",
+		"id": [
+			"dealeradd",
+			"spadd",
+			"bHSevenFourAdd",
+			"gfadd",
+			"bBKDAdd",
+			"bMQDMAdd"
+		],
+		"data": [
+			"庄家加底",
+			"七对加倍",
+			"豪七加倍",
+			"杠上花加倍",
+			"边卡吊加倍",
+			"门清断门加倍"
+		],
+		"selectIndex": [],
+		"itemHeight": -110,
+		"type": 0,
+		"maxPerLine": 3,
+		"group": 0
+	}]
+]

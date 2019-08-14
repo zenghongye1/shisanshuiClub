@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/dysdk_sdk_dialog_bg"
+    android:orientation="vertical" >
+
+    <include
+        android:id="@+id/ic_top"
+        layout="@layout/dysdk_ttw_cz_navigation" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dip"
+        android:layout_marginTop="40dip"
+        android:gravity="center"
+        android:orientation="vertical" >
+
+        <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/dysdk_ico_phone"
+                    android:drawablePadding="10dp"
+                    android:gravity="center_vertical"
+                    android:text="客服热线:"
+                    android:textColor="@color/dysdk_ui_gray"
+                    android:textSize="18dip" />
+
+                <TextView
+                    android:id="@+id/tv_service_tel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0591-88291133"
+                    android:layout_marginLeft="5dp"
+                    android:textColor="@color/dysdk_ui_gray"
+                    android:textSize="18dip" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/dysdk_ico_qq"
+                    android:drawablePadding="10dp"
+                    android:gravity="center_vertical"
+                    android:text="客服 Q Q:"
+                    android:textColor="@color/dysdk_ui_gray"
+                    android:textSize="18dip" />
+
+                <TextView
+                    android:id="@+id/tv_service_qq"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2286748561"
+                    android:layout_marginLeft="5dp"
+                    android:textColor="@color/dysdk_ui_gray"
+                    android:textSize="18dip" />
+            </TableRow>
+        </TableLayout>
+    </LinearLayout>
+
+</LinearLayout>

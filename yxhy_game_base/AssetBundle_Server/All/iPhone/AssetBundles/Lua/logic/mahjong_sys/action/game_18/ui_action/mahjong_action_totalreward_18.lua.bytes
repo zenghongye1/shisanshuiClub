@@ -1,0 +1,246 @@
+local base = require "logic.mahjong_sys.action.common.mahjong_action_base"
+local mahjong_action_totalreward_18 = class("mahjong_action_totalreward_18", base)
+local bigSettlement_ui_data = require "logic/mahjong_sys/data/mahjong_data_class/bigSettlement_ui_data"
+
+local mahjong_ui = mahjong_ui
+
+--[[--
+ * @Description: 特殊牌型加倍叠加番，同时计算自摸点炮和特殊牌型次数  
+ ]]
+function mahjong_action_totalreward_18:Execute(tbl)
+	Trace(GetTblData(tbl))
+
+	local para = tbl._para
+	local scoreLog = {}
+	if para ~= nil then
+		scoreLog = para.scoreLog
+	end
+
+	local user_list = room_usersdata_center.GetUsersDataList()
+
+	local highScore,lowScore = self:GetHighScore(scoreLog)
+
+	local totalrewardData = bigSettlement_ui_data:create()
+	totalrewardData.gameName = self:GetGameName()
+	totalrewardData.endTime = self:GetGameTime()
+	totalrewardData.roomNum = self:GetRoomNum()
+
+	local players = {}
+	local sortPlayerList = {}
+	for i,v in pairs(user_list) do
+		local totalrewardData_one = {}
+		-- 用户数据
+		totalrewardData_one.userData = {}
+		totalrewardData_one.userData["name"] = v.name
+		totalrewardData_one.userData["uid"] = v.uid
+		totalrewardData_one.userData["headurl"] = v.headurl
+		totalrewardData_one.userData["imagetype"] = v.imagetype
+		-- 获取总分
+		totalrewardData_one.all_score = self:SetPlayerScore(scoreLog,i)
+		-- 获取描述项，并生成数组
+		local d = {}
+		for k,u in pairs(self:SetPlayerTlist(scoreLog,i)) do
+			local o = {[k] = u}
+			table.insert(d,o)
+		end
+		-- 调整展示顺序，转换字段
+		d = self:SortArray(d)
+		-- 转换展示的中文数据
+		totalrewardData_one.tList = self:SetInfo(d)
+		-- 大赢家
+		totalrewardData_one.isWin = highScore == totalrewardData_one.all_score and highScore~=0
+		-- 大输家
+		totalrewardData_one.isRich = lowScore == totalrewardData_one.all_score and lowScore~=0
+		-- 房主
+		totalrewardData_one.isRoomOwner = roomdata_center.ownerId == v.uid
+		if v.viewSeat == 1 then
+			table.insert(sortPlayerList,totalrewardData_one)
+		else
+			table.insert(players,totalrewardData_one)
+		end
+	end
+
+	-- table.sort(players, function (a,b)
+	-- 	return tonumber(a.all_score) > tonumber(b.all_score)
+	-- end )
+
+	for i=2,#players do
+		local insertItem = players[i]
+        local insertIndex = i - 1
+        while (insertIndex > 0 and insertItem.all_score > players[insertIndex].all_score)
+        do
+            players[insertIndex + 1] = players[insertIndex]
+            insertIndex = insertIndex -1
+        end
+        players[insertIndex + 1] = insertItem
+	end
+
+	for i=1,#players do
+		table.insert(sortPlayerList,players[i])
+	end
+
+	totalrewardData.players = sortPlayerList
+	roomdata_center.totalRewardData = totalrewardData
+end
+
+function mahjong_action_totalreward_18:GetRoomNum()
+	local str = "房号:"..roomdata_center.roomnumber
+	local round = roomdata_center.nJuNum.."局"
+	if roomdata_center.bSupportKe then
+		round = "打课"
+	end
+	str = str.."（"..round.."）"
+	return str
+end
+
+function mahjong_action_totalreward_18:GetGameTime()
+	return os.date("%Y-%m-%d  %H:%M:%S",os.time())
+end
+
+function mahjong_action_totalreward_18:GetGameName()
+	return GameUtil.GetGameName(roomdata_center.gid)
+end
+
+function mahjong_action_totalreward_18:GetHighScore(scoreLog)
+	local highScore = 0
+	local lowScore = 0
+	local count = room_usersdata_center.GetRoomPlayerCount()
+	for i=1,count do
+		local s = self:SetPlayerScore(scoreLog,i)
+		if highScore < s then
+			highScore = s
+		end
+		if lowScore > s then
+			lowScore = s
+		end
+	end
+	return highScore,lowScore
+end
+
+--[[--
+ * @Description: 获取总分  
+ ]]
+function mahjong_action_totalreward_18:SetPlayerScore(scoreLog,index)
+	local pStr = "p"..index
+	local all_score = 0
+	for _,v in ipairs(scoreLog) do
+		if v[pStr] then
+			all_score = all_score + v[pStr]
+		else
+			logError("获取玩家p失败，"..pStr)
+		end
+	end
+	return all_score
+end
+
+--[[--
+ * @Description: 获取描述项  
+ ]]
+function mahjong_action_totalreward_18:SetPlayerTlist(scoreLog,index)
+	-- 计算详细信息
+	local tList = {}
+	for i,v in ipairs(self.config.big_settlement_mustShow or {}) do
+		tList[v] = 0
+	end
+
+	for _,v in ipairs(scoreLog) do
+		local win_type = v.win_type
+		local who_win = v.who_win
+		local win_info = v.win_info
+		local pStr = "p"..index
+
+		-- 细目
+		if IsTblIncludeValue(index, who_win) then
+			-- 胡牌类型
+			local w_type = self.config.big_settlement_show.win_type[win_type]
+			if tList[w_type] then
+				tList[w_type] = tList[w_type] + 1
+			else
+				tList[w_type] = 1
+			end
+
+			-- 番型
+			if win_info and win_info[pStr] then
+				local nFanDetailInfo = win_info[pStr]["nFanDetailInfo"]
+				if nFanDetailInfo then
+					for _,detailInfo in ipairs(nFanDetailInfo) do
+						-- 不同玩法，一般通过判断 byFanType 过滤
+						if detailInfo.byFanType ~= 0 then
+							local byFanType = detailInfo.byFanType
+							if self.config.byFanType[byFanType] then
+								byFanType = self.config.byFanType[byFanType]
+							end
+
+							local serverName = config_mgr.getConfig("cfg_hutype",byFanType).serverName
+							if serverName then
+								if tList[serverName] then
+									tList[serverName] = tList[serverName] + 1
+								else
+									tList[serverName] = 1
+								end
+							else
+								logError("无法获取serverName,cfg_hutype byFanType:"..byFanType)
+							end
+						end
+					end
+				end
+			else
+				logError(win_info,"获取win_info失败，"..pStr)
+			end
+		end
+	end
+
+	return tList
+end
+
+
+function mahjong_action_totalreward_18:SortArray(arr)
+	for k,v in pairs(self.config.big_settlement_show.fan_change) do
+		for i=1,#arr do
+			if arr[i][k] then
+				arr[i] = {[v] = arr[i][k]}
+				break
+			end
+		end
+	end
+	local list = {}
+	for i,v in ipairs(self.config.big_settlement_show.byFanType) do
+		for _,item in ipairs(arr) do
+			if item[v] then
+				table.insert(list,{[v] = item[v]})
+				break
+			end
+		end
+	end
+	return list
+end
+
+function mahjong_action_totalreward_18:SetInfo(data)
+	local tList = {}	
+	if data == nil or #(data) == 0 then
+		return tList
+	end
+
+	local artConfig = config_mgr.getConfigs("cfg_artconfig")
+	for _, score in ipairs(data) do
+		for k,v in pairs(config_mgr.getConfigs("cfg_hutype")) do
+			if v.serverName and score[v.serverName] then
+				local item = {}
+				local artId = v.artId
+	            local artData = artConfig[artId]
+	            if artData and artData.chineseName then
+					item.name = artData.chineseName..":"
+				else
+					logError("未找到对应cfg_artconfig",artId)
+				end
+				item.num = score[v.serverName].."次"
+				table.insert(tList,item)
+				break
+			end
+		end
+	end
+
+	return tList
+end
+
+return mahjong_action_totalreward_18

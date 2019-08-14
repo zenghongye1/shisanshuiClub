@@ -1,0 +1,315 @@
+local place_card_data = class("place_card_data")
+function place_card_data:ctor()
+	self.cardList = {}				--下发和13张牌
+
+	self.nSpecialType = nil
+	self.recommend_cards = nil
+	self.place_index = nil         --已摆好牌索引
+	self.timeSecond = nil
+	self.isRecommond = false
+	self.left_card = {}
+	self.totalTime = nil
+	self.animationMove = false
+	self.bottonSelectCardsBtn = 0
+	self.allCardTypeIndex = 0		--底部按扭牌型序号
+	self.hoverObj = nil
+	self.isSelectDown = false
+	--已选中扑克
+	self.selectDownCards = {}
+	self.selectUpCard = nil
+
+	self.up_placed_cards = {[1] = {}, [2] = {}, [3] = {}}
+	--1,初始状态 2，选中状态 3，已摆放状态
+	self.CardType = {1, 2, 3}
+	self.first_auto_all_card = {}
+	self.isXiangGong = false
+	self.lastTime = 0  ----倒计时
+	self.animationSmallTime = 0.02
+	self.animationTime = 0.3
+	self.animationWaitTime = 0.3
+
+	self.cardDownScale = Vector3.New(1,1,1)	----未摆牌大小，修改此处需要修改uiGrid适配自动理牌功能
+	self.cardUpScale = Vector3.New(0.65,0.65,0.65)		----牌摆上去后的大小
+	self.XOffset = -6.2	--牌飞上去后底框偏移处理
+	self.YOffset = -31
+	self.cardUpXOffset = 1	--牌飞上去后底框偏移处理
+	self.cardUpYOffset = -4
+	self.cardClickMoveY = 25
+	
+	self.cardTranIndexTbl = {}
+end
+
+function place_card_data:SetCardTranIndex(cards)
+	---分离重复牌，用于区别相同牌的cardTran，设定为每额外多一个+100
+	self.cardTranIndexTbl = Array.Clone(cards)
+	self:FindSameCard(self.cardTranIndexTbl)
+end
+
+function place_card_data:GetallCardType(cards)
+	local normalCards = {}
+    local laiziCards = {}
+    for _, v in ipairs(cards) do
+        local nValue = GetCardValue(v)
+        if card_define.IsGhostCard(v) then
+            table.insert(laiziCards, v)
+        else
+            table.insert(normalCards, v)
+        end
+    end
+    local nLaziCount = #laiziCards
+	return normalCards, nLaziCount, laiziCards
+end
+
+function place_card_data:FindSameCard(cards)
+	if cards == nil then
+		Trace("FindSameCard,找相同的牌为空")
+		return cards
+	end
+	local sameCount = 0
+	for i = 1,#cards do
+		sameCount = 0
+		for j = i+1,#cards do
+			if cards[i] == cards[j] then
+				sameCount = sameCount + 1
+				cards[j] = cards[i] + sameCount * 100
+			end
+		end
+	end
+	return cards
+end
+
+function place_card_data:GetDownCardKey(cardData)
+	for i = 1, #self.selectDownCards do
+		if self.selectDownCards[i].down_index == cardData.down_index then
+			return i
+		end
+	end
+end
+
+----选牌飞上去排序
+function place_card_data:CardSort(cards)
+    --分离癞子牌和普通牌
+    local t = {}
+    local laiziCards = {}
+    for _, v in ipairs(cards) do
+        local nValue = GetCardValue(v)
+        if card_define.IsGhostCard(v) then
+            table.insert(laiziCards, v)
+        else
+            if t[nValue] == nil then
+                t[nValue] = {}
+            end
+            table.insert(t[nValue], v)
+        end
+    end
+
+    --对普通牌 按牌值的数量牌型 从大到小
+    local normalCards = {}
+    for _, v in pairs(t) do
+        table.insert(normalCards, v)
+    end
+    table.sort(normalCards, function(a,b)
+        if #a == #b then
+			local valueA = GetCardValue(a[1])
+			local valueB = GetCardValue(b[1])
+            return valueA > valueB
+        else
+            return #a > #b
+        end
+    end)
+
+    --把癞子牌放到数量最多牌型最前面
+    for _, v in ipairs(laiziCards) do
+		if normalCards[1] ~= nil then
+			table.insert(normalCards[1],1,v)
+		else
+			normalCards[1] = {}
+			table.insert(normalCards[1],v)
+		end
+    end
+
+    local stSortCards = {}
+    for _, v in ipairs(normalCards) do
+        for _, nc in ipairs(v) do
+            table.insert(stSortCards, nc)
+        end
+    end
+
+    return stSortCards
+end
+
+function place_card_data:CardUpSort(srcUpCards)
+	local srcCards = {}
+	for i = 1, #srcUpCards do
+		srcCards[i] = srcUpCards[i].card
+	end
+	srcCards = self:CardSort(srcCards)
+	local sortUpCards = {}
+	for i = 1, #srcCards do
+		for j =  #srcUpCards, 1, -1 do
+			if srcCards[i] == srcUpCards[j].card then
+				table.insert(sortUpCards, srcUpCards[j])
+				table.remove(srcUpCards, j)
+				break
+			end
+		end
+	end
+	return sortUpCards
+end
+
+--只能用做有序的
+function place_card_data:UpdateLeftCard(srcCard, temp)
+	if type(temp) == "table" then
+		Array.DelElements(srcCard, temp)
+	else
+		for i = #srcCard, 1, -1 do
+			if temp == srcCard[i] then
+				table.remove(srcCard, i)
+				return srcCard
+			end
+		end
+	end
+	return srcCard
+end
+
+--检查是否与原始牌一致
+function place_card_data:CheckSendCard(sendCards)
+	local clone_cards = Array.Clone(sendCards)
+	local src_cards = Array.Clone(self.cardList)
+	for i = #src_cards, 1, -1 do
+		for j = #clone_cards, 1, -1 do
+			if src_cards[i] == clone_cards[j] then
+				table.remove(src_cards, i)
+				table.remove(clone_cards, j)
+			end
+		end
+	end
+	if #clone_cards > 0 then
+		UI_Manager:Instance():FastTip(LanguageMgr.GetWord(6021))
+		return false
+	end
+	return true
+end	
+
+--获得确认的牌
+function place_card_data:GetConfirmCard()
+	local confirmCards = {}
+	local sortCard = {}
+	for i = 1, 5 do
+		sortCard[i] = self.up_placed_cards[1][i].card
+	end
+	self:CardSort(sortCard)
+	confirmCards = Array.Add(confirmCards, sortCard)
+	sortCard = {}
+	for i = 1, 5 do
+		sortCard[i] = self.up_placed_cards[2][i].card
+	end
+	self:CardSort(sortCard)
+	confirmCards = Array.Add(confirmCards, sortCard)
+	sortCard = {}
+	for i = 1, 3 do
+		sortCard[i] = self.up_placed_cards[3][i].card
+	end
+	self:CardSort(sortCard)
+	confirmCards = Array.Add(confirmCards, sortCard)
+	return confirmCards
+end
+
+function place_card_data:CardGroup(dun)
+	local tbl ={}
+	if dun == 1 then
+		for i = 1, 5 do
+			tbl[i] = self.up_placed_cards[1][i].card
+		end
+	elseif dun == 2 then
+		for i = 1, 5 do
+			tbl[i] = self.up_placed_cards[2][i].card
+		end
+	elseif dun == 3 then
+		for i = 1, 3 do
+			tbl[i] = self.up_placed_cards[3][i].card
+		end
+	end
+	return tbl
+end
+
+function place_card_data:XiangGong()
+	--重新获取一遍
+	local bSuc1, firstType, values1 = sss_recommendHelper.GetLibNormalCardLogic():GetCardTypeByLaizi(self:CardGroup(3))
+	local bSuc2, secondType, values2 = sss_recommendHelper.GetLibNormalCardLogic():GetCardTypeByLaizi(self:CardGroup(2))
+	local bSuc3, thirdType, values3 = sss_recommendHelper.GetLibNormalCardLogic():GetCardTypeByLaizi(self:CardGroup(1))
+	--需要重新再比一次  防止换牌后还有相公
+	if sss_recommendHelper.GetLibNormalCardLogic():CompareCardsLaizi(firstType, secondType, values1, values2) > 0 then
+		return true
+	end
+	if sss_recommendHelper.GetLibNormalCardLogic():CompareCardsLaizi(secondType, thirdType, values2, values3) > 0 then
+		return true
+	end
+	if sss_recommendHelper.GetLibNormalCardLogic():CompareCardsLaizi(firstType, thirdType, values1, values3) > 0 then
+		return true
+	end
+	return false
+end
+
+function place_card_data:GetMinDun(index)
+	local min
+	if index <= 5 then
+		min = 1
+	elseif index >= 11 then
+		min = 11
+	else
+		min = 6
+	end
+	return min
+end
+
+function place_card_data:GetDunNo(index)
+	local place_max, dun_no
+	if index <= 5 then
+		dun = 1
+		dun_no = index
+	elseif index >= 11 then
+		dun = 3
+		dun_no = index - 10
+	else
+		dun = 2
+		dun_no = index - 5
+	end
+	return dun, dun_no
+end
+
+function place_card_data:GetDun(index)
+	local place_max, dun, dun_no
+	if index <= 5 then
+		place_max = 5
+		dun = 1
+		dun_no = index
+	elseif index >= 11 then
+		place_max = 13
+		dun = 3
+		dun_no = index - 10
+	else
+		place_max = 10
+		dun = 2
+		dun_no = index - 5
+	end
+	return place_max, dun, dun_no
+end
+
+function place_card_data:GetMaxPosInDun(index)
+	local place_max = self:GetMinDun(index)
+	local now_num = 0
+	local num = 4
+	if index > 10 then
+		num = 2
+	end
+	for i = place_max, place_max + num do
+		if cardPlaceTranList[i].blank == true then
+			now_num = now_num + 1
+		end
+	end
+	--print("max_pos_plaxe_card_num: "..place_max)
+	return now_num
+end
+
+return place_card_data

@@ -1,0 +1,15 @@
+1.unity编辑器下Build资源
+
+2.用SVN导出此目录下差异文件至外部文件夹
+
+3.打开ftp至/data/wwwroot/appid/appid_4/appid_4_v2.0.0路径
+
+4.将\yxhy_game_base\AssetBundle_Server\Android\ver_0.1.0 下对应平台打包资源上传
+
+5.Lua打包文件夹要上传至/data/wwwroot/appid/appid_4/appid_4_v2.0.0/Android/AssetBundles下
+
+6.SVN提交差异文件，标注版本号
+
+7.http://intest.dstars.cc/dstars_4/backsite/index.php 配置版本更新
+
+8.是否需要打包apk

@@ -1,0 +1,258 @@
+--region *.lua
+--Date
+--此文件由[BabeLua]插件自动生成
+
+--endregion 
+local mail_wrap = class("mail_wrap")
+
+function mail_wrap:ctor()	
+	self.maxCount = 0
+	self.wrapRecord = nil
+	self.currentIndex = 0
+	--self.page = 0
+	self.mail_ui = nil
+end
+
+function mail_wrap:InitData(Ui,data)
+	Trace("mail_wrap:InitData---------"..GetTblData(data))
+    self.maxCount = table.getCount(data)
+    self.wrapRecord = data
+	self.currentIndex = 1
+	--self.page = 0
+	self.mail_ui = Ui
+	self:InitView()
+    self:UpdateView(data)  
+end
+  
+function mail_wrap:InitView() 
+    self.scrollview = subComponentGet(self.mail_ui.leftChildRoot,"scrollview","UIScrollView")
+	if self.maxCount ~= 0 and self.maxCount ~= nil then
+		componentGet(self.scrollview.transform,"UIPanel"):Refresh()
+	end
+    self.grid = subComponentGet(self.mail_ui.leftChildRoot,"scrollview/ui_wrapcontent","UIGrid")  
+    self.mitem = child(self.mail_ui.leftChildRoot,"scrollview/1")
+    --self.scrollview.onDragFinished = self:DragFinish()
+	self.scrollview_text = subComponentGet(self.mail_ui.rightChildRoot,"sp_background","UIScrollView")
+    self.itemheight = 88
+	self.lbl_title = componentGet(child(self.mail_ui.rightChildRoot,"sp_background/title"),"UILabel")
+	self.lbl_content = componentGet(child(self.mail_ui.rightChildRoot,"sp_background/lbl_details"),"UILabel")
+	self.lbl_time = componentGet(child(self.mail_ui.rightChildRoot,"sp_background/sender/lbl_time"),"UILabel")
+	self.lbl_name = componentGet(child(self.mail_ui.rightChildRoot,"sp_background/sender/lbl_name"),"UILabel")
+	self.lbl_leftTime = componentGet(self.mail_ui.leftTimeGo,"UILabel")
+	self.lbl_leftTime.gameObject:SetActive(false)
+	self.btn_delete = child(self.mail_ui.rightChildRoot,"btn_delete")
+    if self.btn_delete ~= nil then
+        addClickCallbackSelf(self.btn_delete.gameObject,self.DeleteMail,self)
+		self.btn_delete.gameObject:SetActive(false)
+    end
+	self.btn_get = child(self.mail_ui.rightChildRoot,"btn_get")
+    if self.btn_get ~= nil then
+        addClickCallbackSelf(self.btn_get.gameObject,self.GetReward,self)
+    end
+	self.reward = child(self.mail_ui.mailDetailGo.transform,"reward")
+end
+
+--[[function mail_wrap:DragFinish() 
+    if self.scrollview.transform.localPosition.y >= (self.maxCount - 6) * self.itemheight then
+        self:OnUpdateToEnd()
+    end
+end--]]
+
+function mail_wrap:UpdateView(data)
+	self:CheckShowNoMail(self.maxCount)
+	self:CheckAllRead()
+    if table.getCount(data) < self.grid.transform.childCount then
+        local d = self.grid.transform.childCount - table.getCount(data)
+        for i=1,d do 
+            GameObject.DestroyImmediate(self.grid:GetChild(self.grid.transform.childCount - i).gameObject)
+        end
+    end
+    for i=1,#data do
+        local item = nil
+        if i <= self.grid.transform.childCount then
+            item = self.grid.transform:GetChild(i-1).gameObject
+        else
+            item = GameObject.Instantiate(self.mitem.gameObject)  
+            item.gameObject:SetActive(true)
+            item.transform.parent = self.grid.transform
+            item.transform.localScale = {x=1,y=1,z=1} 
+        end  
+        item.name = i
+        self:UpdateDetail(item.gameObject,i) 
+    end 
+    self.grid.enabled = true
+    self.grid:Reposition()
+	self.scrollview:ResetPosition()
+	self.scrollview_text:ResetPosition()
+end
+
+function mail_wrap:DeleteMail()  
+    if self.currentIndex == nil or self.wrapRecord[self.currentIndex] == nil then
+        return
+    end     
+    http_request_interface.delEmail(self.wrapRecord[self.currentIndex].eid,function(str) 
+		local str = ParseJsonStr(str)
+		if str.ret == 0 then
+			local index = self.currentIndex  
+			if (self.currentIndex == self.maxCount) then
+				self.currentIndex = index - 1
+			end
+			self:DeleteItem(index)
+		end
+    end)
+end
+
+function mail_wrap:GetReward()  
+    if self.currentIndex == nil or self.wrapRecord[self.currentIndex] == nil then
+        return
+    end     
+    http_request_interface.getEmailAttachment(self.wrapRecord[self.currentIndex].eid,function(str) 
+        local str = ParseJsonStr(str)
+		if str.ret == 0 then
+										------领取动画待处理
+			self:DeleteMail()
+		end
+    end)
+end
+
+function mail_wrap:DeleteItem(index) 
+    table.remove(self.wrapRecord,index) 
+    self.maxCount = table.getCount(self.wrapRecord)
+    self:UpdateView(self.wrapRecord)  
+end
+
+function mail_wrap:UpdateDetail(go,realindex) 
+    local rindext = realindex   
+    
+    if self.wrapRecord[rindext] == nil then
+        go.gameObject:SetActive(false)
+        return
+    end
+
+    local redpoint = child(go.transform,"sp_red")
+    redpoint.gameObject:SetActive(self.wrapRecord[rindext].status == 0) 
+	
+    componentGet(go.gameObject,"UIToggle").enabled = true
+    if go ~= nil then
+        local lbl_name = child(go.transform,"lab_name")   
+        local lbl_noname = child(go.transform,"lab_NOname")
+        componentGet(lbl_name.gameObject,"UILabel").text = self.wrapRecord[rindext].title 
+        componentGet(lbl_noname.gameObject,"UILabel").text = self.wrapRecord[rindext].title 
+        go.name = rindext  
+        addClickCallbackSelf(go.gameObject,self.toggleclick,self) 
+    end
+    if rindext ~= self.currentIndex then
+        componentGet(go.gameObject,"UIToggle").value = false  
+        child(go.transform,"Checkmark").gameObject:SetActive(false)
+    else
+        componentGet(go.gameObject,"UIToggle").value = true   
+        child(go.transform,"Checkmark").gameObject:SetActive(true)   
+        self.lbl_content.text = self.wrapRecord[rindext].content
+		self.lbl_title.text = self.wrapRecord[rindext].title
+		self.lbl_time.text = os.date("%Y/%m/%d %H:%M",self.wrapRecord[rindext].ptime)
+		self.lbl_name.text = self.wrapRecord[rindext].nickname
+		self.lbl_leftTime.text = "剩余"..os.date("%d天%H小时",self.wrapRecord[rindext].expiretime).."过期"
+		self:CheckWithAttachment(self.wrapRecord[rindext])
+		
+		redpoint.gameObject:SetActive(false) 
+        http_request_interface.readEmail(self.wrapRecord[rindext].eid,function(str) 
+			Trace("rindext------"..rindext.."----readEmail"..str)
+			self:SetRead(rindext,1)	
+		end)  
+    end
+    
+    if self.wrapRecord[rindext] == nil then
+        go.gameObject:SetActive(false)
+        return
+    end
+end
+ 
+--[[function mail_wrap:OnUpdateToEnd()
+    http_request_interface.getEmails(self.page + 1,function (str) 
+        local s = string.gsub(str,"\\/","/")  
+        local t = ParseJsonStr(s) 
+        Trace(str)
+        if t.ret == 0 then 
+            local count = table.getCount(self.wrapRecord)
+            for i = 1,table.getCount(t.data) do
+                self.wrapRecord[i + count] = t.data[i]
+            end
+            self.maxCount = table.getCount(self.wrapRecord) 
+            if table.getCount(t.data) > 0 then
+               self.page = self.page + 1 
+               self:UpdateView(self.wrapRecord)  
+            end
+       end
+    end)  
+end--]]
+
+function mail_wrap:toggleclick(obj2)
+    ui_sound_mgr.PlayButtonClick()
+    self.currentIndex = tonumber(obj2.name) 
+    child(obj2.transform,"Checkmark").gameObject:SetActive(true)
+	self.lbl_title.text = self.wrapRecord[tonumber(obj2.name)].title
+    self.lbl_content.text = self.wrapRecord[tonumber(obj2.name)].content
+	self.lbl_time.text = os.date("%Y/%m/%d %H:%M",self.wrapRecord[tonumber(obj2.name)].ptime)
+	self.lbl_name.text = self.wrapRecord[tonumber(obj2.name)].nickname
+	self.lbl_leftTime.text = "剩余"..os.date("%d天%H小时",self.wrapRecord[tonumber(obj2.name)].expiretime).."过期"
+	self:CheckWithAttachment(self.wrapRecord[tonumber(obj2.name)])
+	
+	self.scrollview_text:ResetPosition()
+	
+    local redpoint = child(obj2.transform,"sp_red") 
+    redpoint.gameObject:SetActive(false) 
+    self:CheckAllRead()
+    http_request_interface.readEmail(self.wrapRecord[tonumber(obj2.name)].eid,function(str)
+		Trace("rindext------"..obj2.name.."----readEmail"..str) 
+		self:SetRead(tonumber(obj2.name),1)		
+	end)   
+end 
+
+function mail_wrap:CheckAllRead()	--检测全部已读
+    local isshow = false 
+    for i=0,self.grid.transform.childCount-1 do 
+        local redpoint = child(self.grid.transform:GetChild(i),"sp_red")
+        if  self.grid.transform:GetChild(i).gameObject.activeSelf then  
+            if redpoint.gameObject.activeSelf  then  
+               isshow = true  
+            end
+        end 
+    end  
+	hall_ui.ShowEmailRedPoint(isshow)
+end
+
+function mail_wrap:CheckShowNoMail(count)
+    local show = count == 0
+    --self.btn_delete.gameObject:SetActive(not show)
+	self.btn_get.gameObject:SetActive(not show)
+    self.mail_ui.nomailBgGo:SetActive(show)
+	self.mail_ui.leftTimeGo:SetActive(not show)
+	self.mail_ui.mailDetailGo:SetActive(not show)
+end
+
+function mail_wrap:CheckWithAttachment(data)		--邮件附件
+	local attachment = data.attachment
+	if attachment == nil or isEmpty(attachment) then
+		--self.btn_delete.gameObject:SetActive(true)
+		self.btn_get.gameObject:SetActive(false)
+		self.reward.gameObject:SetActive(false)
+	else
+		--self.btn_delete.gameObject:SetActive(false)
+		self.btn_get.gameObject:SetActive(true)
+		self.reward.gameObject:SetActive(true)	
+		for k,v in ipairs(attachment) do
+			if v["type"] == 1 then
+				componentGet(child(self.reward,"item"..tostring(v["type"].."/thing")),"UISprite").spriteName = ""
+				componentGet(child(self.reward,"item"..tostring(v["type"].."/getLbl")),"UILabel").text = "房卡*"..tostring(v["val"])
+			else
+				return
+			end
+		end
+	end
+end
+
+function mail_wrap:SetRead(index,status)	--本地数据设置未读已读
+	self.wrapRecord[index].status = status	--0,1
+end
+
+return mail_wrap

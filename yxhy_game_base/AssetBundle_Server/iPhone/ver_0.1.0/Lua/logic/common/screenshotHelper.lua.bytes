@@ -1,0 +1,42 @@
+screenshotHelper = {}
+
+local YX_APIManage = YX_APIManage
+
+--[[--
+ * @Description: 截屏并分享
+ * platform		2 微信，3 QQ，
+ * shareType	0微信好友，1朋友圈，2微信收藏
+ * contentType	1文本，2图片，3声音，4视频，5网页
+ * title		"分享战绩"
+ * url			"http://connect.qq.com/"
+ * Description 	"分享战绩"
+ ]]
+function screenshotHelper.GetShot(platform,shareType,contentType,title,url,description)
+	ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+
+	local picName= "screenshot"..tostring(os.date("%Y%m%d%H%M%S", os.time()))..".png"
+	local filePath = YX_APIManage.Instance.ScreenshotPath..picName
+    local callback = function(tx)
+		shareHelper.doShare(platform,shareType,contentType,title,filePath,url,description)
+    end
+    screenshotHelper.ScreenShot(picName,callback)
+end
+
+--[[--
+ * @Description: 截屏至相册  
+ ]]
+function screenshotHelper.ShotToPhoto()
+	ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+
+	local picName= "screenshot"..tostring(os.date("%Y%m%d%H%M%S", os.time()))..".png"
+	local filePath = YX_APIManage.Instance.ScreenshotPath..picName
+	local callback = function(tx)
+		YX_APIManage.Instance:SavePicToPhoto(picName)
+	end
+	screenshotHelper.ScreenShot(picName,callback)
+end
+
+function screenshotHelper.ScreenShot(picName,callback)
+	YX_APIManage.Instance:GetCenterPicture(picName)
+    YX_APIManage.Instance.onfinishtx = callback
+end

@@ -1,0 +1,709 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 1000011270004250}
+  m_IsPrefabParent: 1
+--- !u!1 &1000011270004250
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013362958672}
+  - 114: {fileID: 114000013576676848}
+  m_Layer: 0
+  m_Name: CardAtlas
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4000013362958672
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011270004250}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+--- !u!114 &114000013576676848
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011270004250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ebd2e0fe8fa5534486602b7b88e97f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  material: {fileID: 2100000, guid: 48e83d0a28377694d932a93775746f61, type: 2}
+  mSprites:
+  - name: 1_hand
+    x: 697
+    y: 412
+    width: 78
+    height: 100
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 24
+    paddingRight: 26
+    paddingTop: 55
+    paddingBottom: 26
+  - name: 11_hand
+    x: 213
+    y: 404
+    width: 85
+    height: 108
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 21
+    paddingRight: 22
+    paddingTop: 48
+    paddingBottom: 25
+  - name: 12_hand
+    x: 87
+    y: 39
+    width: 28
+    height: 111
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 50
+    paddingRight: 50
+    paddingTop: 45
+    paddingBottom: 25
+  - name: 13_hand
+    x: 547
+    y: 403
+    width: 72
+    height: 109
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 28
+    paddingRight: 28
+    paddingTop: 47
+    paddingBottom: 25
+  - name: 14_hand
+    x: 692
+    y: 191
+    width: 59
+    height: 109
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 34
+    paddingRight: 35
+    paddingTop: 47
+    paddingBottom: 25
+  - name: 15_hand
+    x: 547
+    y: 293
+    width: 72
+    height: 109
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 28
+    paddingRight: 28
+    paddingTop: 47
+    paddingBottom: 25
+  - name: 16_hand
+    x: 547
+    y: 183
+    width: 72
+    height: 109
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 28
+    paddingRight: 28
+    paddingTop: 47
+    paddingBottom: 25
+  - name: 17_hand
+    x: 547
+    y: 76
+    width: 71
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 28
+    paddingRight: 29
+    paddingTop: 50
+    paddingBottom: 25
+  - name: 18_hand
+    x: 462
+    y: 93
+    width: 73
+    height: 108
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 27
+    paddingRight: 28
+    paddingTop: 48
+    paddingBottom: 25
+  - name: 19_hand
+    x: 620
+    y: 302
+    width: 71
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 28
+    paddingRight: 29
+    paddingTop: 50
+    paddingBottom: 25
+  - name: 2_hand
+    x: 385
+    y: 185
+    width: 76
+    height: 107
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 25
+    paddingRight: 27
+    paddingTop: 48
+    paddingBottom: 26
+  - name: 21_hand
+    x: 128
+    y: 3
+    width: 75
+    height: 75
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 24
+    paddingRight: 29
+    paddingTop: 64
+    paddingBottom: 42
+  - name: 22_hand
+    x: 957
+    y: 313
+    width: 49
+    height: 95
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 37
+    paddingRight: 42
+    paddingTop: 54
+    paddingBottom: 32
+  - name: 23_hand
+    x: 919
+    y: 421
+    width: 67
+    height: 91
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 28
+    paddingRight: 33
+    paddingTop: 56
+    paddingBottom: 34
+  - name: 24_hand
+    x: 846
+    y: 423
+    width: 72
+    height: 89
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 25
+    paddingRight: 31
+    paddingTop: 57
+    paddingBottom: 35
+  - name: 25_hand
+    x: 823
+    y: 325
+    width: 68
+    height: 83
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 27
+    paddingRight: 33
+    paddingTop: 60
+    paddingBottom: 38
+  - name: 26_hand
+    x: 620
+    y: 194
+    width: 70
+    height: 107
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 26
+    paddingRight: 32
+    paddingTop: 48
+    paddingBottom: 26
+  - name: 27_hand
+    x: 213
+    y: 84
+    width: 81
+    height: 105
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 21
+    paddingRight: 26
+    paddingTop: 50
+    paddingBottom: 26
+  - name: 28_hand
+    x: 692
+    y: 301
+    width: 62
+    height: 107
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 30
+    paddingRight: 36
+    paddingTop: 48
+    paddingBottom: 26
+  - name: 29_hand
+    x: 299
+    y: 413
+    width: 85
+    height: 99
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 19
+    paddingRight: 24
+    paddingTop: 52
+    paddingBottom: 30
+  - name: 3_hand
+    x: 385
+    y: 77
+    width: 75
+    height: 107
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 26
+    paddingRight: 27
+    paddingTop: 48
+    paddingBottom: 26
+  - name: 31_hand
+    x: 462
+    y: 413
+    width: 84
+    height: 99
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 21
+    paddingRight: 23
+    paddingTop: 53
+    paddingBottom: 29
+  - name: 32_hand
+    x: 620
+    y: 4
+    width: 70
+    height: 81
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 28
+    paddingRight: 30
+    paddingTop: 62
+    paddingBottom: 38
+  - name: 33_hand
+    x: 213
+    y: 5
+    width: 81
+    height: 78
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 23
+    paddingRight: 24
+    paddingTop: 64
+    paddingBottom: 39
+  - name: 34_hand
+    x: 385
+    y: 3
+    width: 68
+    height: 73
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 29
+    paddingRight: 31
+    paddingTop: 66
+    paddingBottom: 42
+  - name: 35_hand
+    x: 620
+    y: 86
+    width: 70
+    height: 107
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 28
+    paddingRight: 30
+    paddingTop: 49
+    paddingBottom: 25
+  - name: 36_hand
+    x: 462
+    y: 9
+    width: 81
+    height: 83
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 23
+    paddingRight: 24
+    paddingTop: 61
+    paddingBottom: 37
+  - name: 37_hand
+    x: 620
+    y: 409
+    width: 76
+    height: 103
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 25
+    paddingRight: 27
+    paddingTop: 51
+    paddingBottom: 27
+  - name: 4_hand
+    x: 462
+    y: 306
+    width: 75
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 26
+    paddingRight: 27
+    paddingTop: 48
+    paddingBottom: 27
+  - name: 41_hand
+    x: 213
+    y: 296
+    width: 85
+    height: 107
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 20
+    paddingRight: 23
+    paddingTop: 47
+    paddingBottom: 27
+  - name: 42_hand
+    x: 128
+    y: 79
+    width: 82
+    height: 107
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 21
+    paddingRight: 25
+    paddingTop: 47
+    paddingBottom: 27
+  - name: 43_hand
+    x: 462
+    y: 202
+    width: 77
+    height: 103
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 24
+    paddingRight: 27
+    paddingTop: 49
+    paddingBottom: 29
+  - name: 44_hand
+    x: 213
+    y: 190
+    width: 82
+    height: 105
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 21
+    paddingRight: 25
+    paddingTop: 48
+    paddingBottom: 28
+  - name: 45_hand
+    x: 128
+    y: 187
+    width: 83
+    height: 107
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 21
+    paddingRight: 24
+    paddingTop: 47
+    paddingBottom: 27
+  - name: 46_hand
+    x: 0
+    y: 40
+    width: 86
+    height: 110
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 19
+    paddingRight: 23
+    paddingTop: 45
+    paddingBottom: 26
+  - name: 47_hand
+    x: 128
+    y: 295
+    width: 84
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 20
+    paddingRight: 24
+    paddingTop: 47
+    paddingBottom: 28
+  - name: 48_hand
+    x: 128
+    y: 402
+    width: 84
+    height: 110
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 20
+    paddingRight: 24
+    paddingTop: 45
+    paddingBottom: 26
+  - name: 5_hand
+    x: 385
+    y: 402
+    width: 76
+    height: 110
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 25
+    paddingRight: 27
+    paddingTop: 46
+    paddingBottom: 25
+  - name: 6_hand
+    x: 299
+    y: 300
+    width: 75
+    height: 112
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 26
+    paddingRight: 27
+    paddingTop: 45
+    paddingBottom: 24
+  - name: 7_hand
+    x: 299
+    y: 187
+    width: 75
+    height: 112
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 26
+    paddingRight: 27
+    paddingTop: 45
+    paddingBottom: 24
+  - name: 8_hand
+    x: 385
+    y: 293
+    width: 76
+    height: 108
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 25
+    paddingRight: 27
+    paddingTop: 47
+    paddingBottom: 26
+  - name: 9_hand
+    x: 299
+    y: 74
+    width: 75
+    height: 112
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 26
+    paddingRight: 27
+    paddingTop: 45
+    paddingBottom: 24
+  - name: hand_mine
+    x: 0
+    y: 332
+    width: 127
+    height: 180
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 1
+    paddingTop: 0
+    paddingBottom: 1
+  - name: icon_hun_mine
+    x: 299
+    y: 6
+    width: 67
+    height: 67
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 0
+    paddingBottom: 0
+  - name: jin_1
+    x: 692
+    y: 146
+    width: 44
+    height: 44
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 0
+    paddingBottom: 0
+  - name: mjup
+    x: 776
+    y: 417
+    width: 69
+    height: 95
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 0
+    paddingBottom: 0
+  - name: wall_mine
+    x: 0
+    y: 151
+    width: 126
+    height: 180
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 2
+    paddingRight: 3
+    paddingTop: 0
+    paddingBottom: 0
+  - name: xjs_di_004
+    x: 892
+    y: 321
+    width: 64
+    height: 87
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 0
+    paddingBottom: 0
+  - name: xjs_di_005
+    x: 547
+    y: 31
+    width: 45
+    height: 44
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 0
+    paddingBottom: 0
+  - name: xjs_di_006
+    x: 755
+    y: 321
+    width: 67
+    height: 87
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 0
+    paddingBottom: 0
+  mPixelSize: 1
+  mReplacement: {fileID: 0}
+  mCoordinates: 0
+  sprites: []

@@ -1,0 +1,21 @@
+local base = require "logic.mahjong_sys.action.common.mahjong_action_base"
+local mahjong_mjAction_gameLaiZi = class("mahjong_mjAction_gameLaiZi", base)
+
+
+local InitShowLaiAnim_c = nil
+
+function mahjong_mjAction_gameLaiZi:Execute(tbl)
+    Trace("mahjong_mjAction_gameLaiZi-------------------"..GetTblData(tbl))
+    roomdata_center.SetSpecialCard(tbl["_para"]["laizi"][1])
+    local cardValue = tbl._para.cards[1]
+    local dun = math.ceil(tbl._para.sits[1]/2)
+    self.compPlayerMgr.selfPlayer:ShowSpecialInHand()
+    self.compPlayerMgr:AllSortHandCard() 
+    mahjong_ui:ShowHunPai(tbl["_para"]["laizi"][1])
+    Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.F1_GAME_LAIZI)
+end
+
+
+return mahjong_mjAction_gameLaiZi
+
+    

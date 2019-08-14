@@ -1,0 +1,114 @@
+require "logic/network/messagedefine"
+require "logic/common_ui/fast_tip"
+yingsanzhang_request_protocol = {}
+local this = yingsanzhang_request_protocol
+
+-- @des: 请求我要做庄
+-- @param: _tableID(桌位ID), _seat(座位)
+function this.ChooseBankerReq(_tableID,_seat)
+	local eventTbl = {}
+	local paraTbl = {}
+	local sessionTbl = {}
+	--events
+	eventTbl[messagedefine.EField_EID] = "choosebanker"
+	eventTbl[messagedefine.EField_EType] = "req"
+	--para
+	eventTbl[messagedefine.EField_EPara] = paraTbl
+	return eventTbl
+end
+
+--选择倍数
+function this.requestMult(beishu, tableID, seat)
+	if not beishu  or  not tableID or  not seat then 
+		return
+	end
+	local eventTbl = {}
+	local paraTbl = {}
+	--events
+	eventTbl[messagedefine.EField_EID] = "mult"
+	eventTbl[messagedefine.EField_EType] = "req"
+	--para
+	eventTbl[messagedefine.EField_EPara] = paraTbl
+	paraTbl["nBeishu"] = beishu
+
+	return eventTbl	
+end
+
+function this.robbankerReq(beishu,tableID,seat)
+	if not beishu  or  not tableID or  not seat then 
+		return
+	end
+	local eventTbl = {}
+	local paraTbl = {}
+	
+	--events
+	eventTbl[messagedefine.EField_EID] = "robbanker"
+	eventTbl[messagedefine.EField_EType] = "req"
+	--para
+	eventTbl[messagedefine.EField_EPara] = paraTbl
+	paraTbl["nBeishu"] = beishu
+	return eventTbl	
+end
+
+function this.OpenCardReq()
+	local eventTbl = {}
+	local paraTbl = {}
+	--events
+	eventTbl[messagedefine.EField_EID] = "opencard"
+	eventTbl[messagedefine.EField_EType] = "req"
+	--para
+	eventTbl[messagedefine.EField_EPara] = paraTbl
+	return eventTbl
+end
+
+--加注
+function this.RaiseReq(nBetCoin)
+	local eventTbl = {}
+	local paraTbl = {}
+	--events
+	eventTbl[messagedefine.EField_EID] = "raise"
+	eventTbl[messagedefine.EField_EType] = "req"
+	--para
+	eventTbl[messagedefine.EField_EPara] = paraTbl
+	paraTbl.nBetCoin = nBetCoin
+	return eventTbl
+end
+
+--跟注
+function this.CallReq()
+	local eventTbl = {}
+	local paraTbl = {}
+	--events
+	eventTbl[messagedefine.EField_EID] = "call"
+	eventTbl[messagedefine.EField_EType] = "req"
+	--para
+	eventTbl[messagedefine.EField_EPara] = paraTbl
+	return eventTbl
+end
+
+--弃牌
+function this.FoldReq()
+	local eventTbl = {}
+	local paraTbl = {}
+	--events
+	eventTbl[messagedefine.EField_EID] = "fold"
+	eventTbl[messagedefine.EField_EType] = "req"
+	--para
+	eventTbl[messagedefine.EField_EPara] = paraTbl
+	return eventTbl
+end
+
+--比牌，和谁比。
+function this.CompareReq(nWhoChair)
+	local eventTbl = {}
+	local paraTbl = {}
+	--events
+	eventTbl[messagedefine.EField_EID] = "compare"
+	eventTbl[messagedefine.EField_EType] = "req"
+	--para
+	eventTbl[messagedefine.EField_EPara] = paraTbl
+	paraTbl.nWhoChair = nWhoChair
+	return eventTbl
+end
+
+

@@ -1,0 +1,97 @@
+require "logic/niuniu_sys/network/niuniu_request_protocol"
+require "logic/network/messagedefine"
+
+niuniu_request_interface = {}
+local this = niuniu_request_interface
+
+
+function this.EnterGameReq(gameData)
+  local allInfo =  data_center.GetUserInfoTbl()
+  local session_key = allInfo["session_key"];
+  local urlStr = string.format(global_define.wsurl, data_center.GetLoginUserInfo().uid, session_key)
+
+  local srvName = ""
+  local srvID = nil
+
+  if gameData._dst ~= nil then
+    srvName = gameData._dst._svr_t
+    srvID = gameData._dst._svr_id
+  else
+    srvName = gameData._svr_t 
+    srvID = gameData._svr_id
+
+    if srvName == nil and srvID == nil then
+      srvName = "chess"
+      srvID = 1
+    end
+  end
+  SocketManager:createSocket("game", urlStr, srvName, tonumber(srvID), gameData._dst)
+  SocketManager:onGameOpenCallBack(function (  )
+
+    local pkgBuffer = niuniu_request_protocol.EnterGameReq(gameData, gameData._dst);
+	Trace("pkgBuffer================"..GetTblData(pkgBuffer))
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL, pkgBuffer)
+  end)  
+end
+
+--选庄(固定庄家)
+function this.ChooseBankerReq(_tableId,_seat)
+	local pkgBuffer = niuniu_request_protocol.ChooseBankerReq(_tableId,_seat)
+	Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+	
+end
+
+--准备
+function this.ReadyGameReq(_tableId, _seat)
+    local pkgBuffer = niuniu_request_protocol.ReadyGame(messagedefine.chessPath,_tableId, _seat);
+    Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+
+--闲家选择倍数
+function this.beishuReq(beishu,tableID,seat)
+    local pkgBuffer = niuniu_request_protocol.requestMult(beishu,tableID,seat);
+    Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+
+--抢庄
+function this.robbankerReq(beishu,tableID,seat)
+	local pkgBuffer = niuniu_request_protocol.robbankerReq(beishu,tableID,seat);
+    Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+
+--亮牌
+function this.OpenCardReq()
+	local pkgBuffer = niuniu_request_protocol.OpenCardReq(tableID,seat);
+    Trace("pkgBuffer================"..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+
+----解散房间
+function this.Dissolution( gid, tableid, seat)
+    local pkgBuffer = niuniu_request_protocol.requestDissolution(gid, tableid, seat);
+    Trace("pkgBuffer==============="..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+
+--申请退出，请求合局
+function  this.VoteDrawReq(flag, tableID, seat)
+	Trace("牛牛请求和局")
+    local pkgBuffer = niuniu_request_protocol.requestVoteDraw(flag, tableID, seat)
+    Trace("pkgBuffer==================================="..tostring(pkgBuffer))
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+
+function this.LeaveReq(tableID,seat)
+     local pkgBuffer = niuniu_request_protocol.requestLeave(tableID, seat);
+       Trace("pkgBuffer==================================="..tostring(pkgBuffer));
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end
+
+function this.ChatReq(contenttype,content,tableID,seat,geivewho)
+    local pkgBuffer = majong_request_protocol.requestChat(messagedefine.chessPath,contenttype,content,tableID,seat,geivewho);
+    network_mgr.sendPkgNoWaitForRsp(network_mgr.CMD_LOGIN_HALL,pkgBuffer)
+end

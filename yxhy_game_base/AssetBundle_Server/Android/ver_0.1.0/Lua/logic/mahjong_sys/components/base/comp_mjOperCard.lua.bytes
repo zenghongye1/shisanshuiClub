@@ -1,0 +1,198 @@
+local mode_comp_base = require "logic/mahjong_sys/components/base/mode_comp_base"
+local comp_mjOperCard = class("comp_mjOperCard", mode_comp_base)
+
+function comp_mjOperCard:ctor(enableDown)
+	self.name = "comp_operatorcard"
+	self.operObj =nil --操作组对象
+	self.operData = nil --操作组数据
+	self.keyItem = nil --关键牌，通过需要做特殊旋转的牌
+	self.itemList = {} --操作组麻将列表
+	self.viewSeat = 0 --玩家视图座位
+
+	self.width = 0
+	self.enableDown = enableDown or false
+
+	self.config = mode_manager.GetCurrentMode().config
+	self:CreateOperObj()
+end
+
+function comp_mjOperCard:CreateOperObj()
+	self.operObj = GameObject.New()
+	self.operObj.name = "oper_root"
+end
+
+function comp_mjOperCard:GetWidth()
+	return self.width
+end
+
+
+function comp_mjOperCard:Show(operData,operCardList)
+	self.operData = operData
+	self.operData.card = operCardList[1].paiValue
+	self.itemList = operCardList
+	local keyIndex = operData:GetKeyCardIndex()
+	if(keyIndex>0) then
+		self.keyItem = operCardList[keyIndex]
+		if self.enableDown then
+			self.keyItem:SetDown(true)
+		end
+	end
+	self:RefreshCards()
+end
+
+function comp_mjOperCard:AddShow(operData, mj,isChangeToBright)
+	self.operData = operData
+	self.operData.card = mj.paiValue
+	table.insert(self.itemList,mj)
+	-- 碰杠 不需要倒下
+	if self.keyItem ~= nil and self.enableDown then
+		self.keyItem:SetDown(false)
+		self.keyItem = nil
+	end
+	self:RefreshCards()
+end
+
+function comp_mjOperCard:ReShow(operData, operCardList)
+	self:Show(operData, operCardList)
+end
+
+
+function comp_mjOperCard:RefreshCards()
+	self:SetParentAndState()
+	if self.operData.operType >= MahjongOperAllEnum.DarkBar and 
+		self.operData.operType < MahjongOperAllEnum.Ting then
+		self:QuadrupletRefresh()
+	else
+		self:TripletCollectRefresh()		
+	end
+end
+
+function comp_mjOperCard:SetMjPos(mj, offset)
+	local width = mj:GetWidth()
+	local x = 0
+	if self.viewSeat ~= 1 then
+		x = offset - width / 2
+		offset = offset - width
+	else
+		x = offset + width / 2
+		offset = offset + width
+	end
+	local z = mj:GetHeight() / 2
+	mj:DOLocalMove(x,0,z, 0, false, true)
+	mj:DOLocalRotate(nil, nil, 0, 0)
+	return offset, width
+end
+
+
+function comp_mjOperCard:SetParentAndState()
+	for i = #self.itemList ,1, -1 do
+		self.itemList[i]:SetParent(self.operObj.transform, false)
+		self.itemList[i]:SetState(MahjongItemState.inOperatorCard)
+	end
+	self.width = 0
+end
+
+function comp_mjOperCard:GetSortOrder(offset)
+	offset = offset or 0
+	if self.viewSeat == 1 then
+		return 1, #self.itemList - offset, 1
+	else
+		return #self.itemList, 1 + offset, -1
+	end
+end
+
+function comp_mjOperCard:TripletCollectRefresh()
+	local offsetX = 0
+	self.width = 0
+	local start, total, step = self:GetSortOrder()
+	for i = start ,total, step do
+		local off, width = self:SetMjPos(self.itemList[i], offsetX)
+		offsetX = off
+		self.itemList[i]:Show(true)
+
+		self.itemList[i]:ShowShadow()
+
+		self.width = self.width + width
+	end
+end
+
+function comp_mjOperCard:QuadrupletRefresh()
+	local offsetX = 0
+	if self.enableDown then
+		local start, total, step = self:GetSortOrder()
+		for i = start ,total, step do
+			local off, width = self:SetMjPos(self.itemList[i], offsetX)
+			offsetX = off
+
+			self.width = self.width + width
+			if self.operData.operType == MahjongOperAllEnum.DarkBar then
+				if self.viewSeat == 1 and i == 1 then
+					self.itemList[i]:Show(true)
+				else
+					--self.itemList[i]:DOLocalRotate(nil,nil, 180, 0)
+					self.itemList[i]:Show(false)
+					self.itemList[i]:SetSpecialCard(false)
+				end
+			else
+				self.itemList[i]:Show(true)
+			end
+			self.itemList[i]:ShowShadow()
+		end
+	else
+		-- 前三章正常排
+		local start, total, step = self:GetSortOrder(1)
+		for i = start ,total, step do
+			local off, width = self:SetMjPos(self.itemList[i], offsetX)
+			offsetX = off
+		
+			-- 宽度只计算三张
+			self.width = self.width + width
+			if self.operData.operType == MahjongOperAllEnum.DarkBar then
+				self.itemList[i]:Show(false)
+				self.itemList[i]:SetSpecialCard(false)
+			else
+				self.itemList[i]:Show(true)
+			end
+			self.itemList[i]:ShowShadow()
+		end
+		-- 第四章单独处理
+		local pos
+		
+		local lastItem = nil
+		if self.viewSeat == 1 then
+			lastItem = self.itemList[4]
+			pos = self.itemList[2].transform.localPosition
+		else
+			lastItem = self.itemList[1]
+			pos = self.itemList[3].transform.localPosition
+		end
+		pos.y = mahjongConst.MahjongOffset_y
+		local x,y,z = pos:Get()
+		lastItem:DOLocalMove(x,y,z, 0)
+		if self.viewSeat ~= 1 
+			and self.operData.operType == MahjongOperAllEnum.DarkBar 
+			and not self.config.gameCfg.showDarkBar then
+			lastItem:Show(false)
+			lastItem:SetSpecialCard(false)
+		else
+			lastItem:Show(true)
+		end
+		lastItem:ShowShadow()
+	end
+end
+
+
+function comp_mjOperCard:GetServerOperData()
+	local tab = {0,0,0}
+	-- 别人暗杠
+	if self.viewSeat ~= 1 and self.operData.ucflag == 19 then
+		return tab
+	end
+	tab[1] = self.operData.ucflag
+	tab[2] = self.operData.card
+	tab[3] = self.operData.operWho
+	return tab
+end
+
+
+return comp_mjOperCard

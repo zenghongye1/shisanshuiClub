@@ -1,0 +1,176 @@
+﻿[
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+	[
+      {
+        "exData": [1,2,3],
+        "selectIndex":[1],
+        "itemHeight": -58,
+		"itemWidth": 232,
+        "maxPerLine": 6, 
+        "data":["1/2/5/8","1/2/5","1/2"],
+        "data_score":[[1,2,5,8],[1,2,5],[1,2]],
+        "title":"底分:",
+        "id": "baseScoreid",
+        "type": 1, 
+        "group":22
+      }
+    ],
+  [
+    {
+      "exData": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "selectIndex": [
+        1
+      ],
+      "itemWidth": 116,
+      "itemHeight": -58,
+      "maxPerLine": 6, 
+      "data": [
+        "2人",
+        "3人",
+        "4人",
+        "5人",
+        "6人"
+      ],
+      "title": "人数:",
+      "id": "pnum",
+       "type": 1,
+      "group": 26
+    }
+  ],
+
+  [
+    {
+      "exData": [
+        8,
+        12,
+        16
+      ],
+      "data": [
+        "8局",
+        "12局",
+        "16局"
+      ],
+      "itemHeight": -58,
+	  "itemWidth": 232,
+	  "distance": 61,
+	  "maxPerLine": 3,
+      "selectIndex": [ 2 ],
+      "title": "局数:",
+      "id": "rounds",
+       "type": 1, 
+       "group":25
+    }
+  ], 
+[
+    {
+      "exData": [
+        2,
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "data": [
+        "明牌抢庄",
+        "自由抢庄",
+        "固定坐庄",
+        "轮流坐庄",
+        "赢家坐庄",
+        "随机坐庄"
+      ],
+      "itemHeight": -58,
+	  "itemWidth": 275,
+	  "distance": 61,
+	  "maxPerLine": 2,
+      "selectIndex": [ 1 ],
+      "title": "坐庄:",
+      "id": "takeTurnsMode",
+       "type": 2, 
+       "group":28
+    }
+  ],
+
+  [
+    {
+      "exData":[1,2,3],
+      "itemWidth": 760,
+      "itemHeight": -129,
+      "maxPerLine": 1,
+      "selectIndex": [ 1 ],
+      "data":["牛牛x4、牛九x3、牛八x3、牛七x2、牛六x2",
+              "牛牛x4、牛九x3、牛八x2、牛七x2",
+              "牛牛x3、牛九x2、牛八x2"],
+      "title":"倍数:",
+      "id":  "multipleRuleid" ,
+      "type" :2,
+      "group":29
+    }
+  ],
+
+  [
+        {
+            "multiterm": true,
+            "title": "特殊:",
+            "id": [
+                "wuhuaniu",
+                "zhadanniu",
+                "wuxiaoniu",
+                "wuhuazhadan"
+            ],
+          "data": [
+            "五花牛(x5)",
+            "炸弹牛(x10)",
+            "五小牛(x12)",
+            "五花炸弹(x15)"
+          ],
+          "multiple":[5,10,12,15],
+          "itemHeight": -68,
+          "itemWidth": 200,
+		  "distance": 61,
+		  "maxPerLine": 4,
+          "selectIndex": [  
+          ],
+          "type": 0, 
+          "group":0
+
+        }
+    ],
+    [
+      {
+        "exData": [ 1,0 ],
+        "title": "搓牌:",
+        "id": "rubCard",
+        "data": [
+          "是",
+          "否"
+        ],
+        "timeValue": [ 5, 8, 10 ],
+        "itemHeight": -116,
+		"itemWidth": 200,
+        "selectIndex": [
+          1
+        ],
+        "type": 1,
+        "group": 31
+      }
+    ]
+
+]

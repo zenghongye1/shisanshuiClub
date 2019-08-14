@@ -1,0 +1,66 @@
+
+--[[--
+ * @Description: 开封麻将玩法配置
+ * @FileName:    play_mode_config_fuzhou.lua
+ ]]
+local config_common = require "logic/mahjong_sys/configs/mahjong_config_common":create()
+
+local mahjong_config_55 = {}
+setmetatable(mahjong_config_55, {__index = config_common})
+
+mahjong_config_55.ignoreEffect = {
+	[13] = true,
+	[14] = true,
+	[15] = true,
+	[20] = true,
+	[21] = true,
+	[22] = true,
+	[23] = true,
+	[59] = true,
+	[66] = true,
+}
+mahjong_config_55.big_settlement_show = {}
+mahjong_config_55.big_settlement_show.win_type = {
+	["selfdraw"] = "selfdraw", 		-- 自摸
+	["gunwin"] = "gunwin", 			-- 点炮
+}
+
+mahjong_config_55.big_settlement_show.byFanType = {
+	"gunwin", -- 点炮
+	"selfdraw", -- 自摸
+	"nQiDui",   -- 七对胡
+	"nHQidui",	-- 豪华七对
+	-- "nGangFlower", -- 杠上花
+	-- "nGangGun",	   --杠上炮
+	-- "nMenqing",		--门清
+	-- "bMissHu",		--断门
+	-- "nBian",		--边
+	-- "nKa",			--卡
+	-- "nDiao",		--吊
+	"conceled_gang_count", -- 暗杠
+	"revealed_gang_count", -- 明杠
+}
+mahjong_config_55.big_settlement_mustShow = 
+{
+	"selfdraw",
+	"gunwin",
+} 
+
+mahjong_config_55.MahjongDunCount = 14				-- 一排多少墩
+
+mahjong_config_55.wallDunCountMap = 
+{
+	17,17,17,17
+}
+
+function mahjong_config_55:GetHuBei(fannum)
+    return fannum 
+end
+
+mahjong_config_55.uiActionCfg.small_reward = {55, "mahjong_action_small_reward_55"}
+mahjong_config_55.uiActionCfg.total_reward = {8, "mahjong_action_totalreward_8"}
+mahjong_config_55.mahjongActionCfg.game_askPlay = {8, "mahjong_mjAction_gameAskPlay"}
+mahjong_config_55.mahjongActionCfg.game_playStart = {8, "mahjong_mjAction_gamePlayStart"}
+mahjong_config_55.mahjongActionCfg.game_laiZi = {8, "mahjong_mjAction_gameLaiZi"}
+
+return mahjong_config_55

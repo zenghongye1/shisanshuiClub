@@ -1,0 +1,92 @@
+[
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+    [
+        {
+            "exData": [
+                4,
+                8,
+                16
+            ],
+            "selectIndex": [
+                1
+            ],
+            "data": [
+                "4局(房卡x2)",
+                "8局(房卡x4)",
+                "16局(房卡x8)"
+            ],
+            "type": 1,
+            "group": 22,
+            "itemHeight": -110,
+            "maxPerLine": 3,
+            "title": "局数:",
+            "id": "rounds"
+        }
+    ],
+    [
+        {
+            "exData": [
+                4,
+                3,
+                2
+            ],
+            "selectIndex": [
+                1
+            ],
+            "data": [
+                "4人",
+                "3人",
+                "2人"
+            ],
+            "type": 1,
+            "itemHeight": -110,
+            "group": 21,
+            "title": "人数:",
+            "id": "pnum"
+        }
+    ],
+    [
+        {
+            "multiterm": true,
+            "title": "玩法:",
+            "type": 0,
+            "group": 0,
+            "itemHeight": -110,
+            "id": [
+                "wind",
+                "bGunBaoAll",
+                "bSupportGunAll",
+                "dealeradd"
+            ],
+            "data": [
+                "带风牌",
+                "点炮包胡",
+                "一炮多响",
+                "庄家加番"
+            ],
+            "selectIndex": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "connecttype": [
+                1
+            ],
+            "connect": [],
+            "Isconnect": [],
+            "maxPerLine": 4
+        }
+    ]
+]

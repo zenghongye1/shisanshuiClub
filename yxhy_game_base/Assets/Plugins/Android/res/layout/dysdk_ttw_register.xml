@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:layout_width="392dp"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/dysdk_sdk_login_bg"
+        android:orientation="vertical"
+        android:paddingBottom="10dip"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:visibility="visible" >
+
+        <RelativeLayout
+            android:id="@+id/ll_logo"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="20dp" >
+
+            <ImageView
+                android:id="@+id/iv_register"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="bottom"
+                android:src="@drawable/dysdk_ico_phone_register" />
+
+            <TextView
+                android:id="@+id/tv_copy"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:layout_toRightOf="@id/iv_register"
+                android:gravity="center_vertical"
+                android:text="手机注册"
+                android:textColor="@color/dysdk_ui_white"
+                android:textSize="25sp" />
+
+            <ImageView
+                android:id="@+id/iv_logo"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:src="@drawable/dysdk_logo" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_login_frame"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/dysdk_sdk_login_edit_text"
+            android:orientation="vertical"
+            android:paddingBottom="10dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:paddingTop="10dp" >
+
+            <RelativeLayout
+                android:id="@+id/rl_username"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginBottom="5dp" >
+
+                <ImageView
+                    android:id="@+id/iv_icon_phone_register"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingLeft="8dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:src="@drawable/dysdk_icon_phone" />
+
+                <EditText
+                    android:id="@+id/et_username"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="10dip"
+                    android:layout_marginRight="8dp"
+                    android:layout_toRightOf="@id/iv_icon_phone_register"
+                    android:background="@null"
+                    android:drawableBottom="@drawable/dysdk_sdk_line"
+                    android:drawablePadding="3dp"
+                    android:gravity="center_vertical"
+                    android:hint="请输入手机号"
+                    android:inputType="number"
+                    android:paddingRight="30dip"
+                    android:selectAllOnFocus="true"
+                    android:singleLine="true"
+                    android:textColor="@color/dysdk_ui_white"
+                    android:textSize="13sp"
+                    android:textColorHint="@color/dysdk_ui_gray_dark" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/ll_code"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"
+                android:orientation="vertical" >
+
+                <ImageView
+                    android:id="@+id/iv_icon_codeorname_register"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingLeft="8dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:src="@drawable/dysdk_icon_code" />
+
+                <Button
+                    android:id="@+id/btn_sendcode_register"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="8dp"
+                    android:background="@drawable/dysdk_sdk_orange_stroke"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:paddingLeft="5dp"
+                    android:paddingRight="5dp"
+                    android:text="发送验证码"
+                    android:textColor="@color/dysdk_ui_orange"
+                    android:textSize="12sp" />
+
+                <EditText
+                    android:id="@+id/et_code"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="5dp"
+                    android:layout_toLeftOf="@id/btn_sendcode_register"
+                    android:layout_toRightOf="@id/iv_icon_codeorname_register"
+                    android:background="@null"
+                    android:drawablePadding="3dp"
+                    android:drawableBottom="@drawable/dysdk_sdk_line"
+                    android:hint="请输入验证码"
+                    android:paddingRight="30dip"
+                    android:selectAllOnFocus="true"
+                    android:singleLine="true"
+                    android:textColor="@color/dysdk_ui_white"
+                    android:textSize="13sp"
+                    android:textColorHint="@color/dysdk_ui_gray_dark" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rl_pwd"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginTop="5dp" >
+
+                <ImageView
+                    android:id="@+id/iv_icon_lock_register"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:paddingLeft="8dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:src="@drawable/dysdk_icon_lock" />
+
+                <EditText
+                    android:id="@+id/et_pwd"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="10dip"
+                    android:layout_marginRight="8dp"
+                    android:layout_toRightOf="@id/iv_icon_lock_register"
+                    android:background="@null"
+                    android:drawablePadding="3dp"
+                    android:drawableBottom="@drawable/dysdk_sdk_line"
+                    android:hint="请输入密码"
+                    android:paddingRight="30dip"
+                    android:password="true"
+                    android:selectAllOnFocus="true"
+                    android:singleLine="true"
+                    android:textColor="@color/dysdk_ui_white"
+                    android:textSize="13sp"
+                    android:textColorHint="@color/dysdk_ui_gray_dark" />
+            </RelativeLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rl_login_register"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/btn_back"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/dysdk_sdk_orange_btn_bg"
+                android:gravity="center"
+                android:padding="5dp"
+                android:text="返回登录"
+                android:textColor="@android:color/white" />
+            
+            <Button
+                android:id="@+id/btn_game_in"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/dysdk_sdk_cyan_btn_bg"
+                android:gravity="center"
+                android:padding="5dp"
+                android:text="完成注册"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_user_aggrement"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/dysdk_dialog_checkbox_checked"
+            android:drawablePadding="5dp"
+            android:text="用户协议"
+            android:textColor="@color/dysdk_ui_white"
+            android:textSize="12sp" />
+    </LinearLayout>
+</RelativeLayout>

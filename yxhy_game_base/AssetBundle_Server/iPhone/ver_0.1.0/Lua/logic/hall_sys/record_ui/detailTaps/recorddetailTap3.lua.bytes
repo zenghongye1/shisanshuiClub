@@ -1,0 +1,164 @@
+local base = require("logic.framework.ui.uibase.ui_childwindow")
+local Tab_class = class("recorddetailTap3",base)
+
+local ruleCfgBase = config_mgr.getConfigs("cfg_rule")
+local ruleCfg = {}
+for k,v in pairs(ruleCfgBase) do
+	ruleCfg[k] = v
+	local ruleKey = v.RoomRuleKey
+	if ruleKey and string.len(ruleKey) >0 then
+		ruleCfg[ruleKey] = v
+	end
+end
+
+function Tab_class:ctor()
+	base.ctor(self)
+end
+
+function Tab_class:OnInit()
+	base.OnInit(self)
+end
+
+function Tab_class:OnOpen()
+	base.OnOpen(self)
+	Trace("Tab_c OnOpen")
+end
+
+function Tab_class:OnClose()
+	base.OnClose(self)
+	Trace("Tab_c OnClose")
+end
+
+function Tab_class:UpdateView(_data, _isTimer)
+
+	if not self.updateTimer then
+	    self.updateTimer = FrameTimer.New(function()
+	        self:UpdateView(_data, true)
+	        self.updateTimer = nil
+	      end,1,1)
+	    self.updateTimer:Start()
+	end
+	if not _isTimer then
+		return
+	end
+	
+	if not _data then
+		return
+	end
+	-- Trace("GameLog: "..CombinJsonStr(_data))
+
+	local gid = _data.gid
+	local cfgTbl = {}
+	for k,v in pairs(_data.cfg or {}) do
+		cfgTbl[k] = v
+	end
+	
+	---牛牛特殊处理
+	if gid == ENUM_GAME_TYPE.TYPE_NIUNIU then
+		if cfgTbl.baseScore ~= nil then
+			cfgTbl["nBaseScoreRule"]= table.getCount(cfgTbl.baseScore)
+		end
+		if cfgTbl.multipleRule ~= nil then
+			local num = 0
+			for i,v in ipairs (cfgTbl.multipleRule) do
+				if v >= 2 then
+					num = num + 1
+				end
+			end
+			if num ~= 0 then
+				cfgTbl["nMultipleRule"]= num
+			end
+		end
+	end
+	
+	Trace("cfgTbl------"..GetTblData(cfgTbl))
+	--model/other function
+	local function getRuleString(_ruleKeyTbl, _context)
+		if not _ruleKeyTbl or type(_ruleKeyTbl) ~="table" then
+			-- print("getRuleString:", _ruleKeyTbl, _context)
+			return ""
+		end
+
+		local context = _context
+		for k,v in pairs(_ruleKeyTbl or {}) do
+			local cfgValue = cfgTbl[v]
+			if not cfgValue then
+				--id没对应的则在RoomRuleKey找
+				cfgValue = cfgTbl[ruleCfg[v].RoomRuleKey]
+			end
+
+			if cfgValue then
+				local valueTbl = ruleCfg[v].shareValue
+				if valueTbl and type(valueTbl) =="table" then
+					local ruleName = valueTbl[cfgValue]
+					if ruleName and string.len(ruleName) >0 then
+						if string.len(context) <1 then
+							context = ruleName
+						else
+							context = context..", "..ruleName
+						end
+						cfgTbl[v] = nil
+					end
+				else
+					local valueTbl = ruleCfg[v].value
+					if valueTbl and type(valueTbl) =="table" then
+						local tempContent = ruleCfg[v].name
+						if valueTbl[cfgValue] then
+							tempContent = tempContent..":"..valueTbl[cfgValue]
+						end
+						if string.len(context) <1 then
+							context = tempContent
+						else
+							context = context..", "..tempContent
+						end
+						cfgTbl[v] = nil
+					end
+				end
+			end
+		end
+		return context
+	end
+
+	--模式(roomRulesKey中存在的)
+	-- local context = GameUtil.GetGameName(datatable.gid)..", 牌局人数:"..datatable.cfg.pnum
+	local context = getRuleString(GameUtil.GetRoomRulesKeys(gid), GameUtil.GetGameName(gid))
+	local Label_mode = child(self.gameObject.transform, "Label_content1")
+	if Label_mode then
+		context = string.gsub(context, "玩法:", "")
+		componentGet(Label_mode, "UILabel").text = (string.len(context) >0 and context or "无")
+	end
+
+	--其他(roomRulesOtherKey中存在的)
+	context = getRuleString(GameUtil.GetRoomRulesOtherKeys(gid), "")
+	local Label_other = child(self.gameObject.transform, "Label_content3")
+	if Label_other then
+		context = string.gsub(context, ":是", "")
+		componentGet(Label_other, "UILabel").text = (string.len(context) >0 and context or "无")
+	end
+
+	--玩法(shareValue)
+	context = getRuleString(GameUtil.GetRoomGamePlayKeys(gid), "")
+	
+	--[[for k,v in pairs(cfgTbl) do
+		if ruleCfg[k] then
+			local valueTbl = ruleCfg[k].shareValue
+			if valueTbl and type(valueTbl) =="table" then
+				local ruleName = valueTbl[v]
+				if ruleName and string.len(ruleName) >0 then
+					if string.len(context) <1 then
+						context = ruleName
+					else
+						context = context..", "..ruleName
+					end
+				end
+			end
+		end
+	end--]]
+	local Label_content = child(self.gameObject.transform, "Label_content2")
+	if Label_content then
+		componentGet(Label_content, "UILabel").text = (string.len(context) >0 and context or "无")
+	end
+
+end
+
+return Tab_class

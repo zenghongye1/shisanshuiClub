@@ -1,0 +1,155 @@
+local base = require("logic.framework.ui.uibase.ui_window")
+local ClubCreateUI = class("ClubCreateUI", base)
+local addClickCallbackSelf = addClickCallbackSelf
+local UIManager = UI_Manager:Instance() 
+local LanguageMgr = LanguageMgr
+
+function ClubCreateUI:OnInit()
+	self.model = model_manager:GetModel("ClubModel")
+	self.gameIds = nil
+	self.locationId = nil
+	self.selectIconId = 1
+
+	self.nameInputLabel = self:GetComponent("panel/labels/name", typeof(UIInput))
+	self.nameLabel = self:GetComponent("panel/labels/name", typeof(UILabel))
+	self.idLabel = self:GetComponent("panel/labels/ID", typeof(UILabel))
+	self.locationLabel = self:GetComponent("panel/labels/location", typeof(UILabel))
+	self.gameLabel = self:GetComponent("panel/labels/games", typeof(UILabel))
+	self.scroll = self:GetComponent("panel/scroll", typeof(UIScrollView))
+	self.defaultBtnLabelGo = self:GetGameObject("panel/createBtn/Label")
+	self.defaultBtnLabelGo:SetActive(true)
+	self.roomCardGo = self:GetGameObject("panel/roomCard")
+	self.roomCardGo:SetActive(false)
+
+	self.headIcon = self:GetComponent("panel/headbg/headIcon", typeof(UISprite))
+	addClickCallbackSelf(self.headIcon.gameObject, self.OnIconClick, self)
+
+	self.createBtnGo = self:GetGameObject("panel/createBtn")
+	addClickCallbackSelf(self.createBtnGo, self.OnCreateBtnClick, self)
+	self.nameBtnGo = self:GetGameObject("panel/btns/nameBtn")
+	addClickCallbackSelf(self.nameBtnGo, self.OnNameBtnClick, self)
+	self.idBtnGo = self:GetGameObject("panel/btns/IdBtn")
+	-- id
+	self.locationBtnGo = self:GetGameObject("panel/btns/locationBtn")
+	addClickCallbackSelf(self.locationBtnGo, self.OnLocationBtnClick, self)
+	self.gameBtnGo = self:GetGameObject("panel/btns/gameBtn")
+	addClickCallbackSelf(self.gameBtnGo, self.OnGameBtnClick, self)
+	self.closeBtnGo = self:GetGameObject("panel/Panel_Top/btn_close")
+	addClickCallbackSelf(self.closeBtnGo, self.OnCloseBtnClick, self)
+end
+
+function ClubCreateUI:OnOpen()
+	self.gameIds = nil
+	self.locationId = nil
+	self.selectIconId = 1
+	self:ClearContent()
+	self.needCost = self:CheckShowRoomCard()
+	self.roomCardGo:SetActive(self.needCost)
+	self.defaultBtnLabelGo:SetActive(not self.needCost)
+end
+
+function ClubCreateUI:OnClose()
+end
+
+function ClubCreateUI:CheckShowRoomCard()
+	local list = model_manager:GetModel("ClubModel"):GetClubListByType(ClubMemberState.agent)
+	if list == nil or #list == 0 then
+		return false
+	else
+		return true
+	end
+end	
+
+function ClubCreateUI:ClearContent()
+	self.nameLabel.text = ""
+	self.nameInputLabel.value = ""
+	self.nameInputLabel.defaultText = LanguageMgr.GetWord(10001)
+
+	self.idLabel.text = ""
+	self.locationLabel.text = LanguageMgr.GetWord(10003)
+	self.gameLabel.text = LanguageMgr.GetWord(10004)
+end
+
+function ClubCreateUI:OnCloseBtnClick()
+	UIManager:CloseUiForms("ClubCreateUI")
+end
+
+function ClubCreateUI:OnNameBtnClick()
+	UIManager:ShowUiForms("ClubNameInputUI", nil, nil, 1, self.nameInputLabel.value, function (tab, value )
+		self.nameInputLabel.value = value
+	end, self)
+	-- self.nameInputLabel.isSelected = true
+end
+
+function ClubCreateUI:OnLocationBtnClick()
+	UIManager:ShowUiForms("ClubGameSelectUI", nil, nil, ClubGameSelectEnum.locations, self.gameIds, self.OnLocationSelected, self)
+end
+
+function ClubCreateUI:OnGameBtnClick()
+	UIManager:ShowUiForms("ClubGameSelectUI", nil, nil, ClubGameSelectEnum.games, self.gameIds, self.OnGameSelected, self)
+end
+
+function ClubCreateUI:OnIconClick()
+	UIManager:ShowUiForms("ClubIconSelectUI", nil, nil, self.selectIconId, self.OnSelectIcon, self)
+end
+
+function ClubCreateUI:OnSelectIcon(id)
+	self.selectIconId = id
+	local iconName = ClubUtil.iconIdToNameMap[id]
+	self.headIcon.spriteName = iconName
+end
+
+
+function ClubCreateUI:OnGameSelected(ids)
+	self.gameIds = ids
+	self.gameLabel.text = ClubUtil.GetGameContent(ids)
+end
+
+
+function ClubCreateUI:OnLocationSelected(id)
+	if self.locationId == id then
+		return
+	end
+	self.locationId = id
+	self.locationLabel.text = ClubUtil.GetLocationNameById(id)
+end
+
+function ClubCreateUI:OnCreateBtnClick()
+	if self.nameInputLabel.value == "" then
+		UIManager:FastTip(LanguageMgr.GetWord(10011))
+		return
+	end
+
+	if self.locationId == nil or self.locationId == 0 then
+		UIManager:FastTip(LanguageMgr.GetWord(10012))
+		return
+	end
+
+	if self.gameIds == nil or #self.gameIds == 0 then
+		UIManager:FastTip(LanguageMgr.GetWord(10013))
+		return
+	end
+	if self:CheckShowRoomCard() then
+		MessageBox.ShowYesNoBox("创建俱乐部将消耗[30房卡]，是否确定创建?", 
+			function ()
+				if data_center.CheckRoomCard(30) then
+					self.model:ReqCreateClub(self.nameInputLabel.value, self.gameIds, nil, self.locationId, self.selectIconId)
+					UIManager:CloseUiForms("ClubCreateUI")
+				end
+			end)
+	else
+		self.model:ReqCreateClub(self.nameInputLabel.value, self.gameIds, nil, self.locationId, self.selectIconId)
+		UIManager:CloseUiForms("ClubCreateUI")
+	end
+end
+
+function ClubCreateUI:OnRefreshDepth()
+
+  local uiEffect = child(self.gameObject.transform, "panel/Panel_Top/Title/Effect_youxifenxiang")
+  if uiEffect and self.sortingOrder then
+    local topLayerIndex = self.sortingOrder +self.m_subPanelCount +1
+    Utils.SetEffectSortLayer(uiEffect.gameObject, topLayerIndex)
+  end
+end
+
+return ClubCreateUI

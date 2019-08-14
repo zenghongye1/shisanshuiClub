@@ -1,0 +1,15 @@
+local base = require "logic/mahjong_sys/common/mahjong_action_base"
+local mahjong_action_gameSyncBegin = class("mahjong_action_gameSyncBegin", base)
+
+local mahjong_ui = mahjong_ui
+
+function mahjong_action_gameSyncBegin:Execute(tbl)
+	Trace(GetTblData(tbl))
+	Trace("重连同步开始")
+	if mahjong_ui.voteView ~= nil then
+		mahjong_ui.voteView:Hide()
+	end
+	
+end
+
+return mahjong_action_gameSyncBegin

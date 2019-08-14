@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="40dip"
+    android:gravity="center_vertical"
+    android:orientation="vertical" >
+    <TextView
+        android:id="@+id/tv_username" 
+        android:layout_width="match_parent"
+        android:layout_alignParentLeft="true"
+        android:paddingLeft="10dp"
+        android:textColor="@color/dysdk_ui_gray_light"
+        android:gravity="center_vertical"
+        android:layout_height="40dp"
+        />
+    <ImageView 
+        android:id="@+id/ib_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:paddingRight="10dip"
+        android:src="@drawable/dysdk_ttw_delete"
+        />
+</RelativeLayout>

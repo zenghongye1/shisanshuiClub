@@ -1,0 +1,157 @@
+--[[--
+ * @Description: 定义全局数据结构
+ * @Author:      shine
+ * @FileName:    global_define.lua
+ * @DateTime:    2017-05-16
+ ]]
+
+global_define = {} 
+local this = global_define
+
+this.chatTextIntervalTime = 5
+this.userNameLen = 7
+this.color = 
+{
+	["WHITE"] = "[FFFFFF]",
+	["GREEN"] = "[32E646]",
+	["BLUE"]  = "[32E6F0]",
+	["PURPLE"] = "[BE32F0]",
+	["ORANGE"] = "[F0A032]",
+}
+
+--游戏类型
+ENUM_GAME_TYPE = 
+{
+  TYPE_FUZHOU_MJ = 18,            --福州麻将
+  TYPE_SHISHANSHUI = 11,          --十三水
+  TYPE_QUANZHOU_MJ = 20,            --泉州麻将
+  TYPE_XIAMEN_MJ = 25,            -- 厦门麻将
+  TYPE_ZHANGZHOU_MJ = 26,        -- 漳州麻将
+  TYPE_NIUNIU = 27,                 --牛牛 
+  TYPE_HONGZHONG_MJ = 40,                 --红中麻将
+  TYPE_LONGYAN_MJ = 41,                 --龙岩麻将
+  TYPE_NINGDE_MJ = 42,                 -- 宁德麻将
+  TYPE_SANMING_MJ = 43,             -- 三明
+  TYPE_PUTIANSHISAN_MJ = 44,        -- 莆田十三张
+  TYPE_FUDING_MJ = 45,              -- 福鼎
+}
+
+--登陆类型
+LoginType=
+{
+    WXLOGIN = 2,
+    QQLOGIN = 3,
+    YOUKE = 9,
+}
+
+local HTTPNETTYPE = 
+{
+	HTTP_INTERNET = 1,
+	HTTP_LOCAL_FZMJ = 2,
+	HTTP_LOCAL_SSS = 3,
+	HTTP_DEVELOP = 4,
+	HTTP_RELEASE = 5,
+	HTTP_ABROAD = 6,
+	HTTP_DEFAULT = 10,
+}
+
+this.preWebUrl = "http://b.feiyubk.com"
+local hallShareSubUrl = "/gamewap/youxianqipai/view/youxixiazai.html?uid=%s"
+this.gameShareTitle = "开房玩%s速来,房号:%s"
+
+this.CreateRoomPlayerPrefs = "createRoomCache_" -- 开房数据持久化固定字符串createRoomCache_gid
+this.ClubCreateRoomPlayerPrefs = "clubCreateRoomCache_"
+this.CUR_TYPE_ID = "CUR_TYPE_ID"
+this.CUR_GAME_ID = "CUR_GAME_ID"
+
+this.winXin = "yxqpkefu"
+this.qq = 1715804250
+
+----------------------Oem配置相关------------------------
+this.appConfig = {}
+
+this.appConfig.MWInviteURL = "https://aqvvrq.mlinks.cc/Acss?id=%s&uid=%s"   -----魔窗地址配置-----
+this.appConfig.appId = 4
+this.appConfig.jsonurl = Application.persistentDataPath.."/games/gamerule"
+this.appConfig.qzoneShareIcon = "http://fjmj.dstars.cc/gamewap/youxianqipai/src/images/icon_108.png" 	----分享到空间icon
+
+
+this.appConfig.hallShareTitle = "福建人自己的棋牌游戏"
+this.appConfig.hallShareQTitle = "福建人都在玩的麻将和十三水！"
+this.appConfig.hallShareFriendContent = "有闲你就来！福建本地的麻将游戏，最真实的在线十三水！就在有闲棋牌！"
+this.appConfig.hallShareFriendQContent = "有闲你就来！玩地道福建本地麻将和十三水，就来有闲棋牌，呀厉害！"
+
+local httpmzsm = this.preWebUrl.."/gamewap/youxianqipai/view/yonghuxieyi.html"
+local httpfwtk = this.preWebUrl.."/gamewap/youxianqipai/view/fuwutiaokuan.html"
+local httpyszc = this.preWebUrl.."/gamewap/youxianqipai/view/yinsizhengce.html"
+local httpactivity = this.preWebUrl.."/gamewap/youxianqipai/view/huodonggonggao.html"
+this.defineimg = "http://portrait3.sinaimg.cn/1674470754/blog/180"
+
+
+function this.SetURL(mzsm,fwtk,yszc,activity,shareurl) 
+    if mzsm~=nil and mzsm~="" then
+        httpmzsm=mzsm
+    end
+    if fwtk~=nil and fwtk~="" then
+        httpfwtk=fwtk
+    end
+    if yszc~=nil and yszc~="" then
+        httpyszc=yszc
+    end
+    if activity~=nil and activity~="" then
+        httpactivity=activity
+    end
+    if shareurl~=nil and shareurl~="" then
+        hallShareSubUrl=shareurl
+    end 
+end
+
+-----------------------外部获取接口-----------------------
+function  this.GetUrlData()
+   local t=http_request_interface.GetTable()
+   local url= httpactivity.."?session_key="..t.session_key.."&siteid="..t.siteid.."&version="..t.version
+   return url
+end
+
+function this.GetMzsmUrl()
+   local t=http_request_interface.GetTable()
+     if httpmzsm == "" then
+      httpmzsm = "http://b.feiyubk.com/gamewap/youxianqipai/view/yonghuxieyi.html"
+   end
+   local url= httpmzsm.."?session_key="..t.session_key.."&siteid="..t.siteid.."&version="..t.version
+   return url
+end
+
+function this.GetFwtkUrl()
+   local t=http_request_interface.GetTable()
+   if httpfwtk == "" then
+      httpfwtk = "http://b.feiyubk.com/gamewap/youxianqipai/view/fuwutiaokuan.html"
+   end
+   local url= httpfwtk.."?session_key="..t.session_key.."&siteid="..t.siteid.."&version="..t.version
+   return url
+end
+
+function this.GetYszcUrl()
+   local t=http_request_interface.GetTable()
+   if httpyszc == "" then
+      httpyszc = "http://b.feiyubk.com/gamewap/youxianqipai/view/yinsizhengce.html"
+   end
+   local url= httpyszc.."?session_key="..t.session_key.."&siteid="..t.siteid.."&version="..t.version
+   return url
+end
+
+function this.GetShareUrl()
+   --local t=http_request_interface.GetTable()
+   --local url= global_define.hallShareSubUrl.."?session_key="..t.session_key.."&siteid="..t.siteid.."&version="..t.version
+   local url = hallShareSubUrl.."?uid=%s"
+   return url
+end
+
+function this.CheckHasName(gid)
+  for k,v in pairs(ENUM_GAME_TYPE) do
+    if gid == v then
+      return true
+    end
+  end
+  return false
+end

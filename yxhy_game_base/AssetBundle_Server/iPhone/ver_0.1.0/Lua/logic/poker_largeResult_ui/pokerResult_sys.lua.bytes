@@ -1,0 +1,150 @@
+--[[
+	[@self.userTranList]
+	slef:居首
+	other：分数降序排列
+--]]
+
+local pokerResult_sys = class("pokerResult_sys")
+
+function pokerResult_sys:ctor(userTranList,fangzhuId)	
+	self.userTranList = userTranList
+	self.fangzhuId = fangzhuId
+	self.roomdata = {}
+end
+
+--显示最大牌型详情		self:1 , other: index + 1
+function pokerResult_sys:ShowCardData(index,cardData,nSpecialType)
+	local tran__pokerShow = child(self.userTranList[index],"pokerShow")
+	local cardShow = require("logic/cardShow/poker_cardShow"):create(tran__pokerShow,cardData,nSpecialType)
+	cardShow.isChip = room_data.GetSssRoomDataInfo().isChip
+	cardShow.scale = Vector3(0.38,0.40,0.40)
+	cardShow.gridCellWidth = 50
+	cardShow:SetShisanshuiCardShow()
+end
+
+---设置特殊牌型显示		self:1 , other: index + 1
+function pokerResult_sys:SetSpecialShow(index,nSpecialType)
+	local SpecialSprite = subComponentGet(self.userTranList[index],"specialShow/specialCard","UISprite")
+	local SpecialShow = child(self.userTranList[index],"specialShow")
+	if nSpecialType ~= 0 then
+		SpecialSprite.spriteName = nSpecialType	
+		SpecialSprite.gameObject:SetActive(true)
+		SpecialShow.gameObject:SetActive(true)
+	else
+		SpecialSprite.gameObject:SetActive(false)
+		SpecialShow.gameObject:SetActive(false)
+	end
+end
+
+---设置分数显示		self:1 , other: index + 1
+function pokerResult_sys:SetScoreShow(index,allScore)
+	local ScoreLbl = subComponentGet(self.userTranList[index], "score/scorelbl","UILabel")
+	local negScoreLbl = subComponentGet(self.userTranList[index],"score/negscorelbl","UILabel")
+	local totalScores = allScore
+	if totalScores <= 0 then
+		negScoreLbl.gameObject:SetActive(true)
+		ScoreLbl.gameObject:SetActive(false)
+		negScoreLbl.text = tostring(totalScores)
+	else
+		negScoreLbl.gameObject:SetActive(false)
+		ScoreLbl.gameObject:SetActive(true)
+		ScoreLbl.text = "+"..tostring(totalScores)
+	end
+end
+
+---设置房主标志		self:1 , other: index + 1
+function pokerResult_sys:SetRoomer(index,uid)
+	local fangzhu = subComponentGet(self.userTranList[index],"fangzhu","UISprite")
+	if tonumber(uid) == tonumber(self.fangzhuId) then		
+		fangzhu.gameObject:SetActive(true)
+	else
+		fangzhu.gameObject:SetActive(false)
+	end
+end
+
+------对比分数表
+function pokerResult_sys:ShowHighest(uid,ScorestuidList,callback)	-----IS=0 ：本机用户
+	for i=1,#ScorestuidList do
+		if uid == tonumber(ScorestuidList[i]) then
+			if callback ~= nil then
+				callback()
+			end
+		end
+	end
+end
+
+----------获取最高分的uid表------------
+function pokerResult_sys:FindHighestByuid(ScoreUid)
+	local Temp = 0
+	local higestUid = 0
+	local ScoreUidList = {}
+	for k,v in pairs(ScoreUid) do
+		if v > Temp then
+			Temp = v
+			higestUid = k
+		end	
+	end
+	table.insert(ScoreUidList,higestUid)
+	for k,v in pairs(ScoreUid) do
+		if k ~= higestUid and v == Temp and v > 0 then
+			table.insert(ScoreUidList,k)
+		end	
+	end
+	return ScoreUidList
+end
+
+---------获取最低分的uid表-------------
+function pokerResult_sys:FindLowestByuid(ScoreUid)
+	local Temp = 0
+	local lowestUid = 0
+	local ScoreUidList = {}
+	for k,v in pairs(ScoreUid) do
+		if v < Temp then
+			Temp = v
+			lowestUid = k
+		end	
+	end
+	table.insert(ScoreUidList,lowestUid)
+	for k,v in pairs(ScoreUid) do
+		if k ~= lowestUid and v == Temp and v < 0 then
+			table.insert(ScoreUidList,k)
+		end	
+	end
+	return ScoreUidList
+end
+
+function pokerResult_sys:GetRoomNum()
+	--logError(GetTblData(room_data.GetSssRoomDataInfo()))
+	local str = "房号:  "..self.roomdata["rno"]
+	local round = self.roomdata["cur_playNum"].."/"..self.roomdata["play_num"].."局"
+
+	str = str.." ("..round..")"
+	return str
+end
+
+function pokerResult_sys:GetGameName()
+	return GameUtil.GetGameName(self.roomdata["gid"])
+end
+
+function pokerResult_sys:GetTime()
+	return tostring(os.date("%Y-%m-%d  %H:%M:%S",os.time()))
+end
+
+function pokerResult_sys:SetRoomData()
+	if player_data.GetGameId() == ENUM_GAME_TYPE.TYPE_NIUNIU then
+		local niuniu_data = require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().roomInfo
+		self.roomdata["rno"] = niuniu_data["rno"]
+		self.roomdata["cur_playNum"] = niuniu_data["nCurrJu"]
+		self.roomdata["play_num"] = niuniu_data["nJuNum"]
+		self.roomdata["gid"] = niuniu_data["_gid"]
+	elseif player_data.GetGameId() == ENUM_GAME_TYPE.TYPE_SHISHANSHUI then
+		self.roomdata["rno"] = room_data.GetSssRoomDataInfo()["rno"]
+		self.roomdata["cur_playNum"] = room_data.GetSssRoomDataInfo()["cur_playNum"]
+		self.roomdata["play_num"] = room_data.GetSssRoomDataInfo()["play_num"]
+		self.roomdata["gid"] = room_data.GetSssRoomDataInfo()["gid"]
+	else
+		logError("SetRoomData  error")
+	end
+end
+
+return pokerResult_sys

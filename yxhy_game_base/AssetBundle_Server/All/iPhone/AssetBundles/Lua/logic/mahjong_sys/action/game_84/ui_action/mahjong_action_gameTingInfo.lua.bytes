@@ -1,0 +1,15 @@
+local base = require "logic.mahjong_sys.action.common.mahjong_action_base"
+local mahjong_mjAction_gameTingInfo = class("mahjong_mjAction_gameTingInfo", base)
+
+function mahjong_mjAction_gameTingInfo:Execute(tbl)
+	local tingInfo = tbl._para.tingInfo
+	if tingInfo and tingInfo.win then
+		roomdata_center.currentTingInfo = {}
+		table.insert(roomdata_center.currentTingInfo ,tingInfo.flag)
+		table.insert(roomdata_center.currentTingInfo,tingInfo.win)
+		roomdata_center.isTing = true
+	end
+	Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.MAHJONG_TING_INFO)
+end
+
+return mahjong_mjAction_gameTingInfo

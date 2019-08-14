@@ -1,0 +1,141 @@
+﻿[
+	[{
+		"exData": [1, 2, 0, 3],
+		"selectIndex": [3],
+		"maxPerLine": 6,
+		"data": ["AA支付", "大赢家支付", "房主支付", "会长支付"],
+		"title": "房费:",
+		"id": "costtype",
+		"type": 1,
+		"group": 44
+	}],
+	[{
+		"exData": [
+			1,
+			2,
+			3
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"白板普通牌",
+			"白板替金",
+			"白板补牌"
+		],
+		"type": 1,
+		"group": 20,
+		"title": "玩法:",
+		"id": "nSupportBaiStyle",
+		"connect": [{
+			"nSupportBaiStyle": [{
+				"bSupportBaiScore": [
+					[0],
+					[0],
+					[1]
+				]
+			}]
+		}],
+		"Isconnect": [{
+			"nSupportBaiStyle": [{
+					"bSupportBaiScore": [
+						[1],
+						[1],
+						[0]
+					]
+				}
+
+			]
+		}],
+		"connecttype": [3]
+	}],
+	[{
+		"exData": [
+			4,
+			3,
+			2
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"4人",
+			"3人",
+			"2人"
+		],
+		"type": 1,
+		"group": 21,
+		"title": "人数:",
+		"id": "pnum"
+	}],
+	[{
+		"exData": [
+			4,
+			8,
+			16
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"4局",
+			"8局",
+			"16局"
+		],
+		"type": 1,
+		"group": 22,
+		"maxPerLine": 3,
+		"title": "局数:",
+		"id": "rounds"
+	}],
+	[{
+		"multiterm": true,
+		"title": "计分:",
+		"type": 0,
+		"group": 0,
+		"id": [
+			"bSupportBaiScore"
+		],
+		"data": [
+			"白板计2分"
+		],
+		"selectIndex": []
+	}],
+	[{
+		"exData": [
+			0, 1
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"不进金",
+			"进金"
+		],
+		"type": 1,
+		"group": 23,
+		"title": "定金:",
+		"id": "bSupportGoldAdd"
+	}],
+	[{
+		"exData": [
+			1,
+			3,
+			5,
+			10
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"1分",
+			"3分",
+			"5分",
+			"10分"
+		],
+		"type": 1,
+		"group": 24,
+		"title": "底分:",
+		"id": "nSupportBaseScore"
+	}]
+]

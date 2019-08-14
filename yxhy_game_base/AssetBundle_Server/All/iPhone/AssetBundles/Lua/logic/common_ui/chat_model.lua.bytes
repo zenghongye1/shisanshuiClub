@@ -1,0 +1,51 @@
+chat_model = {}
+local this = chat_model
+this.chatTextTab = {}
+this.chatImgTab ={}
+function this.DealChat(viewSeat,contentType,content,givewho)
+	local para = {}
+		para["viewSeat"]=viewSeat
+		para["contentType"]=contentType
+		para["content"]=content
+		para["givewho"]=givewho
+
+	if contentType == 1 then
+		--文字聊天
+		Notifier.dispatchCmd(cmdName.MSG_CHAT_TEXT, para)
+    if viewSeat == 1 then
+		--  self:HideChatPanel()
+		UI_Manager:Instance():CloseUiForms("chat_ui")
+    end
+	elseif contentType ==2 then
+		--表情聊天
+		Notifier.dispatchCmd(cmdName.MSG_CHAT_IMAGA, para)
+    if viewSeat ==  1 then
+		--  self:HideChatPanel()
+		UI_Manager:Instance():CloseUiForms("chat_ui")
+    end
+	elseif contentType == 3 then
+		--语音聊天
+    Trace("------recive voice msg---------------")  
+    --if viewSeat~=1 then
+      local voiceInfoTbl = {}
+      voiceInfoTbl.fileID = content
+      voiceInfoTbl.viewSeat = viewSeat
+      voiceInfoTbl.flag = 2
+      gvoice_sys.AddDownloadFile(voiceInfoTbl)
+    --end
+	elseif contentType == 4 then
+		--玩家互动
+		Notifier.dispatchCmd(cmdName.MSG_CHAT_INTERACTIN, para)
+	end
+end
+
+function this.GetChatIndexByContent(content)
+  local tIndex = nil
+  for k, value in pairs(this.chatTextTab) do
+    if value == content and k <=defaultTxtCount then
+      tIndex = k
+      break
+    end
+  end
+  return tIndex
+end

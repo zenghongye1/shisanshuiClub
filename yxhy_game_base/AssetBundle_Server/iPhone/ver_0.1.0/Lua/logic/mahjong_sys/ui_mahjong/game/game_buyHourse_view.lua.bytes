@@ -1,0 +1,57 @@
+local base = require "logic/mahjong_sys/common/ui/ui_load_view_base"
+local game_buyHourse_view = class("game_buyHourse_view", base)
+
+function game_buyHourse_view:InitPrefabPath()
+	self.prefabPath = data_center.GetResMJCommPath().."/ui/game/buyHouseView"
+end
+
+function game_buyHourse_view:InitView()
+	self.buyHorseDataList = {}
+	self.txtLabelList = {}
+	self.btnGoList = {}
+
+	for i = 1, 4 do
+		local lbl = self:GetComponent("btn" .. i .. "/Label", typeof(UILabel))
+		self.txtLabelList[i] = lbl
+		self.btnGoList[i] = self:GetGameObject("btn" .. i)
+		addClickCallbackSelf(self:GetGameObject("btn" .. i), 
+			function() 
+				self:OnBtnClick(i)
+			end
+			 , self)
+	end
+end
+
+function game_buyHourse_view:OnLoaded()
+	mahjong_ui:SetChild(self.transform, nil, nil, Vector3(-5, - 113, 0))
+end
+
+function game_buyHourse_view:OnBtnClick(index)
+	if self.buyHorseDataList[index] == nil then
+		return
+	end
+	mahjong_play_sys.XiaPaoReq(self.buyHorseDataList[index])
+	self:Hide()
+end
+
+function game_buyHourse_view:Refresh(list)
+	self.buyHorseDataList = list
+	local count = #list
+	if count ~= 4 then
+		for i = 1, 4 do
+			if i <= count then
+				self.btnGoList[i]:SetActive(true)
+			else
+				self.btnGoList[i]:SetActive(false)
+			end
+		end
+	end
+
+	for i = 1, #list do
+		self.txtLabelList[i].text = "+" .. list[i]
+	end
+
+end
+
+
+return game_buyHourse_view

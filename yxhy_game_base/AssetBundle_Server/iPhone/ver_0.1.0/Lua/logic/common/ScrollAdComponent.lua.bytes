@@ -1,0 +1,196 @@
+local base = require "logic/framework/ui/uibase/ui_view_base"
+local BaseClass = class("ScrollAdComponent", base)
+
+
+local containerWidth = 406 +10
+local itemImgTbl = {"clubcy_01", "clubcy_02", "clubcy_03", "clubcy_04", }
+local itemMaxCount = #itemImgTbl
+local itemTbl = {}
+local itemBasePos = nil
+
+function BaseClass:ctor(_go, _callback)
+  base.ctor(self, _go)
+  self._callback = _callback
+
+  self:registerDragEvent()
+  self:playPageAnimation()
+end
+function BaseClass:OnInit()
+  -- Trace("---OnInit---")
+end
+function BaseClass:OnOpen(data)
+  -- Trace("---OnOpen---")
+end
+function BaseClass:OnHide()
+end
+function BaseClass:clear()
+  if self.updateTimer then
+    self.updateTimer:Stop()
+    self.updateTimer = nil
+  end
+  -- local svObj = self:GetGameObject("ScrollView")
+  -- if svObj then
+  --   local svContainer = child(svObj.transform, "Container")
+  --   if svContainer then
+  --     svContainer.transform:DOKill()
+  --   end
+  -- end
+  itemTbl = {}
+  itemBasePos = nil
+end
+
+--刷新界面
+function BaseClass:playPageAnimation(_isTimer)
+  --临时处理再次打开界面错乱问题
+  if not self.updateTimer then
+      self.updateTimer = FrameTimer.New(function()
+          self:playPageAnimation(true)
+          self.updateTimer = nil
+        end, 150, 1)
+      self.updateTimer:Start()
+  end
+  if not _isTimer then
+    return
+  end
+
+  local svObj = self:GetGameObject("ScrollView")
+  if svObj then
+    local svContainer = child(svObj.transform, "Container")
+    local imgItem = child(svObj.transform, "Container/Texture")
+    itemTbl[1] = imgItem
+    local itemPos = imgItem.gameObject.transform.localPosition
+    itemBasePos = itemBasePos or Vector3(itemPos.x, itemPos.y, itemPos.z)
+
+    local dragDir = -1
+    local containerPos = svContainer.gameObject.transform.localPosition
+    local iSign = containerPos.x >0 and -1 or 1
+    local curItemIndex = math.floor(math.abs(containerPos.x)/containerWidth)
+    for i,v in ipairs({-1, 0, 1}) do
+      local tempItemIndex = curItemIndex +v
+      local itemIndex = (tempItemIndex%itemMaxCount) +1
+      -- print("curItemIndex----", curItemIndex, itemIndex, iSign)
+      if not itemTbl[itemIndex] then
+        -- print("itemIndex-------")
+        local newImgItem = GameObject.Instantiate(imgItem)
+        if newImgItem then
+          newImgItem.name = i
+          newImgItem.transform.parent = svContainer
+          newImgItem.transform.localPosition = Vector3(itemBasePos.x +tempItemIndex *iSign *containerWidth, itemBasePos.y, itemBasePos.z)
+          newImgItem.transform.localScale = Vector3.one
+
+          -- 纹理替换
+          local imagePrefab = newNormalObjSync(data_center.GetAppConfDataTble().appPath.."/uitextures/ui/"..itemImgTbl[itemIndex], typeof(UnityEngine.Texture2D))
+          local textureImg = newobject(imagePrefab)
+          local itemTexture = componentGet(newImgItem.transform,"UITexture")
+          if itemTexture then
+            itemTexture.mainTexture = textureImg
+          end
+
+          itemTbl[itemIndex] = newImgItem
+        end
+      else
+        itemTbl[itemIndex].transform.localPosition = Vector3(itemBasePos.x +tempItemIndex *iSign *containerWidth, itemBasePos.y, itemBasePos.z)
+      end
+    end
+
+    local curItemIndex2 = math.floor(math.abs(containerPos.x +containerWidth/2 *dragDir)/containerWidth) +1
+    local newPos = Vector3(curItemIndex2 *containerWidth *(-iSign), containerPos.y, containerPos.z)
+    local isMoveEnd = false
+    local animTweener = svContainer.transform:DOLocalMove(newPos, 0.5, true)
+    animTweener:SetEase(DG.Tweening.Ease.Linear):OnComplete(function()
+      isMoveEnd = true
+      self:playPageAnimation()
+    end)
+    animTweener:OnKill(function()
+      -- 销毁动画对象
+    end)
+  end
+end
+
+function BaseClass:registerDragEvent( ... )
+  
+  local svObj = self:GetGameObject("ScrollView")
+  if svObj then
+    local svContainer = child(svObj.transform, "Container")
+    local imgItem = child(svObj.transform, "Container/Texture")
+    itemTbl[1] = imgItem
+    local itemPos = imgItem.gameObject.transform.localPosition
+    itemBasePos = itemBasePos or Vector3(itemPos.x, itemPos.y, itemPos.z)
+
+    local dragDir = 1
+
+    addDragCallbackSelf(svObj, function (go, delta)
+      -- Trace("ScrollAdComponent--addDragCallbackSelf--"..delta.x)
+
+      dragDir = delta.x <0 and -1 or 1
+
+      local containerPos = svContainer.gameObject.transform.localPosition
+      -- print("containerPos.x ", containerPos.x)
+      svContainer.gameObject.transform.localPosition = Vector3(containerPos.x +delta.x, containerPos.y, containerPos.z)
+
+      local iSign = containerPos.x >0 and -1 or 1
+      local curItemIndex = math.floor(math.abs(containerPos.x)/containerWidth)
+      for i,v in ipairs({-1, 0, 1}) do
+        local tempItemIndex = curItemIndex +v
+        local itemIndex = (tempItemIndex%itemMaxCount) +1
+        -- print("curItemIndex----", curItemIndex, itemIndex, iSign)
+        if not itemTbl[itemIndex] then
+          -- print("itemIndex-------")
+          local newImgItem = GameObject.Instantiate(imgItem)
+          if newImgItem then
+            newImgItem.name = i
+            newImgItem.transform.parent = svContainer
+            newImgItem.transform.localPosition = Vector3(itemBasePos.x +tempItemIndex *iSign *containerWidth, itemBasePos.y, itemBasePos.z)
+            newImgItem.transform.localScale = Vector3.one
+
+            -- 纹理替换
+            local imagePrefab = newNormalObjSync(data_center.GetAppConfDataTble().appPath.."/uitextures/ui/"..itemImgTbl[itemIndex], typeof(UnityEngine.Texture2D))
+            local textureImg = newobject(imagePrefab)
+            local itemTexture = componentGet(newImgItem.transform,"UITexture")
+            if itemTexture then
+              itemTexture.mainTexture = textureImg
+            end
+
+            itemTbl[itemIndex] = newImgItem
+          end
+        else
+          itemTbl[itemIndex].transform.localPosition = Vector3(itemBasePos.x +tempItemIndex *iSign *containerWidth, itemBasePos.y, itemBasePos.z)
+        end
+      end
+
+    end)
+    addDragStartCallbackSelf(svObj, function (go)
+      -- Trace("addDragStartCallbackSelf-- ")
+
+      if self.updateTimer then
+        self.updateTimer:Stop()
+        self.updateTimer = nil
+      end
+
+    end)
+    addDragEndCallbackSelf(svObj, function (go)
+      -- Trace("addDragEndCallbackSelf-- ")
+
+      local containerPos = svContainer.gameObject.transform.localPosition
+      -- local iSign = containerPos.x <0 and -1 or 1
+      local iSign = containerPos.x >0 and -1 or 1
+
+      local curItemIndex = math.floor(math.abs(containerPos.x +containerWidth/2 *dragDir)/containerWidth)
+      local newPos = Vector3(curItemIndex *containerWidth *(-iSign), containerPos.y, containerPos.z)
+      -- print("curItemIndex----", curItemIndex, containerPos.x, newPos.x, dragDir)
+
+      local isMoveEnd = false
+      local animTweener = svContainer.transform:DOLocalMove(newPos, 0.5, true)
+      animTweener:SetEase(DG.Tweening.Ease.Linear):OnComplete(function()
+        isMoveEnd = true
+        self:playPageAnimation()
+      end)
+      animTweener:OnKill(function()
+        -- 销毁动画对象
+      end)
+    end)
+  end
+
+end
+
+return BaseClass

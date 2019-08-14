@@ -1,0 +1,253 @@
+
+local base = require("logic.framework.ui.uibase.ui_window")
+local poker_largeResult_ui = class("poker_largeResult_ui",base)
+
+function poker_largeResult_ui:ctor()
+	base.ctor(self)
+	self.fangzhuId = 0
+	self.userTranList = {}		--存放user的tran	1:self; 2~6:other
+	self.highestUid = {}
+	self.playerCount = 0
+end
+
+function poker_largeResult_ui:OnInit()	
+	self:InitView()
+end
+
+function poker_largeResult_ui:OnOpen(data)
+	UI_Manager:Instance():CloseUiForms("place_card")
+	UI_Manager:Instance():CloseUiForms("shisanshui_smallResult_ui")
+	UI_Manager:Instance():CloseUiForms("common_card")
+	
+	if data.result ~= nil and not isEmpty(data.result) then
+		Trace("总结算large_result------"..GetTblData(data.result))
+		self:UpdateView(data.result)
+	else
+		largeResultData = nil
+		logError("牌类服务器给大结算空")
+	end
+	roomdata_center.isStart = false
+end
+
+function poker_largeResult_ui:PlayOpenAmination()
+	--打开动画重写
+end
+
+--注册事件
+function poker_largeResult_ui:InitView()
+	local btn_back = child(self.gameObject.transform, "panel/btn/btn_back")
+	if btn_back ~= nil then
+		addClickCallbackSelf(btn_back.gameObject,self.CloseWin,self)
+	end
+	local btn_end = child(self.gameObject.transform, "panel/btn/btn_end")
+	if btn_end ~= nil then
+		addClickCallbackSelf(btn_end.gameObject,self.CloseWin,self)
+	end
+    local btn_share = child(self.gameObject.transform,"panel/btn/btn_share")
+    if btn_share ~= nil then
+		addClickCallbackSelf(btn_share.gameObject,self.ShareClick,self)
+	end
+	
+	self.lbl_roomNum = componentGet(child(self.gameObject.transform,"panel/Anchor_TopRight/roomNum"),"UILabel")
+	self.lbl_time = componentGet(child(self.gameObject.transform,"panel/Anchor_TopRight/time"),"UILabel")
+	self.lbl_gameName = componentGet(child(self.gameObject.transform,"panel/Anchor_TopRight/gameName"),"UILabel")
+	
+	self.tran_over4Root = child(self.gameObject.transform,"panel/over4Root")
+	self.tran_below4Root = child(self.gameObject.transform,"panel/below4Root")
+	
+	--苹果审核隐藏界面
+	if G_isAppleVerifyInvite then
+		if btn_share then
+			btn_share.gameObject:SetActive(false)
+		end
+		if btn_end then
+			LuaHelper.SetTransformLocalX(btn_end.gameObject.transform, 0)
+		end
+	end
+end
+
+function poker_largeResult_ui:UpdateView(data)
+	self.playerCount = table.getCount(data["players"])
+	self:UpdateViewList(self.playerCount)
+	self.fangzhuId = data["owner_uid"]		--房主的uid
+	self:InitPokerResultSys()
+	self.lbl_roomNum.text = "房号:  "..tostring(data["rno"]).." ("..tostring(data["curr_ju"]).."/"..tostring(data["ju_num"]).."局"..")"
+	self.lbl_time.text = self.pokerResultSys:GetTime()
+	self.lbl_gameName.text = self.pokerResultSys:GetGameName()
+	
+	self:LoadAllResult(data["players"])
+end
+
+function poker_largeResult_ui:UpdateViewList(count)
+	if count >= 1 and count <= 4 then
+		self.tran_over4Root.gameObject:SetActive(false)
+		self.tran_below4Root.gameObject:SetActive(true)
+		self.tran_otherUser = child(self.gameObject.transform,"panel/below4Root/playerGrid")
+		local tran_userSelf = child(self.gameObject.transform,"panel/below4Root/playerSelf")
+		table.insert(self.userTranList,tran_userSelf)
+		for i=1,3 do
+			local tran_userOther = child(self.tran_otherUser,"player"..i)
+			tran_userOther.gameObject:SetActive(false)
+			table.insert(self.userTranList,tran_userOther)
+		end
+		
+	elseif count == 5 or count == 6 then
+		self.tran_over4Root.gameObject:SetActive(true)
+		self.tran_below4Root.gameObject:SetActive(false)
+		self.tran_otherUser = child(self.gameObject.transform,"panel/over4Root/playerGrid")
+		local tran_userSelf = child(self.gameObject.transform,"panel/over4Root/playerSelf")
+		table.insert(self.userTranList,tran_userSelf)
+		for i=1,5 do
+			local tran_userOther = child(self.tran_otherUser,"player"..i)
+			tran_userOther.gameObject:SetActive(false)
+			table.insert(self.userTranList,tran_userOther)
+		end
+	else
+		logError("大结算人数不能为0！")
+		return	
+	end
+end
+
+function poker_largeResult_ui:InitPokerResultSys()
+	self.pokerResultSys = require("logic/poker_largeResult_ui/pokerResult_sys"):create(self.userTranList,self.fangzhuId)
+	self.pokerResultSys:SetRoomData()
+end
+
+function poker_largeResult_ui:LoadAllResult(players)
+	Trace("large_result from server"..GetTblData(players))
+	local selfId = data_center.GetLoginUserInfo().uid		--本机uid
+	local otherResult = {}
+	local Score_Uid = {}	  ---- uid - score表	
+	
+	if players ~= nil then
+		for k,v in pairs(players) do
+			
+			Score_Uid[tostring(v["userData"]["uid"])] = v["all_score"]
+		
+			if tonumber(selfId) ~= tonumber(v["userData"]["uid"]) then	
+				Trace("总结算判断不是本机"..selfId.."不等于"..v["userData"]["uid"])
+				table.insert(otherResult,v)
+			else	   --------主机用户放在首位---------
+				self.userTranList[1].gameObject:SetActive(true)	
+				local IDLbl = componentGet(child(self.userTranList[1],"id"), "UILabel")
+				local NameLbl = componentGet(child(self.userTranList[1],"name"), "UILabel")
+				local tex_photo= componentGet(child(self.userTranList[1],"Sprite/head"), "UITexture")
+				IDLbl.text = "ID:"..tostring(v["userData"]["uid"])
+				NameLbl.text = tostring(v["userData"]["name"])
+				hall_data.getuserimage(tex_photo,v["userData"]["imagetype"],v["userData"]["headurl"])	
+				self:SetWinInfo(v["tList"],1)
+				self.pokerResultSys:SetScoreShow(1,v["all_score"])
+				self.pokerResultSys:SetRoomer(1,selfId)
+			end
+		end
+		self.highestUid = self.pokerResultSys:FindHighestByuid(Score_Uid) 		----获取最高分的uid
+		self.lowestUid = self.pokerResultSys:FindLowestByuid(Score_Uid) 		----获取最低分的uid
+		-------------本机用户显示大赢家-------------
+		self.pokerResultSys:ShowHighest(selfId,self.highestUid,function ()
+			local bigWin = child(self.userTranList[1],"bigWin")
+			bigWin.gameObject:SetActive(true)
+		end)
+		---------------大输家-----------
+		self.pokerResultSys:ShowHighest(selfId,self.lowestUid,function ()
+			local bigLoser = child(self.userTranList[1],"bigLoser")
+			bigLoser.gameObject:SetActive(true)
+		end)
+		self:ShowOthersResult(otherResult)
+	end
+end
+				
+--------------------非主机用户结算信息----------------------			
+function poker_largeResult_ui:ShowOthersResult(result)
+	local orderScore = result
+	table.sort(orderScore,function (a,b) return a.all_score > b.all_score end)	
+	for k,v in ipairs(orderScore) do
+		if v ~= nil then
+			self.userTranList[k+1].gameObject:SetActive(true)
+
+			local IDLbl = componentGet(child(self.userTranList[k+1],"id"),"UILabel")
+			local NameLbl = componentGet(child(self.userTranList[k+1],"name"), "UILabel")	
+			local tex_photo= componentGet(child(self.userTranList[k+1],"Sprite/head"), "UITexture")
+			IDLbl.text = "ID:"..tostring(v["userData"]["uid"])
+			NameLbl.text = tostring(v["userData"]["name"])
+			hall_data.getuserimage(tex_photo,v["userData"]["imagetype"],v["userData"]["headurl"])
+			self:SetWinInfo(v["tList"],k+1)
+			self.pokerResultSys:SetScoreShow(k+1,v["all_score"])
+			self.pokerResultSys:SetRoomer(k+1,v["userData"]["uid"])
+			self.pokerResultSys:ShowHighest(v["userData"]["uid"],self.highestUid,function ()
+				local bigWin = child(self.userTranList[k+1],"bigWin")
+				bigWin.gameObject:SetActive(true)
+			end)
+			self.pokerResultSys:ShowHighest(v["userData"]["uid"],self.lowestUid,function ()
+				local bigLoser = child(self.userTranList[k+1],"bigLoser")
+				bigLoser.gameObject:SetActive(true)
+			end)
+		end
+	end
+	-------------居中控制-------------
+	self:SetUserGridPos(#orderScore)
+end
+
+--设置牌局信息  	self:1 , other: index + 1
+function poker_largeResult_ui:SetWinInfo(List,index)
+	local tran_grid = child(self.userTranList[index],"scoreScrollView/grid")
+	--local i = 1
+	for i,v in ipairs(List) do
+		local tran_item = child(self.userTranList[index],"scoreScrollView/grid/item"..i)
+		tran_item.gameObject:SetActive(true)
+	   	componentGet(child(tran_item,"type"),"UILabel").text = tostring(v[1])
+		componentGet(child(tran_item,"count"),"UILabel").text = tostring(v[2])
+		--i = i + 1
+	end
+	componentGet(tran_grid,"UIGrid"):Reposition()
+end
+
+function poker_largeResult_ui:SetUserGridPos(num)
+	--self.grid_otherUser.enabled = true
+	if num == 1 then
+		self.userTranList[1].localPosition =  Vector3(-153.7,0,0)
+		self.tran_otherUser.localPosition =  Vector3(153.7,0,0)			
+	elseif num == 2 then
+		self.userTranList[1].localPosition =  Vector3(-310,0,0)
+		self.tran_otherUser.localPosition =  Vector3(0,0,0)
+	elseif num == 3 then
+		self.userTranList[1].localPosition =  Vector3(-463.7,0,0)
+		self.tran_otherUser.localPosition =  Vector3(-153.7,0,0)
+	elseif num == 4 then
+		self.userTranList[1].localPosition =  Vector3(-627,0,0)
+		self.tran_otherUser.localPosition =  Vector3(-314,0,0)
+	elseif num == 5 then
+		self.userTranList[1].localPosition =  Vector3(-775.7,0,0)
+		self.tran_otherUser.localPosition =  Vector3(-466,0,0)
+	end
+end
+
+function poker_largeResult_ui:ResetUserShow()
+	for i=1,self.playerCount do
+		self.userTranList[i].gameObject:SetActive(false)
+		child(self.userTranList[i],"bigWin").gameObject:SetActive(false)
+		child(self.userTranList[i],"bigLoser").gameObject:SetActive(false)
+	end
+end
+
+function poker_largeResult_ui:ShareClick(obj)
+	report_sys.EventUpload(38,player_data.GetGameId())
+	local loginType = data_center.GetPlatform()
+	screenshotHelper.GetShot(loginType,0,2,"分享战绩","http://connect.qq.com/","分享战绩")
+end
+
+function poker_largeResult_ui:CloseWin(obj)
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音	
+	UI_Manager:Instance():CloseUiForms("poker_largeResult_ui",true)
+	if roomdata_center.gid == ENUM_GAME_TYPE.TYPE_SHISHANSHUI then
+		shisangshui_play_sys.LeaveReq()
+	elseif roomdata_center.gid == ENUM_GAME_TYPE.TYPE_NIUNIU then
+		niuniu_play_sys.LeaveReq()
+	end
+end
+
+function poker_largeResult_ui:OnClose()
+	self:ResetUserShow()
+	self.userTranList = {}
+end
+
+return poker_largeResult_ui

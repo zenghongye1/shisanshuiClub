@@ -1,0 +1,509 @@
+#define GAME_STYLE_ZHENGZHOU      0x11    //--地方麻将:郑州麻将17
+#define GAME_STYLE_ZHUMADIAN      0x12    //--地方麻将 : 驻马店麻将18
+#define GAME_STYLE_LUOYANG        0x13    //--地方麻将 : 洛阳麻将19
+
+#define GAME_STYLE_NANYANG          0x14    //--地方麻将 : 南阳麻将20
+#define GAME_STYLE_ZHOUKOU        0x15    //--地方麻将 : 周口麻将21
+
+#define GAME_STYLE_XUCHANG          0x16    //--地方麻将 : 许昌麻将22
+#define GAME_STYLE_PUYANG        0x17    //--地方麻将 : 濮阳麻将23
+
+#define GAME_STYLE_XINGXIANG      0x18    //--地方麻将 : 新乡麻将24
+#define GAME_STYLE_KAIFENG        0x19    //--地方麻将 : 开封麻将25
+#define GAME_STYLE_JIAOZUO          0x1a    //--地方麻将 : 焦作麻将26
+#define GAME_STYLE_SHANGQIU        0x1b    //--地方麻将 : 商丘麻将27
+#define GAME_STYLE_ANYANG          0x1c    //--地方麻将 : 安阳麻将28
+#define GAME_STYLE_PINGDINGSHAN      0x1d    //--地方麻将 : 平顶山麻将29
+
+#define GAME_STYLE_SHIJIAZHUANG      0x21    //--地方麻将 : 石家庄麻将33
+#define GAME_STYLE_BAZHOU        0x22    //--地方麻将 : 霸州麻将34
+#define GAME_STYLE_LANGFANG        0x23    //--地方麻将 : 廊坊麻将35
+
+#define GAME_STYLE_FUZHOU        0x24    //--地方麻将 : 福州麻将
+#define GAME_STYLE_QUANZHOU        0x25        //--地方麻将 : 泉州州麻将37
+#define GAME_STYLE_XIAMEN        0x26        //--地方麻将 : 厦门麻将38
+#define GAME_STYLE_ZHANGZHOU      0x27        //--地方麻将 : 漳州麻将39
+#define GAME_STYLE_TANGSHAN        0x28    //--地方麻将 : 唐山麻将40
+
+
+#define GAME_STYLE_BAODING      49             //-- 地方麻将:保定麻将49
+#define GAME_STYLE_XINGTAI      50              //-- 地方麻将:邢台麻将50
+#define GAME_STYLE_CANGZHOU     51              //-- 地方麻将:沧州麻将51
+
+#define GAME_STYLE_ZHANGJIAKOU  52              //-- 地方麻将:张家口麻将52
+#define GAME_STYLE_CHENGDE      53              //-- 地方麻将:承德麻将53
+#define GAME_STYLE_HENGSHUI     54              //-- 地方麻将:衡水麻将54
+
+#define GAME_STYLE_HBTDH        55              //--地方麻将:河北推到胡麻将55
+#define GAME_STYLE_QINHUANGDAO  56              //--地方麻将:秦皇岛麻将56
+#define GAME_STYLE_HBHZ         57              //--地方麻将:河北红中麻将57
+#define GAME_STYLE_HANDAN       58              //-- 地方麻将:邯郸麻将58
+
+/*
+ *	河南河北各玩法对应牌型 		
+ *	以COUNTDOCHECK为准
+ */
+
+
+	if (pEnv->gamestyle == GAME_STYLE_SHIJIAZHUANG)
+	{
+		//石家庄麻将检查的番型
+		//0平胡，2清一色，4七对，7清七对，13杠上花，15抢杠胡，16天胡，17地胡，18自摸，19点炮，20门清
+		//21边，22卡，23吊，24庄家，25一条龙，26海底捞月，27-32豪华七对、清豪华七对、
+		//超豪华七对、清超豪华七对、至尊豪华七对、清至尊豪华七对，33捉五魁，34十三幺
+		//35清一色一条龙,36杠上杠
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(2);
+		COUNTDOCHECK(4);
+		COUNTDOCHECK(7);
+		COUNTDOCHECK(13);
+		COUNTDOCHECK(15);
+		COUNTDOCHECK(16);
+		COUNTDOCHECK(17);
+		//COUNTDOCHECK(18);
+		//COUNTDOCHECK(19);
+		COUNTDOCHECK(20);
+		//COUNTDOCHECK(21);
+		//COUNTDOCHECK(22);
+		//COUNTDOCHECK(23);
+		COUNTDOCHECK(24);
+
+		COUNTDOCHECK(25);
+		COUNTDOCHECK(26);
+		COUNTDOCHECK(27);
+		COUNTDOCHECK(28);
+		COUNTDOCHECK(29);
+		COUNTDOCHECK(30);
+		COUNTDOCHECK(31);
+		COUNTDOCHECK(32);
+		//COUNTDOCHECK(33);
+		COUNTDOCHECK(34);
+		COUNTDOCHECK(35);
+		COUNTDOCHECK(36);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_LANGFANG)
+	{
+		//13杠上花，16天胡，17地胡，18自摸，19点炮，20门清
+		//37素胡，38捉五魁，39一条龙，40七小对，41豪华七对，42超级豪华七对，43至尊豪华七对，44混钓，45混钓混，46碰碰胡，47清一色，4813幺，49混悠
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(13);
+		COUNTDOCHECK(16);
+		COUNTDOCHECK(17);
+		COUNTDOCHECK(18);
+		COUNTDOCHECK(19);
+		COUNTDOCHECK(20);
+
+		COUNTDOCHECK(37);
+		COUNTDOCHECK(38);
+		COUNTDOCHECK(39);
+		COUNTDOCHECK(40);
+		COUNTDOCHECK(41);
+		COUNTDOCHECK(42);
+		COUNTDOCHECK(43);
+		COUNTDOCHECK(44);
+		COUNTDOCHECK(45);
+		COUNTDOCHECK(46);
+		COUNTDOCHECK(47);
+		COUNTDOCHECK(48);
+		COUNTDOCHECK(49);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_TANGSHAN)
+	{
+		//13杠上花，14杠上炮，15抢杠胡，16天胡，17地胡，18自摸，19点炮，20门清,
+		//21边，22卡，23吊，26海底捞月
+		//37干搏，38捉五魁，39一条龙，40七小对，41豪华七对，42超级豪华七对，43至尊豪华七对，46飘，47清一色，51本混龙。52，海底炮，53天听，54地听，55潇洒
+		COUNTDOCHECK(13);
+		COUNTDOCHECK(14);
+		COUNTDOCHECK(15);
+		COUNTDOCHECK(16);
+		COUNTDOCHECK(17);
+		COUNTDOCHECK(18);
+		COUNTDOCHECK(19);
+		COUNTDOCHECK(20);
+
+		COUNTDOCHECK(21);
+		COUNTDOCHECK(22);
+		COUNTDOCHECK(23);
+
+		COUNTDOCHECK(26);
+
+		COUNTDOCHECK(37);
+		COUNTDOCHECK(38);
+		COUNTDOCHECK(39);
+		COUNTDOCHECK(40);
+		COUNTDOCHECK(41);
+		COUNTDOCHECK(42);
+		//COUNTDOCHECK(43);
+
+		COUNTDOCHECK(46);
+		COUNTDOCHECK(47);
+
+		COUNTDOCHECK(51);
+		COUNTDOCHECK(52);
+		COUNTDOCHECK(53);
+		COUNTDOCHECK(54);
+		COUNTDOCHECK(55);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_ZHENGZHOU
+		|| pEnv->gamestyle == GAME_STYLE_ZHUMADIAN)
+	{
+		//河南麻将只检查平胡和七对
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(4)
+		COUNTDOCHECK(13);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_LUOYANG)
+	{
+		//河南麻将只检查平胡和七对
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(4);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_NANYANG)
+	{
+		//
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(4);
+		COUNTDOCHECK(13);
+		COUNTDOCHECK(37);
+		COUNTDOCHECK(56);
+		COUNTDOCHECK(57);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_ANYANG)
+	{
+		if (pEnv->byMoneyMode != 2) // 非金币场
+		{
+			if ((pEnv->byTypeStage & 1) > 0)
+			{
+				COUNTDOCHECK(15); // 抢杠胡  1
+			}
+			if ((pEnv->byTypeStage & 2) > 0)
+			{
+				COUNTDOCHECK(16); // 天胡    3
+				COUNTDOCHECK(17); // 地胡    2
+			}
+			if ((pEnv->byTypeStage & 8) > 0)
+			{
+				COUNTDOCHECK(39); // 一条龙  2
+			}
+			COUNTDOCHECK(57); // 四混胡  2
+		}
+		COUNTDOCHECK(0);  // 平胡    1
+		COUNTDOCHECK(4);  // 七对  1:2
+		COUNTDOCHECK(13); // 杠上花  1
+		if ((pEnv->byTypeStage & 4) > 0)
+		{
+			COUNTDOCHECK(21); // 边 2 or 4
+			COUNTDOCHECK(22); // 卡 2 or 4
+			COUNTDOCHECK(23); // 吊 2 or 4
+		}
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_PINGDINGSHAN)
+	{
+		COUNTDOCHECK(0);  // 平胡 1
+		COUNTDOCHECK(4);  // 七对 2
+		COUNTDOCHECK(13); // 杠上花 2
+		COUNTDOCHECK(57); // 四混胡 2
+		COUNTDOCHECK(63); // 十三不靠 2
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_ZHOUKOU)
+	{
+		//
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(4);
+		//COUNTDOCHECK(40);
+		COUNTDOCHECK(15);
+		COUNTDOCHECK(57);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_XUCHANG)
+	{
+		//许昌麻将只检查平胡 七对() 风摸 四混胡 断门
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(40);
+		COUNTDOCHECK(57);
+		COUNTDOCHECK(58);
+		COUNTDOCHECK(59);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_PUYANG)
+	{
+		//puyang麻将只检查平胡 七对 断门 风扑将扑幺九扑 单吊 22卡
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(4);
+		COUNTDOCHECK(22);
+		COUNTDOCHECK(59);
+		COUNTDOCHECK(60);
+		COUNTDOCHECK(61);
+		COUNTDOCHECK(67);
+		COUNTDOCHECK(68);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_258)
+	{
+		//番型:0平胡，1番
+		//碰碰胡，清一色，七对，2番
+		//清大碰，清七对，3番
+		//龙七对（2龙3龙456），清龙七对（2龙3龙567）
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(1);
+		COUNTDOCHECK(2);
+		COUNTDOCHECK(4);
+
+		COUNTDOCHECK(6);
+		COUNTDOCHECK(7);
+
+		COUNTDOCHECK(5);
+		COUNTDOCHECK(10);
+
+		//另加番：13杠上花，14杠上炮，15抢杠胡，16天胡，26海底捞月
+		COUNTDOCHECK(13);
+		COUNTDOCHECK(14);
+		COUNTDOCHECK(15);
+		COUNTDOCHECK(16);
+		COUNTDOCHECK(26);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_GEERMU)
+	{
+		//番型:0平胡，1番
+		//碰碰胡，清一色，七对，将一色，2番
+		//清大碰，清七对，3番
+		//龙七对（2龙3龙456），清龙七对（2龙3龙567）
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(1);
+		COUNTDOCHECK(2);
+		COUNTDOCHECK(4);
+		COUNTDOCHECK(9); //将一色
+
+		COUNTDOCHECK(6);
+		COUNTDOCHECK(7);
+
+		COUNTDOCHECK(5);
+		COUNTDOCHECK(10);
+
+		//另加番：13杠上花，14杠上炮，15抢杠胡，16天胡
+		COUNTDOCHECK(13);
+		COUNTDOCHECK(14);
+		COUNTDOCHECK(15);
+		COUNTDOCHECK(16);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_XINGXIANG)
+	{
+		//番型:0平胡，1番
+		//七对，2番
+
+		COUNTDOCHECK(0);
+
+		COUNTDOCHECK(4);
+
+		//另加番：13杠上花，14杠上炮，15抢杠
+		COUNTDOCHECK(13);
+		COUNTDOCHECK(14);
+		COUNTDOCHECK(15);
+		COUNTDOCHECK(18);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_KAIFENG)
+	{
+		//番型:0平胡，1番
+		//七对，2番
+
+		COUNTDOCHECK(0);
+
+		COUNTDOCHECK(4);
+
+		//另加番：13杠上花，14杠上炮，15抢杠，门清。边卡吊，豪华七对，缺门，中发白顺子
+		COUNTDOCHECK(13);
+		COUNTDOCHECK(14);
+		COUNTDOCHECK(15);
+		COUNTDOCHECK(20);
+		COUNTDOCHECK(21);
+		COUNTDOCHECK(22);
+		COUNTDOCHECK(23);
+		COUNTDOCHECK(27);
+		COUNTDOCHECK(59);
+		COUNTDOCHECK(66);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_JIAOZUO)
+	{
+		//番型: 平胡 0， 清一色 2 【连6连9(lua里检查) ，七小对 4，边 21,卡22，吊23
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(2);
+		COUNTDOCHECK(4);
+		COUNTDOCHECK(21);
+		COUNTDOCHECK(22);
+		COUNTDOCHECK(23);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_SHANGQIU)
+	{
+		//番型:0平胡，1番
+		//七对，2番
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(4);
+		//另加番：13杠上花，14杠上炮，15抢杠，门清。端门，边（偏次）卡（掐张），暗卡，
+		COUNTDOCHECK(13);
+		COUNTDOCHECK(14);
+		COUNTDOCHECK(15);
+
+		COUNTDOCHECK(20);
+		COUNTDOCHECK(59);
+
+		COUNTDOCHECK(21);
+		COUNTDOCHECK(22);
+
+		COUNTDOCHECK(62);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_HBTDH)
+	{
+		// 胡牌方式
+		COUNTDOCHECK(18); // 自摸
+		// 胡牌牌形
+		COUNTDOCHECK(0);  // 平胡
+		COUNTDOCHECK(39); // 一条龙
+		COUNTDOCHECK(40); // 七小对
+		COUNTDOCHECK(41); // 豪华七对
+		COUNTDOCHECK(47); // 清一色
+		COUNTDOCHECK(48); // 十三幺
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_HBHZ)
+	{
+		// 胡牌方式
+		COUNTDOCHECK(18); // 自摸
+		// 胡牌牌形
+		COUNTDOCHECK(0);  // 平胡
+		if (pEnv->n258Jiang & 4 > 0)
+		{
+			COUNTDOCHECK(40); // 七小对
+		}
+		if (pEnv->n258Jiang & 2 > 0)
+		{
+			COUNTDOCHECK(57); // 四红中
+		}
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_QINHUANGDAO)
+	{
+		COUNTDOCHECK(13); // 杠上花 2
+		COUNTDOCHECK(18); // 自摸 2
+		COUNTDOCHECK(20); // 门清 2
+		COUNTDOCHECK(21); // 边胡 2
+		COUNTDOCHECK(22); // 卡胡 2
+		COUNTDOCHECK(23); // 吊胡 2
+		//COUNTDOCHECK(24); // 庄家 2
+		COUNTDOCHECK(26); // 海底捞月 2
+		COUNTDOCHECK(37); // 素胡
+		COUNTDOCHECK(39); // 一条龙 2
+		COUNTDOCHECK(44); // 混悠
+		COUNTDOCHECK(45); // 混悠儿混
+		COUNTDOCHECK(46); // 飘胡
+		COUNTDOCHECK(47); // 清一色 2
+		COUNTDOCHECK(60); // 大吊车 2
+		COUNTDOCHECK(64); // 字一色 8
+
+		COUNTDOCHECK(0);  // 平胡 1
+		COUNTDOCHECK(40); // 七小对 2
+		COUNTDOCHECK(41); // 豪华七对 4
+		COUNTDOCHECK(42); // 超豪华七对 8
+		COUNTDOCHECK(43); // 至尊豪华七对 16
+		COUNTDOCHECK(48); // 十三幺 10
+		COUNTDOCHECK(57); // 混儿杠 10
+		COUNTDOCHECK(63); // 七星不靠 8
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_HENGSHUI)
+	{
+		//番数放到lua调整
+		///0平胡，18点炮，19自摸，4七对，25豪华七对，27超豪华七对，31超超豪华七对（至尊豪华七对）44混吊
+		COUNTDOCHECK(0); // 平胡
+		COUNTDOCHECK(18); // 点炮
+		COUNTDOCHECK(19); // 自摸
+		COUNTDOCHECK(4); // 七对
+		COUNTDOCHECK(27);//豪华七对
+		COUNTDOCHECK(29); //超豪华七对
+		COUNTDOCHECK(31);//超超豪华七对
+		COUNTDOCHECK(44);//混吊
+
+						 //另加番 一条龙，清一色，天胡，地胡
+		COUNTDOCHECK(25);
+		COUNTDOCHECK(2);
+		COUNTDOCHECK(16);
+		COUNTDOCHECK(17);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_CHENGDE)
+	{
+		//番数放到lua调整
+		//0平胡，18点炮，19自摸，4七对，25豪华七对，33捉五魁，37干的 素胡，31超超豪华七对（至尊豪华七对）
+		COUNTDOCHECK(0); // 平胡
+		COUNTDOCHECK(18); // 点炮
+		COUNTDOCHECK(19); // 自摸
+		COUNTDOCHECK(4); // 七对
+
+		COUNTDOCHECK(21); // 边卡吊
+		COUNTDOCHECK(22); // 
+		COUNTDOCHECK(23); // 
+
+		COUNTDOCHECK(37);//干的 素胡
+
+		COUNTDOCHECK(1);//碰碰胡  飘
+
+		COUNTDOCHECK(27);//豪华七对
+		COUNTDOCHECK(29); //超豪华七对
+		COUNTDOCHECK(33);//捉五魁
+
+						 //另加番 一条龙，清一色，飘，55潇洒，53天听，20门清，
+		COUNTDOCHECK(25);
+		COUNTDOCHECK(2);
+
+		COUNTDOCHECK(55);
+		COUNTDOCHECK(53);
+		COUNTDOCHECK(20);
+
+		//另加番：13杠上花，14杠上炮，15抢杠（和自摸点炮互斥）
+		COUNTDOCHECK(13);
+		COUNTDOCHECK(14);
+		COUNTDOCHECK(15);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_ZHANGJIAKOU)
+	{
+		//番数放到lua调整
+		//0平胡，18点炮，19自摸，4七对，7清七对，
+		COUNTDOCHECK(0); // 平胡
+		COUNTDOCHECK(18); // 点炮
+		COUNTDOCHECK(19); // 自摸
+		COUNTDOCHECK(4); // 七对
+		COUNTDOCHECK(7); //	清七对
+
+						 //一条龙，清一色，清一色一条龙
+		COUNTDOCHECK(25);
+		COUNTDOCHECK(2);
+		COUNTDOCHECK(35);
+
+		//另加番 ，20门清，
+
+		COUNTDOCHECK(20);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_XINGTAI)
+	{
+		//平胡0,碰碰胡1, 清一色2, 七对4, 豪华七对27, 一条龙25,  十三幺34, 捉五魁33
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(1);
+		COUNTDOCHECK(2); 
+		COUNTDOCHECK(4); 
+		COUNTDOCHECK(25);
+		COUNTDOCHECK(27);
+		COUNTDOCHECK(33);
+		COUNTDOCHECK(34);
+	}
+	else if (pEnv->gamestyle == GAME_STYLE_CANGZHOU)
+	{
+		//平胡0,碰碰胡1, 清一色2, 七对4, 豪华七对27, 一条龙25,  十三幺34, 捉五魁33
+		//混一色65, 天胡16, 地胡17, 缺门59, 门清20 
+		COUNTDOCHECK(0);
+		COUNTDOCHECK(1);
+		COUNTDOCHECK(2); 
+		COUNTDOCHECK(4); 
+		COUNTDOCHECK(25);
+		COUNTDOCHECK(27);
+		COUNTDOCHECK(33);
+		COUNTDOCHECK(34);
+
+		COUNTDOCHECK(16);
+		COUNTDOCHECK(17);
+		COUNTDOCHECK(20);
+		COUNTDOCHECK(59);
+		COUNTDOCHECK(65);
+
+	}

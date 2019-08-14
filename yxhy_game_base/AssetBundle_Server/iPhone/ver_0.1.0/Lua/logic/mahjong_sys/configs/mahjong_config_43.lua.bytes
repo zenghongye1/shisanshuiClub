@@ -1,0 +1,72 @@
+
+--[[--
+ * @Description: 三明麻将玩法配置
+ * @FileName:    play_mode_config_fuzhou.lua
+ ]]
+local config_common = require "logic/mahjong_sys/configs/mahjong_config_common":create()
+
+local mahjong_config_43 = {}
+setmetatable(mahjong_config_43, {__index = config_common})
+
+mahjong_config_43.tableFontSpriteName = "sanmingmj"
+
+mahjong_config_43.game_state = {
+    none         = "none",
+    prepare      = "prepare",        --开始
+    banker       = "banker",          --定庄
+    deal         = "deal",               --抓牌
+    opengold     = "opengold",         --开金
+    round        = "round",        --游戏阶段
+    reward       = "reward",       --结算
+    gameend      = "gameend",       --结束
+}
+
+mahjong_config_43.gameCfg.tingType = MahjongOperTipsEnum.TingJinKan
+
+mahjong_config_43.byFanType = {
+	[38] = 31
+}
+
+mahjong_config_43.big_settlement_show = {}
+mahjong_config_43.big_settlement_show.win_type = {
+	["selfdraw"] = "selfdraw", -- 自摸
+	["gunwin"] = "gunwin", -- 点炮
+	["robgangwin"] = "gunwin", -- 抢杠
+	["robgoldwin"] = "selfdraw", -- 抢金
+}
+mahjong_config_43.big_settlement_show.fan_change = {
+	["selfdraw"] = "nSelfDraw", -- 自摸
+}
+mahjong_config_43.big_settlement_show.byFanType = {
+	"gunwin", -- 点炮
+	"nSelfDraw", -- 自摸
+	"nQiangJin", -- 抢金
+	"nWuShuiHu", -- 无水胡
+	"nGodWin", -- 天胡
+	"nSanJinDao", -- 三金倒
+	"nGoldBird", -- 金雀
+	"nGoldDragon", -- 金龙
+	"nGoldCamp", -- 金坎	
+	"nQYS", -- 清一色
+}
+
+mahjong_config_43.big_settlement_mustShow = 
+{
+	"selfdraw",
+	"gunwin",
+}
+
+mahjong_config_43.uiActionCfg.small_reward = {43, "mahjong_action_small_reward_43"}
+mahjong_config_43.uiActionCfg.game_followBanker = {26,"mahjong_action_game_followBanker"}
+mahjong_config_43.uiActionCfg.game_treePeng = {43,"mahjong_action_game_threePeng"}
+mahjong_config_43.uiActionCfg.game_tingType = {0,"mahjong_action_gameTingType"}
+mahjong_config_43.uiActionCfg.game_win = {18, "mahjong_action_gameWin_18"}
+mahjong_config_43.uiActionCfg.total_reward = {18, "mahjong_action_totalreward_18"}
+
+mahjong_config_43.mahjongActionCfg.game_openGlod = {18, "mahjong_mjAction_gameOpenGlod_18"}
+
+
+mahjong_config_43.stateAnimMap[MahjongGameAnimState.openGold] = {"fanjin", mahjong_path_enum.mjCommon, "fangjin", 1}
+
+
+return mahjong_config_43

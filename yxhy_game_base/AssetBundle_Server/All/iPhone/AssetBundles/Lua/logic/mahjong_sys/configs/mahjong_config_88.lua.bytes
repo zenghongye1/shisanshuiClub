@@ -1,0 +1,31 @@
+
+--[[--
+ * @Description: 河北红中麻将玩法配置
+ * @FileName:    play_mode_config_fuzhou.lua
+ ]]
+local config_common = require "logic/mahjong_sys/configs/mahjong_config_common":create()
+
+local mahjong_config = {}
+setmetatable(mahjong_config, {__index = config_common})
+
+mahjong_config.MahjongDunCount = 17				-- 一排多少墩
+
+mahjong_config.tableFontSpriteName = "hongzhongmj"
+
+mahjong_config.wallDunCountMap = 
+{
+	17,17,17,17
+}
+
+mahjong_config.beishu_wintype_dic = 
+{
+	["nSelfDraw"] = 2,
+	["nGun"] = 1,
+}
+
+mahjong_config.mahjongActionCfg.game_playStart = {15, "mahjong_mjAction_gamePlayStart"}
+mahjong_config.uiActionCfg.small_reward = {88, "mahjong_action_small_reward_88"} 
+mahjong_config.uiActionCfg.total_reward = {24, "mahjong_action_totalreward_24"} 
+mahjong_config.mahjongActionCfg.game_laiZi = {88, "mahjong_mjAction_gameLaiZi"}
+
+return mahjong_config

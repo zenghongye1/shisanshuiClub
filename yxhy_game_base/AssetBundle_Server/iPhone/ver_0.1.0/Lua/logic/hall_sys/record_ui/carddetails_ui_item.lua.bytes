@@ -1,0 +1,258 @@
+local base = require "logic/framework/ui/uibase/ui_view_base"
+local carddetails_ui_item = class("carddetails_ui_item",base)
+
+function carddetails_ui_item:InitView()
+	self.mainUI = nil
+	self.opercardList = {}
+	self.handcard=nil
+	
+  self.lab_name_lb = subComponentGet(self.transform,"headView/name","UILabel")
+  self.head_tex = subComponentGet(self.transform,"headView/headIcon","UITexture")
+
+  self.lab_score=child(self.transform,"infoView/scoreLabel")
+  self.lab_score1=child(self.transform,"infoView/scoreLabel1")
+
+	self.tran_zhuang = child(self.transform,"headView/zhuangIcon")
+  self.winIconGo = self:GetGameObject("headView/huIcon")
+  self.dianPaoGo = self:GetGameObject("infoView/dianpao")
+	
+	self.tran_itemList = child(self.transform,"infoView/itemList")
+  self.contentLabel = subComponentGet(self.transform,"infoView/contentLabel","UILabel")
+	
+	self.tran_pokerShow = child(self.transform,"infoView/pokerShow")	
+	self.tran_specialShow = child(self.transform,"infoView/specialShow")
+		
+	self.tran_lbl_nnType = child(self.transform,"infoView/lbl_nnType")
+	self.tran_Sprite2 = child(self.transform,"infoView/bg/Sprite2")
+	self.tran_Sprite1 = child(self.transform,"infoView/bg/Sprite1")
+	
+end
+
+function carddetails_ui_item:SetHeadInfo(rewards)
+      self.lab_name_lb.text=rewards.nickname
+      local imagetype=rewards.img.type 
+      local imageurl=rewards.img.url 
+      hall_data.getuserimage(self.head_tex,imagetype,imageurl)
+end
+
+function carddetails_ui_item:SetScore(score)
+      local nScore = tonumber(score)
+      if nScore >0 then
+        self.lab_score.gameObject:SetActive(true)
+        self.lab_score1.gameObject:SetActive(false)
+      else
+        self.lab_score.gameObject:SetActive(false)
+        self.lab_score1.gameObject:SetActive(true)
+      end
+      
+      if nScore >0 then
+        componentGet(self.lab_score.gameObject,"UILabel").text= "+"..nScore
+      else
+        componentGet(self.lab_score1.gameObject,"UILabel").text=tostring(nScore)
+      end
+end
+
+function carddetails_ui_item:ShowMJ(info,scoreItem,specialCardValues,replaceSpecialCardValue,isPao)
+  --self:ResetItemView()
+  local isWin = table.getCount(info.win_card)>0
+  --local root_tr = child(self.transform,"infoView/itemList")
+  self.tran_itemList.gameObject:SetActive(true)
+  local handCards = self:GetMJHandCard(info.cards,info.win_card[1],specialCardValues,replaceSpecialCardValue)
+  local valueList = self:GetOperValueList(info.combineTile,specialCardValues,replaceSpecialCardValue)
+
+  if self.winIconGo ~= nil then
+    self.winIconGo:SetActive(info.win_card[1]~=nil)
+  end
+
+  local distance = 151
+  for i=1,#self.opercardList do
+    self.mainUI:RecycleOperCard(self.opercardList[i])
+  end
+  self.opercardList = {}
+  for i=1,#valueList do
+    local operItem = self.mainUI:GetOperCard()
+    operItem:SetActive(true)
+    operItem.transform.parent = self.tran_itemList
+    operItem.transform.localPosition = Vector3((i-1)*distance,0,0)
+    operItem.transform.localScale = Vector3.one
+    operItem:SetInfo(valueList[i],specialCardValues)
+    table.insert(self.opercardList,operItem)
+  end
+  if self.handcard==nil or IsNil(self.handcard.gameObject) then
+    self.handcard = self.mainUI:GetHandCard()
+    self.handcard:SetActive(true)
+  end
+  self.handcard.transform.parent = self.tran_itemList
+  self.handcard.transform.localPosition = Vector3((#valueList)*distance,0,0)
+  self.handcard.transform.localScale = Vector3.one
+  self.handcard:SetInfo(handCards,isWin,specialCardValues)
+
+  if scoreItem and self.contentLabel then
+	self.contentLabel.gameObject:SetActive(true)
+    self:SetContent(scoreItem)
+  end
+  if self.dianPaoGo then
+    self.dianPaoGo:SetActive(isPao == true)
+  end
+end
+
+function carddetails_ui_item:GetMJHandCard(cards,win_card,specialCardValues,replaceSpecialCardValue)
+  local handCards = {}
+  for i=1,#cards do
+    table.insert(handCards,cards[i])
+  end
+
+    table.sort(handCards)
+    -- 白板代替金
+    for j=1,#handCards do
+      if handCards[j] == replaceSpecialCardValue then
+          local index = j-1
+          while index > 0 and handCards[index] > specialCardValues[1] do 
+              local temp = handCards[index]
+              handCards[index] = handCards[index+1]
+              handCards[index+1] = temp
+              index = index -1
+          end
+      end
+    end
+    --金前置
+    for j=1,#handCards do
+      if self:CheckIsSpecialCard(handCards[j],specialCardValues) then
+          local index = j-1
+          while index > 0 and not self:CheckIsSpecialCard(handCards[index],specialCardValues) do 
+              local temp = handCards[index]
+              handCards[index] = handCards[index+1]
+              handCards[index+1] = temp
+              index = index -1
+          end
+      end
+    end
+    if win_card then
+      table.insert(handCards,win_card)
+    end
+  return handCards
+end
+
+function carddetails_ui_item:CheckIsSpecialCard(card,specialCards)
+  local res = false
+  for _,v in ipairs(specialCards) do
+    if v == card then
+      res = true
+      break
+    end
+  end
+  return res
+end
+
+function carddetails_ui_item:GetOperValueList( combineTile,specialCardValues,replaceSpecialCardValue)
+  local list = {}
+  for i,operData in ipairs(combineTile) do
+    local valueList = {}
+    if operData.ucFlag == 16 then
+      local cardValue1 = self:GetReplaceCard(operData.card,specialCardValues,replaceSpecialCardValue)
+            local cardValue2 = self:GetReplaceCard(cardValue1 + 1,specialCardValues,replaceSpecialCardValue)
+            local cardValue3 = self:GetReplaceCard(cardValue1 + 2,specialCardValues,replaceSpecialCardValue)
+          table.insert(valueList,operData.card)
+          table.insert(valueList,cardValue2)
+          table.insert(valueList,cardValue3)
+    elseif operData.ucFlag == 17 then
+          table.insert(valueList,operData.card)
+          table.insert(valueList,operData.card)
+          table.insert(valueList,operData.card)
+    elseif operData.ucFlag == 18 then
+          table.insert(valueList,operData.card)
+          table.insert(valueList,operData.card)
+          table.insert(valueList,operData.card)
+          table.insert(valueList,operData.card)
+    elseif operData.ucFlag == 19 then
+          table.insert(valueList,0)
+          table.insert(valueList,0)
+          table.insert(valueList,0)
+          table.insert(valueList,operData.card)
+    elseif operData.ucFlag == 20 then
+      table.insert(valueList,operData.card)
+          table.insert(valueList,operData.card)
+          table.insert(valueList,operData.card)
+          table.insert(valueList,operData.card)
+    end
+    table.insert(list,valueList)
+  end
+  return list
+end
+
+function carddetails_ui_item:GetReplaceCard(card,specialCardValues,replaceSpecialCardValue)
+    if card == replaceSpecialCardValue and card ~= 0 then
+        return specialCardValues[1] or card
+    elseif card == specialCardValues[1] and replaceSpecialCardValue ~= 0 then
+        return replaceSpecialCardValue
+    else
+        return card
+    end
+end
+
+function carddetails_ui_item:SetContent(scoreItem)
+  local content = ""
+  for i=1,#scoreItem do
+    if scoreItem[i].des then
+      content = content..scoreItem[i].des
+    end
+    if scoreItem[i].num then
+      content = content..scoreItem[i].num
+    end
+    if i~= #scoreItem then
+      content = content.."  "
+    end
+  end
+  self.contentLabel.text = content
+end
+
+function carddetails_ui_item:ShowSSS(t)
+	--self:ResetItemView()
+	--local tran_pokerShow = child(self.gameObject.transform,"infoView/pokerShow")
+	self.tran_pokerShow.gameObject:SetActive(true)
+	self.tran_pokerShow.localPosition = Vector3(-195,-168,0)
+	if t["nSpecialType"] > 0 then
+		--local specialShow = child(self.gameObject.transform,"infoView/specialShow")
+		self.tran_specialShow.gameObject:SetActive(true)
+		componentGet(child(self.tran_specialShow,"specialCard"),"UISprite").spriteName = t["nSpecialType"]
+	end
+	
+	local poker_cardShow = require("logic/cardShow/poker_cardShow"):create(self.tran_pokerShow,t.cards,t.nSpecialType)
+	poker_cardShow.updateDepth = 12
+	poker_cardShow.gridCellWidth = 55
+	poker_cardShow:SetShisanshuiCardShow()
+end
+
+function carddetails_ui_item:ShowNiuniu(t)
+	--logError(GetTblData(t))
+	--self:ResetItemView()
+	self.tran_Sprite2.gameObject:SetActive(true)
+	self.tran_Sprite1.gameObject:SetActive(true)
+	--local nnType = child(self.gameObject.transform, "infoView/lbl_nnType")
+	self.tran_lbl_nnType.gameObject:SetActive(true)
+	require("logic/niuniu_sys/other/niuniu_rule_define")
+	componentGet(self.tran_lbl_nnType.gameObject,"UILabel").text = niuniu_rule_define.PT_BULL_Text[t["nCardType"]].."  X"..t["nBeishu"]
+	
+	--local tran_pokerShow = child(self.gameObject.transform,"infoView/pokerShow")
+	self.tran_pokerShow.gameObject:SetActive(true)
+	self.tran_pokerShow.localPosition = Vector3(-80,-168,0)
+	local poker_cardShow = require("logic/cardShow/poker_cardShow"):create(self.tran_pokerShow,t.cards,t.nCardType)
+	poker_cardShow.updateDepth = 12
+	poker_cardShow.gridCellWidth = 55
+	poker_cardShow:SetNiuNiuCardShow()
+end
+
+function carddetails_ui_item:ResetItemView()
+	self.tran_Sprite2.gameObject:SetActive(false)
+	self.tran_Sprite1.gameObject:SetActive(false)
+	self.tran_lbl_nnType.gameObject:SetActive(false)
+	self.tran_specialShow.gameObject:SetActive(false)
+	self.tran_pokerShow.gameObject:SetActive(false)
+	self.tran_itemList.gameObject:SetActive(false)
+	self.tran_zhuang.gameObject:SetActive(false)
+	self.contentLabel.gameObject:SetActive(false)
+	self.winIconGo.gameObject:SetActive(false)
+	self.dianPaoGo.gameObject:SetActive(false)
+end
+
+return carddetails_ui_item

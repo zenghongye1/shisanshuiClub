@@ -1,0 +1,63 @@
+
+--[[--
+ * @Description: 厦门麻将玩法配置
+ * @FileName:    play_mode_config_fuzhou.lua
+ ]]
+local config_common = require "logic/mahjong_sys/configs/mahjong_config_common":create()
+
+local mahjong_config_25 = {}
+setmetatable(mahjong_config_25, {__index = config_common})
+
+mahjong_config_25.tableFontSpriteName = "xiamenmajiang"
+
+mahjong_config_25.game_state = {
+    none         = "none",
+    prepare      = "prepare",        --开始
+    banker       = "banker",          --定庄
+    deal         = "deal",               --抓牌
+    changeflower = "changeflower",      --补花
+    opengold     = "opengold",         --开金
+    round        = "round",        --游戏阶段
+    reward       = "reward",       --结算
+    gameend      = "gameend",       --结束
+}
+
+
+mahjong_config_25.big_settlement_show = {}
+mahjong_config_25.big_settlement_show.win_type = {
+	["selfdraw"] = "selfdraw", -- 自摸
+	["gunwin"] = "gunwin", -- 点炮
+	["robgangwin"] = "selfdraw", -- 抢杠
+	["robgoldwin"] = "selfdraw", -- 抢金
+}
+mahjong_config_25.big_settlement_show.fan_change = {
+	["selfdraw"] = "nSelfDraw", -- 自摸
+	["nXianJin"] = "nYouJin", -- 游金（即闲金）
+}
+mahjong_config_25.big_settlement_show.byFanType = {
+	"gunwin", -- 点炮
+	"nSelfDraw", -- 自摸
+	"nQiangJin", -- 抢金
+	"nGodWin", -- 天胡
+	"nYouJin", -- 游金（即闲金）
+	"nDoubleYou", -- 双游
+	"nTribleYou", -- 三游
+	"nSanJinDao", -- 三金倒
+	"nQYS", -- 清一色
+}
+
+
+mahjong_config_25.uiActionCfg.small_reward = {25, "mahjong_action_small_reward_25"}
+mahjong_config_25.uiActionCfg.account_update = {25, "mahjong_action_account_update_25"}
+mahjong_config_25.uiActionCfg.game_youStatus = {20,"mahjong_action_gameYouStatus"}
+mahjong_config_25.uiActionCfg.total_reward = {20, "mahjong_action_totalreward_20"}
+
+
+mahjong_config_25.mahjongActionCfg.game_openGlod = {25, "mahjong_mjAction_gameOpenGlod_25"}
+
+
+mahjong_config_25.stateAnimMap[MahjongGameAnimState.openGold] = {"fanjin", mahjong_path_enum.mjCommon, "fangjin", 1}
+
+mahjong_config_25.replaceSpecialCardValue = 37
+
+return mahjong_config_25

@@ -1,0 +1,630 @@
+--region *.lua
+--Date
+--此文件由[BabeLua]插件自动生成
+
+
+
+--endregion
+MJRoom_UI={
+    paneltable={},
+    panelitem=data_center.GetAppConfDataTble().appPath.."/ui/openroom_ui/panel",
+    UI_Pos=nil,
+    toggleitem={[0]=data_center.GetAppConfDataTble().appPath.."/ui/openroom_ui/toggle_01",
+    [1]=data_center.GetAppConfDataTble().appPath.."/ui/openroom_ui/toggle_02", 
+    [2]=data_center.GetAppConfDataTble().appPath.."/ui/openroom_ui/poplist"},
+    gid = 0,
+    -- 缓存配置文件
+    roomConfigMap = {},
+    toggleResItemMap = {},
+}
+
+ 
+MJRoom_UI.__index=MJRoom_UI
+
+function MJRoom_UI.New()
+   local result = {  
+    paneltable={},
+    panelitem=data_center.GetAppConfDataTble().appPath.."/ui/openroom_ui/panel",
+    UI_Pos=nil,
+    toggleitem={[0]=data_center.GetAppConfDataTble().appPath.."/ui/openroom_ui/toggle_01",
+    [1]=data_center.GetAppConfDataTble().appPath.."/ui/openroom_ui/toggle_02", 
+    [2]=data_center.GetAppConfDataTble().appPath.."/ui/openroom_ui/poplist"},
+	}
+	setmetatable(result,MJRoom_UI)
+	return result
+end
+
+function MJRoom_UI.Init(gid)  
+    MJRoom_UI.gid = gid
+    MJRoom_UI.paneltable={}
+    MJRoom_UI.UI_Pos=nil
+    if PlayerPrefs.HasKey("createRoomCache_"..gid) and  PlayerPrefs.GetString("createRoomCache_"..gid)~=nil then
+        local str=PlayerPrefs.GetString("createRoomCache_"..gid)  
+        str=string.gsub(str,"'"," ")
+        local t=ParseJsonStr(str)
+        for k,v in pairs(t) do 
+            MJRoom_UI.paneltable[k]=v
+        end
+    end
+    if MJRoom_UI.paneltable==nil or table.getCount(MJRoom_UI.paneltable)==0 then
+      -- local str = FileReader.ReadFile(global_define.appConfig.jsonurl.."/"..GameUtil.GetJsonName(gid)) 
+      -- local roomConfData = nil
+      -- if nil ~= str and "" ~= str then
+      --   roomConfData = ParseJsonStr(str)
+      -- else
+      --   logError("json文件不存在，"..GameUtil.GetJsonName(gid))
+      -- end
+      local roomConfData = MJRoom_UI.GetRoomCfgByGid(gid)
+      if roomConfData ~= nil then
+        room_data.ReadInfo(roomConfData,MJRoom_UI)   
+      end
+    end  
+    if room_data.GetRoomCard()[gid]~=nil then
+        MJRoom_UI:ChangeRoomCard(room_data.GetRoomCard()[gid])
+    end
+    MJRoom_UI.UI_Pos=openroom_main_ui.UI_Pos 
+    MJRoom_UI:Show() 
+    MJRoom_UI:ReflashPanel()
+    openroom_main_ui.RegisterCreateHandle(MJRoom_UI.OnCreateBtnClick) 
+end
+
+function MJRoom_UI:GetItemByType(type)
+  local resItem = MJRoom_UI.toggleResItemMap[type]
+  if IsNil(resItem) then
+    local path
+    if type == 101 then
+      path = MJRoom_UI.panelitem
+    else
+      path = MJRoom_UI.toggleitem[type]
+    end
+    resItem = newNormalObjSync(path, typeof(GameObject))
+    if resItem ~= nil then
+      MJRoom_UI.toggleResItemMap[type] = resItem
+    end
+  end
+  return newobject(resItem)
+end
+
+function MJRoom_UI.GetRoomCfgByGid(gid)
+  local cfgData = MJRoom_UI.roomConfigMap[gid]
+  if cfgData ~= nil then
+    return cfgData
+  end
+  local str = FileReader.ReadFile(global_define.appConfig.jsonurl.."/"..GameUtil.GetJsonName(gid)) 
+  if nil ~= str and "" ~= str then
+    cfgData = ParseJsonStr(str)
+  else
+    logError("json文件不存在，"..GameUtil.GetJsonName(gid))
+  end
+  if MJRoom_UI.roomConfigMap.gidList == nil then
+    MJRoom_UI.roomConfigMap.gidList = {}
+  end
+  if #MJRoom_UI.roomConfigMap.gidList > 10 then
+    local gidList = MJRoom_UI.roomConfigMap.gidList
+    MJRoom_UI.roomConfigMap[gidList[1]] = nil
+    table.remove(gidList, 1)
+  end
+  MJRoom_UI.roomConfigMap[gid] = cfgData
+  table.insert(MJRoom_UI.roomConfigMap.gidList, gid)
+  return cfgData
+end
+
+function MJRoom_UI.OnCreateBtnClick() 
+    local tables=MJRoom_UI:GetSelect() 
+    local confData={}  
+    confData = tables
+    confData.gid = MJRoom_UI.gid  
+
+    confData = MJRoom_UI.SetOtherCfgData(confData,MJRoom_UI.gid)
+
+    join_room_ctrl.CreateRoom(confData)   
+    local str= json.encode(MJRoom_UI.paneltable)
+    PlayerPrefs.SetString("createRoomCache_"..MJRoom_UI.gid,str)
+end
+
+function MJRoom_UI.SetOtherCfgData(confData,gid)
+  if gid == 25 or gid == 20 then
+    confData.bsupportju = confData.bsupportke == 1 and 0 or 1
+  end
+  return confData
+end
+
+function MJRoom_UI:ReflashPanel()
+  for i=1,#self.paneltable do 
+    local panel = self.paneltable[i]
+    local selectIndex = panel.selectIndex
+    local connect = panel.connect
+    for j=1,#panel.ToggleTable do
+      local toggle=panel.ToggleTable[j]
+      local toggle_type = toggle.type
+      local connecttype = toggle.connecttype
+
+      -- 单选
+      if toggle_type == 1 or toggle_type == 0 then
+        local toggle_UIToggle = toggle.toggle
+        local toggle_UIButton = componentGet(toggle_UIToggle.transform,"UIButton")
+
+        local toggle_value = false
+        for k=1,#selectIndex do
+          if selectIndex[k] == j and toggle_UIButton.isEnabled then
+            toggle_value = true
+            break
+          end
+        end
+        toggle_UIToggle.value = toggle_value
+
+        -- 对选中项恢复关联
+        if connect == 1 and connecttype then
+          for m=1,#connecttype do
+            if connecttype[m]==1 then 
+              if toggle_value then 
+                self:Disable(toggle,m)
+              end
+            end
+            if connecttype[m]==2 then 
+              if toggle_value then
+                self:ChangLabel(toggle,m) 
+              end
+            end 
+            if connecttype[m]==3 then
+              if toggle_value then
+                self:ToggleChange(toggle,m) 
+              end
+            end  
+          end 
+        end
+      -- -- 多选
+      -- elseif toggle_type == 0 then
+      --   local toggle_UIToggle = toggle.toggle
+      --   local toggle_UIButton = componentGet(toggle_UIToggle.transform,"UIButton")
+
+      --   local toggle_value = false
+      --   for k=1,#selectIndex do
+      --     if selectIndex[k] == j and toggle_UIButton.isEnabled then
+      --       toggle_value = true
+      --       break
+      --     end
+      --   end
+      --   toggle_UIToggle.value = toggle_value
+
+      -- 下拉
+      elseif toggle_type == 2 then
+        local toggle_UIToggle = toggle.toggle
+
+      end
+    end
+  end
+end
+
+function MJRoom_UI:Show() 
+   if self.panelitem==nil then
+      return
+   end
+   if self.UI_Pos==nil then
+      return
+   end
+   self:InitPanel()
+
+end
+
+
+function MJRoom_UI:InitPanel()
+    local Theight=0
+    --self:ChangeRoomCard()
+    for i=1,#self.paneltable do 
+       local p=self:CreatePanel(self.paneltable[i])
+       if i==1 then
+          p.transform.localPosition={x=0,y=Theight,z=0}
+       else 
+          p.transform.localPosition={x=0,y=self.paneltable[i].height+Theight,z=0}
+          Theight=Theight+self.paneltable[i].height 
+       end
+    end
+    self:AddConnect()
+end
+
+function MJRoom_UI:CreateToggle(toggle)
+    if toggle.type==0 or toggle.type==1 then
+        --local toggle_clone=newNormalUI(self.toggleitem[toggle.type])
+        local toggle_clone = self:GetItemByType(toggle.type)
+        local background=subComponentGet(toggle_clone.transform,"Background","UISprite")
+        local checkmark=subComponentGet(toggle_clone.transform,"Checkmark","UISprite")
+        local lab_select=subComponentGet(toggle_clone.transform,"lab_select","UILabel")
+        local lab_noselect=subComponentGet(toggle_clone.transform,"lab_noselect","UILabel") 
+        if LuaHelper.isAppleVerify ~= nil 
+        and LuaHelper.isAppleVerify 
+        and toggle.iosdata~=nil 
+        and type(toggle.iosdata)~=type(table)  then    
+             lab_select.text=toggle.iosdata
+             lab_noselect.text=toggle.iosdata 
+        else 
+            lab_select.text=toggle.text
+            lab_noselect.text=toggle.text 
+        end
+        toggle.toggle=componentGet(toggle_clone,"UIToggle")
+        toggle.toggle.group=toggle.Group
+        return toggle_clone
+    end
+    if toggle.type==2 then
+        --local toggle_clone=newNormalUI(self.toggleitem[toggle.type])
+        local toggle_clone = self:GetItemByType(toggle.type)
+        toggle.item=child(toggle_clone.transform,"item")
+        local sp_back=subComponentGet(toggle_clone.transform,"Background","UISprite")
+        toggle.itemHeight=sp_back.height
+        local width=string.len(toggle.text[1])/5*toggle.fontsize
+        if width>656 -72 then
+           width=656 -72
+        end
+        sp_back.width=width+72
+        sp_back.transform.localPosition={x=(width+72)/2+5,y=0,z=0}
+        local item_back=subComponentGet(toggle.item.transform,"Background","UISprite")
+        item_back.width=width+72
+        item_back.transform.localPosition={x=(width+72)/2+5,y=0,z=0}
+        toggle.grid=child(toggle_clone.transform,"sv/items")
+        toggle.poplist=toggle_clone
+        toggle.currentIndex=subComponentGet(toggle_clone.transform,"Background/Label","UILabel")
+        componentGet(toggle.grid,"UIGrid").cellHeight=toggle.itemHeight-12
+        toggle.toggleList = {}
+        for i=1,#toggle.text do 
+            local item= GameObject.Instantiate(toggle.item)
+            item.transform.parent=toggle.grid
+            item.transform.localScale={x=1,y=1,z=1} 
+            item.gameObject:SetActive(true)
+            local text=subComponentGet(item.transform,"Label","UILabel")
+            text.text=toggle.text[i]
+            local item_toggle=subComponentGet(item.transform,"toggle","UIToggle")
+            item_toggle.group=toggle.Group
+            table.insert(toggle.toggleList,item_toggle)
+        end  
+        local tween=componentGet(toggle.grid,"TweenPosition")
+        toggle.grid.transform.localPosition={x=tween.from.x,y=tween.from.y+(table.getCount(toggle.text)-1)*toggle.itemHeight,z=0}
+        tween.from={x=tween.from.x,y=tween.from.y+(table.getCount(toggle.text)-1)*toggle.itemHeight,z=0}
+        return toggle_clone
+    end
+end
+
+function MJRoom_UI:CreatePanel(panel)
+    local panelobj=self:GetItemByType(101) 
+    panelobj.transform.parent=self.UI_Pos.transform
+    panelobj.transform.localScale={x=1,y=1,z=1}
+    local label_title=subComponentGet(panelobj.transform,"lab_name","UILabel")
+    label_title.text=panel.title
+    panelobj:SetActive(true)
+    local toggle_grid=subComponentGet(panelobj.transform,"toggle_grid","UIGrid")
+    toggle_grid.cellWidth=panel.itemWidth
+    toggle_grid.cellHeight=panel.itemHeight
+    toggle_grid.maxPerLine=panel.maxperLine
+    if table.getCount(panel.ToggleTable)>panel.maxperLine then
+        local sp=subComponentGet(panelobj.transform,"sp_playtype01","UISprite")
+        sp.height=sp.height*2
+        sp.transform.localPosition={x=sp.transform.localPosition.x,y=sp.transform.localPosition.y-sp.height/4,z=0}
+    end
+    for i=1,#panel.ToggleTable do
+        local toggle=panel.ToggleTable[i]
+        local toggleobj=self:CreateToggle(toggle)
+        
+        toggleobj.transform.parent=toggle_grid.transform
+        toggleobj.transform.localScale={x=1,y=1,z=1} 
+        toggleobj:SetActive(true) 
+        toggleobj.name=i
+    end  
+    for i=1,#panel.selectIndex do    
+       local t=panel.ToggleTable[panel.selectIndex[i]] 
+       if t==nil then
+          t=panel.ToggleTable[1] 
+       end
+       if t.type==1 or t.type==0 then
+           t.toggle.value=true 
+       end    
+       if t.type==2 then 
+          t.currentIndex.text=t.text[panel.selectIndex[i]]
+          t.toggleList[panel.selectIndex[i]].value=true
+       end
+    end
+    return panelobj
+end
+
+function MJRoom_UI:GetSelect()
+    local paramTable={}
+    for i=1,#self.paneltable do  
+        self.paneltable[i].selectIndex={}
+        for m=1,#self.paneltable[i].ToggleTable do
+            local t=self.paneltable[i].ToggleTable[m]  
+            if t.type==0 or t.type==1 then
+                local toggle_UIButton = componentGet(t.toggle.transform,"UIButton")
+                if t.toggle.value==true and toggle_UIButton.isEnabled then 
+                    if t.type==0  then  
+                       paramTable[t.selectIndex]=1  
+                    end
+                    if t.type==1 then 
+                       paramTable[t.selectIndex]=t.exData 
+                       
+                    end
+                    table.insert(self.paneltable[i].selectIndex,m)
+                else
+                    if t.type==0  then  
+                       paramTable[t.selectIndex]=0
+                    end
+                end
+            end
+            if t.type==2 then
+                for j=1,#t.text do
+                   if t.currentIndex.text==t.text[j] then
+                      paramTable[t.selectIndex]=j  
+                      table.insert(self.paneltable[i].selectIndex,j) 
+                   end
+                end
+            end
+        end
+    end 
+    return  paramTable
+end
+--[[
+
+]]
+function MJRoom_UI:AddConnect() 
+    local connectitem={}
+    for i=1,#self.paneltable do
+        local panel=self.paneltable[i] 
+        if panel.connect==1 then  
+            for m=1,#panel.ToggleTable do
+                if panel.ToggleTable[m].connecttype~=nil then  
+                   table.insert(connectitem,panel.ToggleTable[m])  
+                end
+            end
+        end
+    end  
+    for i=1,#connectitem do 
+       for k=1,#connectitem[i].connecttype do
+          if connectitem[i].connecttype[k]==1 then 
+              self:AddListener(connectitem[i],function ()
+                 self:Disable(connectitem[i],k) 
+              end,this) 
+              --if connectitem[i].toggle.value==true then
+                self:Disable(connectitem[i],k)
+              --end  
+           end
+           if connectitem[i].connecttype[k]==2 then 
+              self:AddListener(connectitem[i],function ()
+              self:ChangLabel(connectitem[i],k) 
+                end,this) 
+              if connectitem[i].toggle.value==true then
+                 self:ChangLabel(connectitem[i],k) 
+              end
+           end 
+           if connectitem[i].connecttype[k]==3 then
+              self:AddListener(connectitem[i],function ()
+              self:ToggleChange(connectitem[i],k)
+                end,this) 
+              if connectitem[i].toggle.value==true then 
+                 self:ToggleChange(connectitem[i],k) 
+              end
+           end   
+        end
+    end
+end
+
+function MJRoom_UI:Disable(toggle,index) 
+   if toggle.connect[index]==nil then
+      return
+   end   
+   for i=1,#self.paneltable do 
+      local panel=self.paneltable[i]
+      for j=1,#panel.ToggleTable do
+          local tt=panel.ToggleTable[j]
+          for m=1,#toggle.connect[index].enable do
+             local ctable=toggle.connect[index].enable[m]  
+             if ctable[tt.selectIndex]~=nil then
+                for g=1,#ctable[tt.selectIndex] do
+                    if ctable[tt.selectIndex][g]==tt.exData then 
+                        componentGet(tt.toggle.gameObject,"UIButton").isEnabled=toggle.toggle.value  
+                        if tt.toggle.value==true  then    
+                            if table.getCount(ctable[tt.selectIndex]) ==table.getCount(panel.ToggleTable) then
+                                tt.toggle.value=false
+                            end
+                           child(tt.toggle.transform,"Checkmark").gameObject:SetActive(toggle.toggle.value)
+                           child(tt.toggle.transform,"lab_select").gameObject:SetActive(toggle.toggle.value)
+                           child(tt.toggle.transform,"lab_noselect").gameObject:SetActive(toggle.toggle.value==false)
+                        end
+                        --[[
+                            特殊逻辑处理十三水
+                        ]]
+                        if toggle.selectIndex=="pnum" and tt.selectIndex=="addColor" then
+                            if self.paneltable[1].ToggleTable[1].toggle.value==true then
+                                if tt.exData==0 then
+                                    componentGet(tt.toggle.gameObject,"UIButton").isEnabled=false
+                                end
+                            end
+                        end
+                    end 
+                end
+             end
+          end
+          for m=1,#toggle.isconnect[index].select do
+             local ctable=toggle.isconnect[index].select[m]   
+             if ctable[tt.selectIndex]~=nil then
+                for g=1,#ctable[tt.selectIndex] do
+                    if ctable[tt.selectIndex][g]==tt.exData then
+                        if componentGet(tt.toggle.gameObject,"UIButton").isEnabled  then 
+                           tt.toggle.value=true     
+                           if tt.connecttype~=nil then
+                                for i=1,#tt.connecttype do 
+                                    if tt.connecttype[i]==1 then
+                                        self:Disable(tt,i) 
+                                    end
+                                    if tt.connecttype[i]==2 then
+                                        self:ChangLabel(tt,i)
+                                    end
+                                    if tt.connecttype[i]==3 then
+                                        self:ToggleChange(tt,i)
+                                    end
+                                end 
+                            end
+                        end 
+                    end 
+                end
+             end
+          end 
+          for m=1,#toggle.connect[index].disable do
+             local ctable=toggle.connect[index].disable[m]  
+             if ctable[tt.selectIndex]~=nil then
+                for g=1,#ctable[tt.selectIndex] do
+                    if ctable[tt.selectIndex][g]==tt.exData then 
+                        componentGet(tt.toggle.gameObject,"UIButton").isEnabled=toggle.toggle.value==false 
+                        if tt.toggle.value==true  then     
+                           child(tt.toggle.transform,"Checkmark").gameObject:SetActive(toggle.toggle.value==false)
+                           child(tt.toggle.transform,"lab_select").gameObject:SetActive(toggle.toggle.value==false)
+                           child(tt.toggle.transform,"lab_noselect").gameObject:SetActive(toggle.toggle.value)
+                        end  
+                    end 
+                end
+             end
+          end  
+      end
+   end
+end
+
+
+function MJRoom_UI:ChangLabel(toggle,index) 
+   if toggle.connect[index]~=nil then     
+     for m=1,#self.paneltable do
+        local panel=self.paneltable[m]  
+        for i=1,#panel.ToggleTable do
+            local t=panel.ToggleTable[i] 
+            local rtable=toggle.connect[index][1] 
+            if rtable[t.selectIndex]~=nil   then   
+               if  rtable[t.selectIndex][i]~=nil then 
+                   t.toggle.gameObject:SetActive(true)  
+                   local text=rtable[t.selectIndex][i] 
+                   local label_select=subComponentGet(t.toggle.transform,"lab_select","UILabel")
+                   local label_noselect=subComponentGet(t.toggle.transform,"lab_noselect","UILabel")
+                   if LuaHelper.isAppleVerify ~= nil and LuaHelper.isAppleVerify then    
+                      label_select.text=toggle.iosconnect[index][1][t.selectIndex][i] 
+                      label_noselect.text=toggle.iosconnect[index][1][t.selectIndex][i]
+                   else  
+                       label_select.text=text
+                       label_noselect.text=text
+                   end
+               else
+                   t.toggle.gameObject:SetActive(false) 
+               end  
+            end
+        end
+     end 
+   end   
+end
+
+function MJRoom_UI:AddListener(toggle,f)
+    table.insert(toggle.clicktable,f)
+    addClickCallbackSelf(toggle.toggle.gameObject,function ()
+        for i=1,#toggle.clicktable do
+            toggle.clicktable[i]()
+        end
+    end )
+end
+
+function MJRoom_UI:ToggleChange(toggle,index)    
+   for i=1,#self.paneltable do 
+      local panel=self.paneltable[i] 
+      for m=1,#panel.ToggleTable do
+         local t=panel.ToggleTable[m] 
+         local vtable=toggle.connect[1][1] 
+         local ctable=toggle.isconnect[1][1]
+         if ctable[t.selectIndex]~=nil then  
+            local enable=ctable[t.selectIndex][tonumber(toggle.toggle.name)]  
+            for k=1,#enable do
+                if t.exData==enable[k] then   
+                     local btn=componentGet(t.toggle.gameObject,"UIButton")
+                     btn.isEnabled=true  
+                     t.toggle.value=true 
+                 end
+            end
+         end 
+         if vtable[t.selectIndex]~=nil then  
+            local disable=vtable[t.selectIndex][tonumber(toggle.toggle.name)] 
+            for k=1,#disable do
+               if t.exData==disable[k] then
+                  local mark= child(t.toggle.transform,"Checkmark")
+                  mark.gameObject:SetActive(false)
+                  local label_select= child(t.toggle.transform,"lab_select")
+                  label_select.gameObject:SetActive(false)
+                  local label_noselect=child(t.toggle.transform,"lab_noselect")
+                  label_noselect.gameObject:SetActive(true) 
+                  local btn=componentGet(t.toggle.gameObject,"UIButton")
+                  btn.isEnabled=false  
+               end
+            end
+         end  
+      end
+   end
+end
+
+function MJRoom_UI:ChangeRoomCard(roomtable) 
+    local type=0
+    if roomtable[0]~=nil then
+        type=2
+    else
+        type=1
+    end
+    for i=1,#self.paneltable do
+        if self.paneltable[i].ToggleTable[1].selectIndex=="pnum" and type==1 then
+           for j=1,#self.paneltable[i].ToggleTable do
+              local toggle=self.paneltable[i].ToggleTable[j]
+              local index=toggle.exData
+              local isconnectcard=false
+              if toggle.connecttype==nil then
+                 isconnectcard=false
+                 toggle.connecttype={}
+                 toggle.connect={}
+             else
+                 for m=1,#toggle.connecttype do
+                    if toggle.connecttype[m]==2 then 
+                       local connecttable=toggle.connect[m][1]  
+                       for k=1,#connecttable["rounds"] do
+                          for o,v in pairs(roomtable[tostring(index)][k]) do 
+                            if tonumber(o)~=0 then
+                                 connecttable["rounds"][k]=o.."".."(房卡X"..v..")"
+                             else
+                                 connecttable["rounds"][k]="打课".."(房卡X"..v..")"
+                             end 
+                          end
+                       end
+                       isconnectcard=true
+                    end
+                 end
+              end 
+              if isconnectcard==false then 
+                 table.insert(toggle.connecttype,2)
+                 local tt={}
+                 tt["rounds"]={}  
+                 for k=1,#roomtable[tostring(index)] do
+                    for o,v in pairs(roomtable[tostring(index)][k]) do 
+                       if tonumber(o)~=0 then
+                           tt["rounds"][k]=o.."".."(房卡X"..v..")"
+                       else
+                           tt["rounds"][k]="打课".."(房卡X"..v..")"
+                       end
+                    end
+                 end 
+                 local ts={}
+                 table.insert(ts,tt)
+                 table.insert(toggle.connect,ts) 
+                 self.paneltable[i].connect=1
+              end
+           end
+        end
+        if self.paneltable[i].ToggleTable[1].selectIndex=="rounds" and type==2 then
+          for j=1,#self.paneltable[i].ToggleTable do 
+              local toggle=self.paneltable[i].ToggleTable[j]  
+              for _,v in ipairs(roomtable[0]) do
+                for key,_ in ipairs(v) do
+                  if key == tostring(toggle.exData) then
+                    toggle.text=toggle.exData.."(房卡X"..roomtable[0][j][tostring(toggle.exData)]..")";
+                  end
+                end
+              end
+              --toggle.text=toggle.exData.."局(房卡X"..roomtable[0][j][tostring(toggle.exData)]..")";
+           end
+        end
+    end
+end

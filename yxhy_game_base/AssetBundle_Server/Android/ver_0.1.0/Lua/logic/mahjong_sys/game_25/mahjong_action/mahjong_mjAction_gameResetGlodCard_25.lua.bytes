@@ -1,0 +1,52 @@
+local base = require "logic/mahjong_sys/common/mahjong_action_base"
+local mahjong_mjAction_gameResetGlodCard_25 = class("mahjong_mjAction_gameResetGlodCard_25", base)
+
+function mahjong_mjAction_gameResetGlodCard_25:Execute(jin,pos)
+     if jin ~= nil then
+        roomdata_center.SetSpecialCard(jin)
+        self:ReSetShowJin(jin, pos)
+        roomdata_center.AddMj(jin)
+    end
+end
+
+function mahjong_mjAction_gameResetGlodCard_25:ReSetShowJin( cardValue,pos )
+    local index = self.compTable:GetMutliNextIndex(self.compTable.lastIndex,roomdata_center.leftCard - pos)
+
+    local mj = self.compMjItemMgr.mjItemList[index]
+    roomdata_center.leftCard = roomdata_center.leftCard -1
+    mahjong_ui.SetLeftCard( roomdata_center.leftCard )
+
+    -- 当金牌在下层则与上层的牌交换位置
+    local originPos = mj.transform.localPosition
+    local originPos_exchangeJin
+
+    local isMoveJin = false
+    local mj_exchangeJin = nil
+    if math.fmod(index,2) == 1 then
+        mj_exchangeJin = self.compMjItemMgr.mjItemList[index + 1]
+        if mj_exchangeJin and mj_exchangeJin.curState == MahjongItemState.inWall then
+            isMoveJin = true
+        end
+    end
+    
+    if isMoveJin then
+        originPos_exchangeJin = mj_exchangeJin.transform.localPosition
+        self.compTable.exChangeSpecialCard = mj_exchangeJin
+    end
+
+    if isMoveJin and mj_exchangeJin then
+        mj_exchangeJin:DOLocalMove(originPos, 0)
+        mj:DOLocalMove(originPos_exchangeJin, 0)
+    end
+
+    mj:SetMesh(cardValue)
+    mj:SetState(MahjongItemState.other)
+
+    self.compTable.mjJin = mj
+    self.compTable.mjJin.mjObj.name = "jin"
+    mahjong_ui.ShowSpecialCard(cardValue)
+    -- mj:HideAndReset()
+    self.compTable.mjJin:Show(true)
+end
+
+return mahjong_mjAction_gameResetGlodCard_25

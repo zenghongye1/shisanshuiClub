@@ -1,0 +1,981 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"ma",
+				"mapID"
+			],
+			[
+				"cmd",
+				"cmdID"
+			],
+			[
+				"wai",
+				"waiting_ui"
+			],
+			[
+				"Set",
+				"SetNetChnl"
+			],
+			[
+				"fun",
+				"function\tfunction"
+			],
+			[
+				"so",
+				"socketIO"
+			],
+			[
+				"So",
+				"SocketIOComponent"
+			],
+			[
+				"log",
+				"login_sys"
+			],
+			[
+				"btn",
+				"btnTest"
+			],
+			[
+				"lg",
+				"login_sys"
+			],
+			[
+				"send",
+				"sendData"
+			],
+			[
+				"req",
+				"require"
+			],
+			[
+				"sc",
+				"SocketIO"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "Assets/CC_Lua/logic/network/network_mgr.lua",
+			"settings":
+			{
+				"buffer_size": 12756,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Assets/CC_Lua/Global.lua",
+			"settings":
+			{
+				"buffer_size": 5396,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/E/ResPro/bestGame/Assets/CC_Lua/logic/login_sys/login_info_ui.lua",
+			"settings":
+			{
+				"buffer_size": 10349,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "Assets/CC_Lua/logic/login_sys/login_sys.lua",
+			"settings":
+			{
+				"buffer_size": 4847,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Assets/CC_Lua/logic/common/net_cmd.lua",
+			"settings":
+			{
+				"buffer_size": 189,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "Assets/CC_Lua/logic/scene_sys/game_scene.lua",
+			"settings":
+			{
+				"buffer_size": 6831,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Assets/CC_Lua/logic/scene_sys/map_controller.lua",
+			"settings":
+			{
+				"buffer_size": 7633,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Assets/CC_Lua/logic/network/netchnl_state.lua",
+			"settings":
+			{
+				"buffer_size": 5478,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Assets/CC_Lua/logic/game_state/gs_base.lua",
+			"settings":
+			{
+				"buffer_size": 1307,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "Assets/CC_Lua/logic/game_state/gs_mgr.lua",
+			"settings":
+			{
+				"buffer_size": 4141,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/rank_sys"
+	],
+	"file_history":
+	[
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/common/config_data_center.lua",
+		"/E/ResPro/bestGame/Assets/CC_Lua/logic/network/NetworkMgr.lua",
+		"/E/ResPro/bestGame/Assets/CC_Lua/logic/login_sys/login_sys.lua",
+		"/E/ResPro/bestGame/Assets/CC_Lua/Global.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/login_sys/login_sys.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/network/global_rsp_handler.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/AsyncActionSet.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/framework/data_center.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/framework/game.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/framework/msg_dispatch_mgr.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/framework/cmdName.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/login_sys/login_ui.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/network/gamesrv_alive.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/Global.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/hall_sys/hall_ui_ctrl.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/hall_sys/hall_data.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/hall_sys/hall_ui.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/common/functions.lua",
+		"/E/ResPro/bestGame/Assets/CC_Lua/logic/network/netchnl_state.lua",
+		"/E/ResPro/bestGame/Assets/CC_Lua/logic/login_sys/login_info_ui.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/network/req_protocol.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/common_ui/waiting_ui.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/common/waiting_ui.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/common/TestMode.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/scene_sys/map_controller.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/Resources/ProtobufDataConfig/dataconfig_sceneconfig.bytes",
+		"/E/ResPro/bestGame/Assets/CC_Scripts/ProtobufDataConfig/ProtobufDataConfigMgr.cs",
+		"/G/dstars/chess_u3d/xyhyGame_truck/BuildDataConfig/场景配置表.bat",
+		"/G/dstars/chess_u3d/xyhyGame_truck/BuildDataConfig/build_all.py",
+		"/E/ResPro/bestGame/Assets/CC_Scripts/Framework/ulua/Utility/Util.cs",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/network/netchnl_state.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/framework/logicLuaObjMgr.lua",
+		"/G/dstars/chess_client/MJGame/src/app/ViewModel/MainViewModel.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/framework/local_storage_sys.lua",
+		"/G/dstars/chess_client/MJGame/src/app/Utilities/GeneralTool.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/network/network_mgr.lua",
+		"/E/ResPro/bestGame/Assets/CC_Lua/logic/hall_sys/hallui_mainscene.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/common_ui/ui_sound_mgr.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/game_state/gs_mgr.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/controller/map_controller.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/scene_sys/game_scene.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/common_ui/ui_player_mgr.lua",
+		"/E/ResPro/bestGame/Assets/CC_Lua/utils/class.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/common_ui/ui_base.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/game_state/gs_base.lua",
+		"/D/360安全浏览器下载/LuaFramework_NGUI-master/LuaFramework_NGUI-master/Assets/LuaFramework/Scripts/Framework/AppFacade.cs",
+		"/E/ResPro/bestGame/Assets/CC_Lua/logic/scene_sys/game_scene.lua",
+		"/G/dstars/chess_client/MJGame/src/app/SocketClient.lua",
+		"/G/dstars/chess_client/MJGame/src/app/views/AfficheLayer.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/game_state/gs_level_single.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/game_state/gs_login.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/game_state/gs_level_guide.lua",
+		"/G/dstars/chess_client/MJGame/src/app/ViewModel/BaseViewModel.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/common/after_cmd_base.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/game_state/gs_main_hall.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/login_sys/login_info_ui.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/login_sys/create_role.lua",
+		"/G/dstars/chess_client/MJGame/src/cocos/cocos2d/json.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/common/jsonHelper.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/game_state/gs_scene_loading.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/game_state/gs_level_multi.lua",
+		"/C/Users/admin/Desktop/luajson-master/luajson-master/tests/test.lua",
+		"/G/dstars/chess_client/MJGame/src/app/DataCenter.lua",
+		"/G/dstars/chess_u3d/xyhyGame_truck/Assets/CC_Lua/logic/common/global_rsp_handler.lua",
+		"/G/dstars/chess_client/MJGame/src/app/Protocols/RequestProtocol.lua",
+		"/C/Users/admin/Desktop/luajson-master/luajson-master/README.md",
+		"/E/ResPro/bestGame/Assets/CC_Lua/logic/framework/data_center.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/framework/game.lua",
+		"/G/xyhyGame/Assets/CC_Lua/Global.lua",
+		"/G/xyhyGame/Assets/CC_Lua/Main.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/game_state/gs_main_city.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/game_state/gs_scene_loading.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/game_state/gs_login.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/game_state/gs_mgr.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/game_state/gs_role_show.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/login_sys/login_sys.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/login_sys/login_info_ui.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/scene_sys/game_scene.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/AsyncActionSet.lua",
+		"/G/xyhyGame/Assets/CC_Lua/utils/string_handler.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common_ui/message_box.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/network/netchnl_state.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/network/gamesrv_alive.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/network/NetworkMgr.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/framework/page_jumper.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/game_state/gs_update_version.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/game_state/gs_level_guide.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/game_state/gs_level_multi.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/game_state/gs_level_single.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/framework/data_center.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/game_state/gs_cg.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/game_state/gs_base.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/scene_sys/scene_type.lua",
+		"/G/xyhyGame/Assets/CC_Lua/common/TestMode.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/framework/local_storage_sys.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common/pool_manager.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common/waiting_ui.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common/prefab_pool.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common/global_rsp_handler.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common/global_define.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common/utf8Helper.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common/after_cmd_base.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common/after_cmds_mgr.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common/config_data_center.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common_ui/ui_stack_mgr.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common_ui/ui_sound_mgr.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common_ui/ui_base_tween.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common_ui/ui_base_grid.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common_ui/ui_base.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common_ui/link_ctrl.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/framework/logicLuaObjMgr.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/framework/cmdName.lua",
+		"/G/xyhyGame/Assets/CC_Lua/common/Utils.lua",
+		"/G/xyhyGame/Assets/CC_Lua/common/XArray.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common/FastTips.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common_ui/countdown.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common_ui/ui_tool.lua",
+		"/G/xyhyGame/Assets/CC_Lua/logic/common/gift_list.lua",
+		"/E/ResPro/bestGame/Assets/CC_Scripts/Utility/wlWeakRef.cs",
+		"/F/WorkTool/Sublime Text 3/Packages/Data/Packages/User/lua_header_with_time.py",
+		"/D/360安全浏览器下载/Data/Data/Packages/User/lua_header_with_time.py",
+		"/G/xyhyGame/Assets/CC_Lua/common/define.lua",
+		"/G/xyhyGame/Assets/CC_Lua/common/functions.lua",
+		"/G/xyhyGame/Assets/CC_Lua/common/XList.lua",
+		"/D/BaiduNetdiskDownload/Assets/Assets/CC_Scripts/BasicSystem/SDK/SDKManager.cs",
+		"/D/BaiduNetdiskDownload/Assets/Assets/CC_Scripts/BasicSystem/SDK/SDKFactory.cs",
+		"/E/ResPro/bestGame/Assets/Assets/CC_Scripts/BasicSystem/SDK/Develop/DevelopSDKComp.cs",
+		"/G/xyhyGame/Assets/CC_Scripts/BasicSystem/SDK/SDKManager.cs"
+	],
+	"find":
+	{
+		"height": 34.0
+	},
+	"find_in_files":
+	{
+		"height": 90.0,
+		"where_history":
+		[
+			"*.lua",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"LoginHallReq",
+			"SetNetChnl",
+			"ConnectAndLoginServer",
+			"loginReqPack",
+			"SetLoginReq",
+			"SetLoginReqForLua",
+			"sendPkg",
+			"ChangeState",
+			"state_current",
+			"HandleOnNetworkClose",
+			"state_current",
+			"On_NETWORK_CONNECTION_CLOSE",
+			"NETWORK_CONNECTION_CLOSE",
+			"HandleOnNetworkClose",
+			"ShowReconnectMsgBox",
+			"HandleOnNetworkClose",
+			"ShowReconnectMsgBox",
+			"OnChnlClose",
+			"waiting_ui.Hide",
+			"aiting_ui.Hide",
+			"waiting_ui",
+			"waiting_ui.Hide",
+			"waiting_ui",
+			"SetNetChnl",
+			"StartConnect",
+			"SetLoginReq",
+			"ConnectAndLoginServer",
+			"StartConnect",
+			"SetLoginReq",
+			"socketIO",
+			"RequestAreaList",
+			"OnPlatLoginOK",
+			"StartConnect",
+			"OnChnlConnect",
+			"LOGIN_OK",
+			"StartConnect",
+			"waiting_ui",
+			"sendPkg",
+			"RequestEnterMap",
+			"LoginHallReq",
+			"SendLoginReq",
+			"waiting_ui",
+			"sendPkgWaitForRsp",
+			"sendPkg",
+			"sendPkgWaitForRsp",
+			"addPkgListener",
+			"sendPkg",
+			"sendPkgWaitForRsp",
+			"addPkgListener",
+			"handleRecvData",
+			"addPkgListener",
+			"sendPkgWaitForRsp",
+			"fnCallback",
+			"addPkgListener",
+			"sendPkg",
+			"OnNotifyEnterMapInfo",
+			"NotifyEnterHallAndLevel",
+			"mLoadSceneEvent",
+			"LoadHallScene",
+			"SetSingleMode",
+			"ReqEnterHallAndLevel",
+			"RequestEnterMap",
+			"Connect",
+			"SocketState",
+			"socketState",
+			"RequestEnterMap",
+			"ReqEnterHallAndLevel",
+			"LoginHallReq",
+			"SendRequestEnterMap",
+			"map_controller",
+			"SendRequestEnterMap",
+			"SetSingleMode",
+			"singleMode",
+			"CSCMDTYPE_CS_ENTER_MAP_REQ_ENUM",
+			"IsNewGuildLevel",
+			"ReqEnterHallAndLevel",
+			"dataconfig_levelconfig",
+			"ReqEnterHallAndLevel",
+			"gotoHall",
+			"OnPlatLoginOK",
+			"TimeCostLog",
+			"currSceneID",
+			"createAllUI",
+			"onLevelWasLoaded",
+			"createAllUI",
+			"currSceneID",
+			"TryToLoadScene",
+			"OnLevelWasLoaded",
+			"onLevelWasLoaded",
+			"createAllUI",
+			"createAllUICallback",
+			"MSG_DESTROY_VERSION_UPDATE_UI",
+			"ui_loading",
+			"SendHeartBeat",
+			"addPkgListener",
+			"Util",
+			"NetworkMgr.OnSocket",
+			"addlis",
+			"Utility_LuaHelper",
+			"luaclass",
+			"page_jumper",
+			"luaclass",
+			"MSG_WAIT_ENTER_GAME_FINISH",
+			"onServerKickOff",
+			"logoutTimer",
+			"SetNetChnl",
+			"SetLoginReq",
+			"req_protocol",
+			"LoginHallReq",
+			"UIEventListener",
+			"UIEventListener.VoidDelegate",
+			"UIEventListener",
+			"UIEventListener.VoidDelegate",
+			"OnOpenEvent",
+			"OnHandleHelloTimeout",
+			"OnChnlConnect",
+			"gamesrv_alive",
+			"OnHearBeatTimer",
+			"helloTimer",
+			"setHeartBeatMsg",
+			"_heartBeatMsg",
+			"heartBeatMsg",
+			"sendPkg",
+			"sendMessage",
+			"g_heartBeatTime",
+			"_heartBeatCD",
+			"_curReplayInterval",
+			"sendHeartBeat"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"netChnl",
+			"dataconfig_sceneconfig",
+			"hearBeatTimer",
+			"socketIO",
+			"network_mgr",
+			"state_main_hall",
+			"GetDictString",
+			"network_mgr",
+			"XYHY.AssetBundleInfo"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 6,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "Assets/CC_Lua/logic/network/network_mgr.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 12756,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1062,
+								1072
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 648.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "Assets/CC_Lua/Global.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5396,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1279,
+								1279
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/E/ResPro/bestGame/Assets/CC_Lua/logic/login_sys/login_info_ui.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10349,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7003,
+								7024
+							],
+							[
+								7959,
+								7980
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 3571.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "Assets/CC_Lua/logic/login_sys/login_sys.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4847,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1429,
+								1429
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 691.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "Assets/CC_Lua/logic/common/net_cmd.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 189,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								189,
+								189
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "Assets/CC_Lua/logic/scene_sys/game_scene.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6831,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2840,
+								2840
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1606.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "Assets/CC_Lua/logic/scene_sys/map_controller.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7633,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4465,
+								4465
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1485.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "Assets/CC_Lua/logic/network/netchnl_state.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5478,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2226,
+								2226
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1111.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "Assets/CC_Lua/logic/game_state/gs_base.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1307,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								763,
+								782
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 286.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "Assets/CC_Lua/logic/game_state/gs_mgr.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4141,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2959,
+								2986
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1743.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "xyhyGameLua.sublime-project",
+	"replace":
+	{
+		"height": 62.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"net",
+				"CC_Lua\\logic\\network\\NetworkMgr.lua"
+			],
+			[
+				"l",
+				"CC_Lua\\logic\\login_sys\\login_sys.lua"
+			],
+			[
+				"networ",
+				"CC_Lua\\logic\\network\\network_mgr.lua"
+			],
+			[
+				"netw",
+				"CC_Lua\\logic\\network\\NetworkMgr.lua"
+			],
+			[
+				"wai",
+				"logic\\common\\waiting_ui.lua"
+			],
+			[
+				"test",
+				"common\\TestMode.lua"
+			],
+			[
+				"testmode",
+				"common\\TestMode.lua"
+			],
+			[
+				"map",
+				"logic\\scene_sys\\map_controller.lua"
+			],
+			[
+				"glo",
+				"Global.lua"
+			],
+			[
+				"config",
+				"logic\\common\\config_data_center.lua"
+			],
+			[
+				"game_scene",
+				"logic\\scene_sys\\game_scene.lua"
+			],
+			[
+				"fun",
+				"CC_Lua\\common\\functions.lua"
+			],
+			[
+				"ui_soun",
+				"logic\\common_ui\\ui_sound_mgr.lua"
+			],
+			[
+				"ui_",
+				"logic\\common_ui\\ui_base.lua"
+			],
+			[
+				"game_sc",
+				"logic\\scene_sys\\game_scene.lua"
+			],
+			[
+				"ga",
+				"logic\\scene_sys\\game_scene.lua"
+			],
+			[
+				"game",
+				"logic\\framework\\game.lua"
+			],
+			[
+				"sock",
+				"app\\SocketClient.lua"
+			],
+			[
+				"mainviewmodel",
+				"app\\ViewModel\\MainViewModel.lua"
+			],
+			[
+				"global_rsp_handler",
+				"CC_Lua\\logic\\common\\global_rsp_handler.lua"
+			],
+			[
+				"requestprotocol",
+				"app\\Protocols\\RequestProtocol.lua"
+			],
+			[
+				"netchnl_state",
+				"logic\\network\\netchnl_state.lua"
+			],
+			[
+				"da",
+				"logic\\framework\\data_center.lua"
+			],
+			[
+				"login",
+				"logic\\login_sys\\login_sys.lua"
+			],
+			[
+				"gs_mgr",
+				"logic\\game_state\\gs_mgr.lua"
+			],
+			[
+				"xa",
+				"common\\XArray.lua"
+			],
+			[
+				"lua",
+				"G:\\xyhyGame\\Assets\\ToLua\\Core\\LuaFunction.cs"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 244.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

@@ -1,0 +1,110 @@
+[ 
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+  [
+    {
+      "exData": [0],
+      "title": "玩法:",
+      "id": [
+        "hutype",
+        "lowrun",
+        "bJiangHu"
+      ],
+      "data": [
+        "可点炮胡",
+        "下跑",
+        "258将"
+      ],
+      "selectIndex": [1,2],
+	  "connecttype": [ 1 ],
+      "connect": [
+        {
+          "hutype": {
+            "disable": [
+            ],
+            "enable": [
+              { "bSelfAdd": 1,
+				"bAnGangAdd": 1
+			  }
+            ]
+          }
+        }
+      ],
+      "Isconnect": [
+        {
+          "hutype": {
+            "select": [
+            ]
+          }
+        }
+      ],
+      "itemHeight":-80,
+      "itemWidth": 232,
+      "type": 0,
+      "group": 0
+    }
+  ],
+  [
+    {
+      "exData": [4,8,16],
+      "selectIndex": [1],
+      "data": [
+        "4局(房卡x2)",
+        "8局(房卡x4)",
+        "16局(房卡x8)"
+      ],
+      "type": 1,
+      "group": 22,
+      "itemHeight": -110,      
+      "maxPerLine": 3,
+      "title": "局数:",
+      "id": "rounds"
+    }
+  ],  
+  [
+    {
+      "exData": [4,3,2],
+      "selectIndex": [1],
+      "data": [
+          "4人",
+          "3人",
+          "2人"
+      ],
+      "type": 1,
+      "itemHeight": -110,      
+      "group": 21,
+      "title": "人数:",
+      "id": "pnum"
+    }
+  ],
+  [
+   {
+      "exData": [0],
+      "title": "结算:",
+      "id": [
+        "dealeradd",
+        "bSelfAdd",
+        "bAnGangAdd"
+      ],
+      "data": [
+        "庄家加底",
+        "自摸加倍",
+        "暗杠加倍"
+      ],
+      "selectIndex": [],
+      "itemHeight":-80,      
+      "type": 0,
+      "group": 0
+    }
+  ]   
+]

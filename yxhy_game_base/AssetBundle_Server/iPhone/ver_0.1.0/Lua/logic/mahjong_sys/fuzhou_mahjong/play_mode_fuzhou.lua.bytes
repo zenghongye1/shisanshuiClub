@@ -1,0 +1,98 @@
+--[[--
+ * @Description: 福州麻将玩法
+ * @Author:      shine
+ * @FileName:    play_mode_fuzhou.lua
+ * @DateTime:    2017-06-13 10:22:49
+ ]]
+
+require "logic/mahjong_sys/mode_base"
+
+require "logic/mahjong_sys/comp_show/comp_show_base"
+require "logic/mahjong_sys/utils/mahjong_path_mgr"
+require "logic/mahjong_sys/ui_mahjong/mahjong_ui_sys"
+require "logic/mahjong_sys/utils/MahjongFuncSetUtil"
+
+
+local comp_mjTable = require "logic/mahjong_sys/components/base/comp_mjTable"
+local comp_mjPlayerMgr = require "logic/mahjong_sys/components/base/comp_mjPlayerMgr"
+local comp_mjItemMgr = require "logic/mahjong_sys/components/base/comp_mjItemMgr"
+local comp_mjDice = require "logic/mahjong_sys/components/base/comp_mjDice"
+local comp_mjResMgr = require "logic/mahjong_sys/components/base/comp_mjResMgr"
+local comp_mjScene = require "logic/mahjong_sys/components/base/comp_mjScene"
+
+
+
+play_mode_fuzhou = {}
+local instance = nil
+
+function play_mode_fuzhou.GetInstance()
+    if (instance == nil) then
+        instance = play_mode_fuzhou.create()
+    end
+
+    return instance
+end
+
+function play_mode_fuzhou.create(levelID)
+    local this = mode_base.create(levelID)
+    this.Class = play_mode_fuzhou
+    this.name = "play_mode_fuzhou"
+    local gid = player_data.GetGameId()
+    this.config = require ("logic/mahjong_sys/configs/mahjong_config_" .. gid)
+    mahjong_anim_state_control.InitFuzhouAnims(this.config)
+    mahjong_path_mgr.InitGameId(player_data.GetGameId())
+
+    --------------------------------  
+
+    local ConstructComponents = nil
+
+    this.base_init = this.Initialize
+    function this:Initialize()
+        this.base_init()   
+        comp_show_base:Init()        
+        mahjong_ui_sys.Init()
+
+    end
+
+    this.base_uninit = this.Uninitialize
+    function this:Uninitialize()
+        this.base_uninit()
+        comp_show_base:Uinit()
+        mahjong_ui_sys.UInit()
+
+        instance = nil        
+        roomdata_center.isRoundStart = false
+        roomdata_center.nCurrJu = 0
+    end
+
+    --[[--
+     * @Description: 组装所需要的组件
+     ]]
+    function ConstructComponents()
+        Trace("ConstructComponents---------------------------------------")
+        -- 组装
+        this:AddComponent(comp_mjScene:create())
+        this:AddComponent(comp_mjResMgr:create())
+        this:AddComponent(comp_mjItemMgr:create("logic/mahjong_sys/components/base/comp_mjItem"))
+        this:AddComponent(comp_mjTable:create())
+        this:AddComponent(comp_mjPlayerMgr:create("logic/mahjong_sys/components/base/comp_mjPlayer"))      
+        this:AddComponent(comp_mjDice:create())   
+
+        mahjong_client_ting_mgr = require "logic/mahjong_sys/mahjong_client_ting_mgr":create()
+
+        if Application.isEditor then
+            mahjong_gm_manager = require "logic/mahjong_sys/mahjong_gm_manager":create(this)
+        end
+
+        mahjong_effectMgr = require "logic/mahjong_sys/mahjong_effectMgr":create()
+    end
+
+    function this:PreloadObjects()
+        --预加载场景物体
+    end
+
+    -- 执行下组装
+    ConstructComponents()
+
+    return this
+end

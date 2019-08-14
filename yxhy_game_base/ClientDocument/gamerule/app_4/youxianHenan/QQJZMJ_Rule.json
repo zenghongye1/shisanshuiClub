@@ -1,0 +1,195 @@
+[ 
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+  [
+    {
+      "exData": [
+        4,
+        8,
+        16
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4局(房卡x1)",
+        "8局(房卡x2)",
+        "16局(房卡x4)"
+      ],
+      "type": 1,
+      "group": 22,
+      "itemHeight": -150,  
+      "title": "局数:",
+      "id": "rounds"
+    }
+  ],
+  [
+    {
+      "exData": [4,3,2],
+      "selectIndex": [1],
+      "data": [
+          "4人",
+          "3人",
+          "2人"
+      ],
+      "type": 1,
+      "itemHeight": -110,
+      "group": 21,
+      "title": "人数:",
+      "id": "pnum"
+    }
+  ],
+  [
+    {
+      "exData": [
+        1,
+        2,
+        3
+      ],
+      "id": "bSupportRuleType",
+      "selectIndex": [
+        3
+      ],
+      "data": [
+        "独听胡",
+        "515场",
+        "报听胡"
+      ],
+      "type": 1,
+      "itemHeight": -80,
+      "group": 25,
+      "title": "玩法:",
+      "connecttype": [ 1 ],
+      "connect": [
+        {
+          "1": {
+            "disable": [
+              {
+                "bSupportSixNineLink": 1,
+                "bQingYiSeAdd": 1
+              }
+            ],
+            "enable": [
+              {
+                "gfadd": 1,
+                "spadd": 1,
+				"lowrun":  1
+              }
+            ]
+          },
+          "2": {
+            "disable": [ 
+              {
+                "gfadd": 1,
+                "spadd": 1,
+                "bSupportSixNineLink": 1,
+                "bQingYiSeAdd": 1,
+				"lowrun":  1
+              }
+            ],
+            "enable": [
+              {
+              }
+            ]
+          },
+          "3": {
+            "disable": [
+              {
+                "gfadd": 1,
+                "spadd": 1
+              }
+            ],
+            "enable": [ 
+              {
+                "bSupportSixNineLink": 1,
+                "bQingYiSeAdd": 1,
+				"lowrun":  1
+              }
+            ]
+          }
+          
+        }
+      ],
+      "Isconnect": [
+        {
+          "1": {
+            "select": [
+              { 
+              }
+            ]
+          },
+          "2": {
+            "select": [
+              {
+                "lowrun":  0 
+              }
+            ]
+          },
+          "3": {
+            "select": [
+              {
+                "lowrun":  1 
+              }
+            ]
+          } 
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "multiterm": true,
+      "title": "下跑:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -90,
+      "id": [ 
+        "lowrun"
+      ],
+      "data": [ 
+        "下跑"
+      ],
+      "selectIndex": [
+        1
+      ], 
+      "itemWidth": 200,
+      "maxPerLine":3
+    }
+  ],
+  [
+    {
+      "multiterm": true,
+      "title": "结算:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -90,
+      "id": [ 
+        "gfadd",
+        "bSupportSixNineLink",
+        "spadd", 
+        "bQingYiSeAdd"
+      ],
+      "data": [ 
+        "杠上花加倍",
+        "6连9连",
+        "七对加倍", 
+        "清一色2倍"
+      ],
+      "selectIndex": [
+        1
+      ], 
+      "itemWidth": 200,
+      "maxPerLine":3
+    }
+  ]
+]

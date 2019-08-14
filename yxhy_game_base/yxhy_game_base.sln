@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "yxhy_game_base.Plugins", "yxhy_game_base.Plugins.csproj", "{7608EE2F-0C99-D7CF-CBC2-EB11F32FBD42}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "yxhy_game_base", "yxhy_game_base.csproj", "{99442853-B8AD-A1D1-14C3-1758387DD3C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "yxhy_game_base.Editor", "yxhy_game_base.Editor.csproj", "{74B478BE-1888-09EF-6B49-43849EA72DBE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7608EE2F-0C99-D7CF-CBC2-EB11F32FBD42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7608EE2F-0C99-D7CF-CBC2-EB11F32FBD42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7608EE2F-0C99-D7CF-CBC2-EB11F32FBD42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7608EE2F-0C99-D7CF-CBC2-EB11F32FBD42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99442853-B8AD-A1D1-14C3-1758387DD3C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99442853-B8AD-A1D1-14C3-1758387DD3C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99442853-B8AD-A1D1-14C3-1758387DD3C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99442853-B8AD-A1D1-14C3-1758387DD3C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74B478BE-1888-09EF-6B49-43849EA72DBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74B478BE-1888-09EF-6B49-43849EA72DBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74B478BE-1888-09EF-6B49-43849EA72DBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74B478BE-1888-09EF-6B49-43849EA72DBE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

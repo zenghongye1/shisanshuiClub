@@ -1,0 +1,140 @@
+﻿[
+	[{
+		"exData": [1, 2, 0, 3],
+		"selectIndex": [3],
+		"maxPerLine": 6,
+		"data": ["AA支付", "大赢家支付", "房主支付", "会长支付"],
+		"title": "房费:",
+		"id": "costtype",
+		"type": 1,
+		"group": 44
+	}],
+	[{
+		"exData": [
+			3,
+			2
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"3人",
+			"2人"
+		],
+		"type": 1,
+		"group": 21,
+		"title": "人数:",
+		"id": "pnum"
+	}],
+	[{
+		"exData": [
+			4,
+			8,
+			16
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"4局",
+			"8局",
+			"16局"
+		],
+		"type": 1,
+		"group": 22,
+		"maxPerLine": 3,
+		"title": "局数:",
+		"id": "rounds"
+	}],
+	[{
+		"exData": [
+			1,
+			0
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"全频道",
+			"半频道"
+		],
+		"type": 1,
+		"group": 23,
+		"title": "玩法:",
+		"id": "bSupportAllChannel"
+	}],
+	[{
+		"multiterm": true,
+		"title": "规则:",
+		"type": 0,
+		"group": 0,
+		"id": [
+			"bSupportKaWuXing",
+			"bSupportChaJiao",
+			"bSupportShangLou"
+		],
+		"data": [
+			"卡五星4番",
+			"查叫",
+			"上楼"
+		],
+		"selectIndex": [
+			1
+		]
+	}],
+	[{
+		"exData": [
+			0,
+			1
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"不漂",
+			"自由漂"
+		],
+		"type": 1,
+		"group": 24,
+		"title": "定漂:",
+		"id": "bSupportXiaPao"
+	}],
+	[{
+		"exData": [
+			0,
+			1,
+			2
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"不买马",
+			"自摸买马",
+			"亮倒自摸买马"
+		],
+		"type": 1,
+		"group": 25,
+		"title": "买马:",
+		"id": "nSupportZiMoMaiMa"
+	}],
+	[{
+		"exData": [
+			0,
+			1,
+			2
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"不封顶",
+			"50封顶",
+			"100封顶"
+		],
+		"type": 1,
+		"group": 26,
+		"title": "封顶:",
+		"id": "nSupportFDBaoHu"
+	}]
+]

@@ -1,0 +1,14 @@
+MahjongFuncSetUtil = {}
+
+
+-- 获取发牌位置
+function MahjongFuncSetUtil.GetSendIndexNormal(dun, viewSeat, config)
+	return dun * 2 + (viewSeat-1) * config.MahjongDunCount * 2--发牌位置
+end
+
+
+
+
+
+
+

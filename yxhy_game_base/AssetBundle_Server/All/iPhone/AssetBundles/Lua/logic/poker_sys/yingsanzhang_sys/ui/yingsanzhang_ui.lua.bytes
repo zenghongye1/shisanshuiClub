@@ -1,0 +1,1221 @@
+require "logic/invite_sys/invite_sys"
+require "logic/niuniu_sys/other/poker_table_coordinate"
+local base = require("logic.poker_sys.common.poker_ui_base")
+local yingsanzhang_ui = class("yingsanzhang_ui",base)
+local yingsanzhang_data_manage = require("logic.poker_sys.yingsanzhang_sys.cmd_manage.yingsanzhang_data_manage")
+local before_starting_operation_view = require("logic.niuniu_sys.ui.sub_ui.before_starting_operation_view")
+
+local instance = nil
+
+function yingsanzhang_ui:ctor()
+	base.ctor(self)
+	self.playerList = {}
+	self.widgetTbl = {}
+	self.compTbl = {}	
+	self.bankerBtnList = {}
+	self.special_card_type = {}
+	self.isCancel = false
+	self.isMaxTimeSend = false
+	self.isDrag = false
+	self.disTimer_Elapse = nil
+	self.leftTime = nil
+	self.read_card_player = {}
+	self.poker_effect_mgr = require("logic.poker_sys.sangong_sys.other.poker_effect_mgr"):create()
+	self.chatTextTab = {
+		"慢死了，虾米都煮成稀饭了",
+		"快点呀！我等得花都又开了",
+		"哎！牌这么差，这下要掉粉了",
+		"辛辛苦苦很多年，一把回到解放前",
+		"搏一搏，单车变摩托",
+		"押得多赢得多，娶个媳妇回家暖被窝~",
+		"有运气还要什么技术啊"
+	}
+	self.chatImgTab = {
+	"1","2","3","4","5",
+	"6","7","8","9","10",
+	"11","12","13","14","15",
+	"16","17","18","19","20",
+	"21","22","23","24","25",
+	"26",
+	}
+
+	self.gvoice_engine = nil
+
+	instance = self
+end
+
+function yingsanzhang_ui:OnInit()
+	base.OnInit(self)
+	self:InitWidgets()
+	self:InitVoteView()
+	
+	msg_dispatch_mgr.SetIsEnterState(true)	
+end
+
+function yingsanzhang_ui:OnOpen()
+	base.OnOpen(self)
+	self:CreatePlayerList()
+	self:InitBatteryAndSignal()
+	if(not gvoice_sys.GetIsInit()) then
+		Trace("Init Again--------------------------")
+	end
+	self:RegisterEvent()
+	self:ResetAll()
+	self:SetAllState(false)
+	self:ReSetReadCard()
+
+	UpdateBeat:Add(slot(self.Update, self))
+	self.gvoice_engine = gvoice_sys.GetEngine()
+	self:InitSettingBgm()
+	self:StartGetDateTimer()
+end
+
+function yingsanzhang_ui:PlayOpenAmination()
+end
+function yingsanzhang_ui:OnRefreshDepth()
+	if self.playerList then
+		for k,v in pairs(self.playerList) do
+			local playerComponent = v
+			--表情层设定
+			if playerComponent then
+				playerComponent.sortingOrder = self.sortingOrder
+				playerComponent.m_subPanelCount = self.m_subPanelCount
+			end
+		end
+	end
+end
+
+--[[--
+ * @Description: 获取各节点对象  
+ ]]
+function yingsanzhang_ui:InitWidgets()
+	
+	self.widgetTbl.panel = child(self.gameObject.transform, "Panel")
+	
+	--返回大厅按钮
+	self.widgetTbl.btn_exit = child(self.widgetTbl.panel, "Anchor_TopLeft/exit")
+	if self.widgetTbl.btn_exit~=nil then
+       addClickCallbackSelf(self.widgetTbl.btn_exit.gameObject,self.Onbtn_exitClick,self)
+    end
+    --更多按钮
+	self.moreBtnGo = self:GetGameObject("Panel/Anchor_TopRight/morePanel/more")
+	if self.moreBtnGo then
+		self.moreBtnGo:SetActive(true)
+		addClickCallbackSelf(self.moreBtnGo, self.Onbtn_moreClick, self)
+	end
+
+	 self.before_starting_operation_view = before_starting_operation_view:create(child(self.widgetTbl.panel, "Anchor_Center/readyBtns"),self)
+	
+    --语音按钮
+	self.widgetTbl.btn_voice = child(self.widgetTbl.panel, "Anchor_Right/voice")
+	if self.widgetTbl.btn_voice~=nil then
+       addClickCallbackSelf(self.widgetTbl.btn_voice.gameObject,self.Onbtn_voiceClick,self)
+       self.widgetTbl.btn_voice.gameObject:SetActive(true)
+		addPressedCallbackSelf(self.widgetTbl.btn_voice.transform, "", self.Onbtn_voicePressed, self)
+       	self:AddSoundDragEventListener(self.widgetTbl.btn_voice.gameObject)
+    end
+    self:InitSoundView()
+
+    --聊天按钮
+	self.widgetTbl.btn_chat = child(self.widgetTbl.panel, "Anchor_Right/chat")
+	if self.widgetTbl.btn_chat~=nil then
+       addClickCallbackSelf(self.widgetTbl.btn_chat.gameObject,self.Onbtn_chatClick,self)
+       self.widgetTbl.btn_chat.gameObject:SetActive(true)
+    end
+	
+	--wifi状态
+    self.widgetTbl.sprite_network = componentGet(child(self.widgetTbl.panel,"Anchor_TopLeft/phoneInfo/network"),"UISprite")
+    --电池状态
+    self.widgetTbl.sprite_power = componentGet(child(self.widgetTbl.panel,"Anchor_TopLeft/phoneInfo/power/slider"),"UISprite")
+	--时间状态
+	self.widgetTbl.lbl_time = componentGet(child(self.widgetTbl.panel,"Anchor_TopLeft/phoneInfo/timeLbl"),"UILabel")
+
+    --牌局信息
+    self.widgetTbl.gameNum = componentGet(child(self.widgetTbl.panel,"Anchor_TopRight/gameCount"),"UILabel")
+
+		--理牌提示
+	self.widgetTbl.readCardGroup = child(self.widgetTbl.panel,"Anchor_Center/read_card_group")
+	if self.widgetTbl.readCardGroup~=nil then
+		self.widgetTbl.readCardGroup.gameObject:SetActive(true)
+		for i=1,6 do
+			local tReadCard = child(self.widgetTbl.readCardGroup,"read_card"..i)
+			self.read_card_player[tostring(i)] = tReadCard
+			self.read_card_player["time"..tostring(i)]= {}
+			tReadCard.gameObject:SetActive(false)
+		end
+	end
+
+
+	----设置互动表情位置
+	local roomData = yingsanzhang_data_manage:GetInstance():GetRoomInfo()
+	local peopleNum = roomData.nPlayerNum
+	local posTbl = config_mgr.getConfig("cfg_niuniupos",peopleNum)
+	for i=1,peopleNum do
+		local playerTrans = child(self.widgetTbl.panel, "Anchor_Center/Players/Player"..i)
+		self:InitInteractionView(playerTrans.gameObject,posTbl["pos"][i])
+	end
+		
+	self.compTbl.countDownSlider = child(self.widgetTbl.panel,"Anchor_Center/countdownslider")
+	self.compTbl.countDownTimeLabel = componentGet(child(self.widgetTbl.panel,"Anchor_Center/countdownslider/timeLbl"),"UILabel")
+	self.compTbl.countDownSlider.gameObject:SetActive(false)
+
+	self:InitMoreBtnsView()
+	
+	self.OperationView_93 = require("logic.poker_sys.yingsanzhang_sys.ui.sub_ui.OperationView_93"):create(self.gameObject.transform)
+	self.OperationView_93.BtnBiPaiOnClickDelegate = function()
+		self:BtnBiPaiOnClick()
+	end
+	
+	self.clickArea = child(self.widgetTbl.panel,"Anchor_Center/ClickArea")
+	self.clickArea.gameObject:SetActive(false)
+	local clickBg = child(self.widgetTbl.panel,"Anchor_Center/ClickArea/clickBg")
+	addClickCallbackSelf(clickBg.gameObject,self.OnClickBg,self)
+end
+
+---比牌面板隐藏
+function yingsanzhang_ui:OnClickBg()
+	if self.clickArea.gameObject.activeSelf then
+		self.clickArea.gameObject:SetActive(false)
+		for i,v in ipairs(self.playerList) do
+			if v.viewSeat ~= 1 and not v.isOut then
+				v:showBiPaiKuang(false)
+			elseif v.viewSeat == 1 then	
+				self:StopCountDownTimer()
+				self.compTbl.countDownSlider.gameObject:SetActive(false)
+			end
+		end
+	end
+end
+
+
+function yingsanzhang_ui:BtnBiPaiOnClick()
+	self.clickArea.gameObject:SetActive(true)
+	for i,v in ipairs(self.playerList) do
+		if v.viewSeat == 1 then	
+			local timeEnd = v.timeEnd
+			if timeEnd and timeEnd > 0 then
+				self:SetCountDown(self.compTbl.countDownSlider.gameObject,timeEnd,slot(self.CompareCountDown,self),nil)
+			end
+		else
+			if not v.isOut then
+				v:showBiPaiKuang(true)
+			end
+		end
+	end
+end
+
+ --创建用户列表
+function yingsanzhang_ui:CreatePlayerList()
+	local roomData = yingsanzhang_data_manage:GetInstance():GetRoomInfo()
+	local peopleNum = roomData.nPlayerNum
+	Trace("PeopleNum:"..tostring(peopleNum))
+
+	--初始化聊天坐标信息
+	local chatConfigString = "{\"2\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":3,\"x\":110,\"y\":-150,\"z\":0}],\"3\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":4,\"x\":245,\"y\":0,\"z\":0}],\"4\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":2,\"x\":-220,\"y\":-95,\"z\":0},{\"index\":3,\"x\":160,\"y\":-145,\"z\":0}],\"5\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":2,\"x\":-225,\"y\":-85,\"z\":0},{\"index\":3,\"x\":120,\"y\":-153,\"z\":0},{\"index\":3,\"x\":110,\"y\":-150,\"z\":0}],\"6\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":3,\"x\":90,\"y\":-155,\"z\":0},{\"index\":3,\"x\":105,\"y\":-150,\"z\":0},{\"index\":4,\"x\":220,\"y\":-20,\"z\":0}]}"
+	local chatSoundConfigString = "{\"2\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":4,\"x\":152,\"y\":-90.1,\"z\":0}],\"3\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":35,\"y\":53,\"z\":0},{\"index\":3,\"x\":275,\"y\":53,\"z\":0}],\"4\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":31,\"y\":52,\"z\":0},{\"index\":2,\"x\":40,\"y\":-44,\"z\":0},{\"index\":4,\"x\":200,\"y\":-84,\"z\":0}],\"5\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":31,\"y\":53,\"z\":0},{\"index\":2,\"x\":39,\"y\":-30,\"z\":0},{\"index\":4,\"x\":-372,\"y\":-60,\"z\":0},{\"index\":4,\"x\":152,\"y\":-90.1,\"z\":0}],\"6\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":32,\"y\":55,\"z\":0},{\"index\":2,\"x\":32,\"y\":52,\"z\":0},{\"index\":4,\"x\":132,\"y\":-90.1,\"z\":0},{\"index\":4,\"x\":146,\"y\":-90.1,\"z\":0},{\"index\":3,\"x\":-401,\"y\":-296,\"z\":0}]}"
+	local chatJson = ParseJsonStr(chatConfigString)
+	local chatJsonItem = chatJson[tostring(peopleNum)]
+	
+	local chatSoundJson = ParseJsonStr(chatSoundConfigString)
+	local chatSoundJsonItem = chatSoundJson[tostring(peopleNum)]
+	
+	self.currentTable = poker_table_coordinate.poker_table[peopleNum]
+	gps_data.SetTotalPlayer(self.currentTable)
+	for i = 1,7 do
+		local playerTrans = child(self.widgetTbl.panel, "Anchor_Center/Players/Player"..i)
+		playerTrans.gameObject:SetActive(false)
+		for j,viewSeat in ipairs(self.currentTable) do
+			if i == viewSeat then
+				local playerComponent = require("logic.poker_sys.yingsanzhang_sys.ui.yingsanzhang_player_ui"):create(playerTrans,self)
+				playerComponent.posititon_index = viewSeat
+				table.insert(self.playerList,playerComponent)
+				break
+			end
+		end
+	end
+end
+
+function yingsanzhang_ui:Onbtn_exitClick()
+	report_sys.EventUpload(31,player_data.GetGameId())
+  if roomdata_center.isStart then
+	Trace("+++++++++投票，投票+++++++++++++")
+ 	MessageBox.ShowYesNoBox(GetDictString(6030), function() sangong_play_sys.VoteDrawReq(true) end)
+  	return
+  end
+	--如果是固定庄家模式，并且是庄家，则退出时要清桌，其他模式不清桌，自己退出
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	local configData = yingsanzhang_data_manage:GetInstance().roomInfo
+	local isBanker = yingsanzhang_data_manage:GetInstance():IsBanker()
+	local takeTurnsMode = configData.GameSetting.takeTurnsMode
+	if takeTurnsMode == niuniu_rule_define.SUB_BULL_BANKER.SUB_BULL_BANKER_FIXED then
+		if isBanker then
+			MessageBox.ShowYesNoBox("你是庄家，离开后会解散牌桌，是否离开？", function() sangong_play_sys.LeaveReq() end)
+			return
+		end
+	end	
+	MessageBox.ShowYesNoBox(GetDictString(5001), function() poker_request_interface.LeaveReq() end)
+end
+
+function yingsanzhang_ui:Onbtn_moreClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	--self:SetMorePanle()
+	self:SetMorePanel()
+end
+
+function yingsanzhang_ui:Onbtn_readyClick()	
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	Trace("Onbtn_readyClick")
+	poker_request_interface.ReadyGameReq()
+end
+
+--发送开牌消息
+--[[function yingsanzhang_ui:onbtn_openCardClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+
+	local tableComponent =require("logic.poker_sys.yingsanzhang_sys.cmd_manage.sangong_msg_manage"):GetInstance():GetSceneControllerInstance().tableComponent
+	tableComponent:OpenLastCard()	
+	sangong_play_sys.OpenCardReq()
+end--]]
+
+--打开搓牌界面
+--[[function yingsanzhang_ui:OnBtnCuoPaiOnClick(go)
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	local cards = require("logic.poker_sys.yingsanzhang_sys.cmd_manage.yingsanzhang_data_manage"):GetInstance().DealData._para.stCards
+	local sceneControl = require ("logic.poker_sys.yingsanzhang_sys.cmd_manage.sangong_msg_manage"):GetInstance():GetSceneControllerInstance()
+	UI_Manager:Instance():ShowUiForms("cuopai_ui",nil,nil,cards,sceneControl)
+end--]]
+
+--我要当庄
+--[[function yingsanzhang_ui:Onbtn_setBankerOnClick()
+ 	MessageBox.ShowYesNoBox("成为庄家后不可提前离场，是否确认成为庄家", 
+ 		function() 
+ 			sangong_play_sys.ChooseBankerReq()
+			self:IsShowBankerList(false) 
+		end)
+end--]]
+
+local isClick=true
+function yingsanzhang_ui:Onbtn_voiceClick()
+	report_sys.EventUpload(32,player_data.GetGameId())
+	Trace("Onbtn_voiceClick")
+end
+
+function yingsanzhang_ui:Onbtn_inviteFriend()	--邀请好友
+	Trace("Onbtn_inviteFriend")
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	report_sys.EventUpload(29,player_data.GetGameId())
+	local name, des = ShareStrUtil.GetShareStr()
+	invite_sys.inviteToRoom(roomdata_center.roomnumber,name,des,roomdata_center.roomCid)
+end
+
+function yingsanzhang_ui:Onbtn_dimissRoom()	--解散房间
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	report_sys.EventUpload(30,player_data.GetGameId())
+    MessageBox.ShowYesNoBox(GetDictString(6031), 
+    	function ()
+    	sangong_play_sys.DissolutionRoom()
+    end)
+end
+
+function yingsanzhang_ui:Onbtn_chatClick()
+	Trace("Onbtn_chatClick")
+	report_sys.EventUpload(33,player_data.GetGameId())
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	 UI_Manager:Instance():ShowUiForms("chat_ui",UiCloseType.UiCloseType_CloseNothing,nil,self.chatTextTab,self.chatImgTab)
+end
+
+function yingsanzhang_ui:OnBtn_SettingOnClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	report_sys.EventUpload(36,player_data.GetGameId())
+	Trace("++++++++SettingOnClick")
+	setting_ui.Show()
+	  local luaBaseComp = componentGet(setting_ui.transform,typeof(LogicBaseLua))
+	  if luaBaseComp ~= nil then
+		luaBaseComp.beKeepDepthValue = false
+	  end
+end
+
+--更多蒙板
+function yingsanzhang_ui:Onbtn_moreContainerClick()
+	self:moreContainerClickAnimation()
+end
+
+--战绩UI
+function yingsanzhang_ui:OnBtn_AchievementOnClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	report_sys.EventUpload(37,player_data.GetGameId())
+	http_request_interface.getRoomByRid(roomdata_center.rid,1,function (str)
+	   local s=string.gsub(str,"\\/","/")  
+	   local t=ParseJsonStr(s)
+	   Trace(str)
+	 recorddetails_ui.Show(t) 
+	   local luaBaseComp = componentGet(recorddetails_ui.transform,typeof(LogicBaseLua))
+		if luaBaseComp ~= nil then
+			luaBaseComp.beKeepDepthValue = false
+		end
+   end)
+end
+
+function yingsanzhang_ui:InitVoteView()
+	local go = newNormalObjSync(data_center.GetAppPath().."/ui/common/voteView", typeof(GameObject))
+    go = newobject(go)
+    go.transform:SetParent(child(self.widgetTbl.panel, "Anchor_TopRight/votePanel"), false)
+	self.voteView = require("logic/voteQuit/vote_view"):create(go.gameObject)
+	self.voteView:Hide()
+end
+
+function yingsanzhang_ui:Onbtn_rewardsBackClick()
+	self:HideRewards()
+	self.before_starting_operation_view:ShowReadyBtn()
+end
+
+--复制房号点击事件
+function yingsanzhang_ui:Onbtn_CopyRoomNum(obj1,obj1)
+	ui_sound_mgr.PlayButtonClick()
+	local str = self.rno
+	Trace("Onbtn_CopyRoomNum:"..tostring(str))
+	YX_APIManage.Instance:onCopy(str,function()UI_Manager:Instance():FastTip(GetDictString(6043))end)
+end
+
+--监听电量及网络信号强度
+function yingsanzhang_ui:InitBatteryAndSignal()
+	--监听电量及网络信号强度
+    -- YX_APIManage.Instance.batteryCallBack = 
+    YX_APIManage.Instance:setBatteryCallback(function(msg)
+      local msgTable = ParseJsonStr(msg)
+      local precent = tonumber(msgTable.percent)  or 0
+      self:SetPowerState(precent/100.0)
+    end)
+
+    YX_APIManage.Instance.signalCallBack = function(msg)
+    	local msgTable = ParseJsonStr(msg)
+    	local precent = tonumber(msgTable.percent)	
+    	Trace("signal:"..precent)		
+		self:SetNetworkState(precent)
+    end
+    local strBattery = YX_APIManage.Instance:GetPhoneBattery()
+    if strBattery and string.len(strBattery) >0 then
+      local msgTable = ParseJsonStr(strBattery)
+      local precent = tonumber(msgTable.percent)  or 0
+      self:SetPowerState(precent/100.0)
+    end
+
+end
+
+function yingsanzhang_ui:UnInitBatteryAndSignal()
+	YX_APIManage.Instance.batteryCallBack = nil
+	YX_APIManage.Instance.signalCallBack = nil
+end
+
+function yingsanzhang_ui:SetNetworkState(value)
+	local spName = ""
+	if value > 0.75 then
+		spName = "paiju_13"
+	elseif value >0.5 then
+		spName = "paiju_14"
+	elseif value >0.25 then
+		spName = "paiju_15"
+	else 
+		spName = "paiju_16"
+	end
+	self.widgetTbl.sprite_network.spriteName = spName
+end
+
+function yingsanzhang_ui:SetPowerState(value)
+	local sp_width = 29
+	self.widgetTbl.sprite_power.width = sp_width * value
+end
+
+--定时器每分钟刷新系统时间
+function yingsanzhang_ui:StartGetDateTimer()
+	if self.widgetTbl.lbl_time then
+		self.widgetTbl.lbl_time.text = tostring(os.date("%H:%M"))
+	end
+	if not self.getDateTimer then
+		self.getDateTimer = Timer.New(slot(self.OnGetDateTimer_Proc,self),30,-1)	
+		self.getDateTimer:Start()
+	end
+end
+
+function yingsanzhang_ui:OnGetDateTimer_Proc()
+		
+	if self.widgetTbl.lbl_time then
+		self.widgetTbl.lbl_time.text = tostring(os.date("%H:%M"))
+	end
+end
+
+--[[--
+ * @Description: 更多界面  
+ ]]
+function yingsanzhang_ui:SetMorePanle()
+	if self.widgetTbl.panel_more.gameObject.activeSelf == true then
+		self.widgetTbl.panel_more.gameObject:SetActive(false)
+	else
+		self.widgetTbl.panel_more.gameObject:SetActive(true)
+	end
+end
+
+function yingsanzhang_ui:moreContainerClickAnimation()
+	instance.moreBtnGo:SendMessage("OnClick")
+end
+
+function yingsanzhang_ui:RegisterEvent()
+	
+	Notifier.regist(cmdName.MSG_VOICE_INFO, slot(self.OnMsgVoiceInfoHandler,self))
+	Notifier.regist(cmdName.MSG_VOICE_PLAY_BEGIN, slot(self.OnMsgVoicePlayBegin,self))
+	Notifier.regist(cmdName.MSG_VOICE_PLAY_END, slot(self.OnMsgVoicePlayEnd,self))
+
+	Notifier.regist(cmdName.MSG_CHAT_TEXT, slot(self.OnMsgChatText,self))
+  	Notifier.regist(cmdName.MSG_CHAT_IMAGA, slot(self.OnMsgChatImaga,self))
+  	Notifier.regist(cmdName.MSG_CHAT_INTERACTIN, slot(self.OnMsgChatInteractin,self))
+  	Notifier.regist(GameEvent.OnPlayerApplyClubChange, self.OnPlayerApplyClubChange, self)
+end
+function yingsanzhang_ui:UnRegisterEvent()
+	Notifier.remove(cmdName.MSG_VOICE_INFO, slot(self.OnMsgVoiceInfoHandler,self))
+	Notifier.remove(cmdName.MSG_VOICE_PLAY_BEGIN,  slot(self.OnMsgVoicePlayBegin,self))
+	Notifier.remove(cmdName.MSG_VOICE_PLAY_END, slot(self.OnMsgVoicePlayEnd,self))
+
+	Notifier.remove(cmdName.MSG_CHAT_TEXT,  slot(self.OnMsgChatText,self))
+  	Notifier.remove(cmdName.MSG_CHAT_IMAGA,  slot(self.OnMsgChatImaga,self))
+  	Notifier.remove(cmdName.MSG_CHAT_INTERACTIN, slot(self.OnMsgChatInteractin,self))
+  	Notifier.remove(GameEvent.OnPlayerApplyClubChange, self.OnPlayerApplyClubChange, self)
+end
+
+function yingsanzhang_ui:OnPlayerApplyClubChange()
+	if self.applyTimer ~= nil then
+		self.applyTimer:Stop()
+		self.applyTimer = nil
+	end
+	local list = model_manager:GetModel("ClubModel"):GetHasApplyMemeberList()
+	if list == nil or #list == 0 then
+		self.newApplyGo:SetActive(false)
+	else
+		self.newApplyGo:SetActive(true)
+		self.applyTimer = Timer.New(function()
+			if not IsNil(self.newApplyGo) then
+		 		self.newApplyGo:SetActive(false)
+		 	end
+		 	self.applyTimer = nil
+		 end, 4, false)
+		self.applyTimer:Start()
+	end
+end
+
+--[[
+语音回调检测
+]]
+function yingsanzhang_ui:Update()
+    if(self.gvoice_engine ~= nil) then
+		self.gvoice_engine:Poll()
+	end
+end
+
+function yingsanzhang_ui:OnClose()
+	base.OnClose(self)
+	gps_data.ResetGpsData()
+	self.UnInitBatteryAndSignal()
+	self.playerList = {}
+	if self.getDateTimer then
+		self.getDateTimer:Stop()
+		self.getDateTimer = nil
+	end
+	self:LimitRecodeSoundHide()
+	self:UnRegisterEvent()
+	gvoice_sys.Uinit()
+	UI_Manager:Instance():CloseUiForms("chat_ui")
+	self:StopCountDownTimer()
+
+	if self.recordView then
+		self.recordView:Hide()
+	end
+	UpdateBeat:Remove(slot(self.Update, self))
+	self.gvoice_engine = nil
+	self.voteView:Hide()
+end
+
+function yingsanzhang_ui:AskAction(viewSeat,time)
+	local actionTime = yingsanzhang_data_manage:GetInstance().roomInfo["TimerSetting"]["actionTimeOut"]
+	for _,v in ipairs(self.playerList) do 
+		if v.viewSeat == viewSeat then
+			v:SetTurnFrame(true,time,actionTime)
+		else
+			v:SetTurnFrame(false)
+		end
+	end
+end
+
+function yingsanzhang_ui:ResetTurnCount()
+	for _,v in ipairs(self.playerList) do
+		v:SetTurnFrame(false)
+	end
+end
+
+--设置局数
+function  yingsanzhang_ui:SetGameNum(subround)
+	local data = yingsanzhang_data_manage:GetInstance():GetRoomInfo()
+	local nCurrJu = data.nCurrJu
+	if subround then
+		nCurrJu = subround
+		yingsanzhang_data_manage:GetInstance():GetRoomInfo().nCurrJu = subround
+	end
+	self.widgetTbl.gameNum.text = "局数:"..tostring(nCurrJu).."/"..tostring(data.nJuNum)
+end
+
+--设置互动表情面板位置
+function  yingsanzhang_ui:InitInteractionView(go,tbl)
+  self.InteractionView = require "logic/interaction/InteractionView":create(go,nil,tbl)
+end
+
+--更多面板
+function  yingsanzhang_ui:InitMoreBtnsView()
+
+  self.moreBtnsView = require("logic/mahjong_sys/ui_mahjong/views/MoreBtnsView"):create(nil, 
+  	slot(self.moreContainerClickAnimation,self), subComponentGet(self.widgetTbl.panel, "Anchor_TopRight/morePanel/more/Sprite", typeof(UIRect)))
+  local go = newNormalObjSync(data_center.GetAppPath().."/ui/common/gameBtnsView", typeof(GameObject))
+  go = newobject(go)
+  go.transform:SetParent(child(self.widgetTbl.panel, "Anchor_TopRight/morePanel"), false)
+  self.moreBtnsView:SetGo(go)
+  self.moreBtnsView:SetActive(false)
+
+  self.newApplyGo = self:GetGameObject("Panel/Anchor_TopRight/morePanel/newApply")
+  self.newApplyGo:SetActive(false)
+  addClickCallbackSelf(self.newApplyGo, self.OnNewApplyClick, self)
+  self.applyTimer = nil
+end
+
+function yingsanzhang_ui:OnNewApplyClick( )
+	local list = model_manager:GetModel("ClubModel"):GetHasApplyMemeberList()
+	if #list == 0 then
+		return
+	end
+	if #list == 1 then
+		UI_Manager:Instance():ShowUiForms("ClubApplyUI", nil, nil, list[1].cid)
+	else
+		UI_Manager:Instance():ShowUiForms("ClubGameApplyUI")
+	end
+end
+
+--显示更多面板
+function  yingsanzhang_ui:SetMorePanel()
+  self.moreBtnsView:SetActive(not self.moreBtnsView.isActive)
+end
+
+
+--设置用户信息
+function  yingsanzhang_ui:SetPlayerInfo(viewSeat, usersdata)
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat]:Show(usersdata,viewSeat)
+	end
+end
+
+--单个人比牌（剩两人系统比牌时，数据封装后走这个）
+function yingsanzhang_ui:playCompareEffect(tbl,callback)
+	Trace("两人比牌-----------"..GetTblData(tbl))
+	
+	local amin1Pos = child(self.transform,"Aim1").position
+	local amin2Pos = child(self.transform,"Aim2").position
+	
+	local function MoveToPos(userViewSeat,aimPos,callback)
+		local headTran = self.playerList[userViewSeat].head
+		local curPos = headTran.localPosition
+		local user = self.playerList[userViewSeat]
+		user:SetTurnFrame(false)
+		headTran.transform:DOMove(aimPos,0.7,false):OnComplete(function()
+			headTran.gameObject:SetActive(false)
+			headTran.localPosition = curPos		
+			if callback then
+				callback()
+			end
+		end)
+	end
+	
+	---设置胜利失败特效
+	local function SetWinStateEffect(winParentTran,loseParentTran,isAskWin)
+		local effectShengLi = EffectMgr.PlayEffect(data_center.GetResRootPath().."/effects/".."Effect_shengli",1)
+		local effectShiBai = EffectMgr.PlayEffect(data_center.GetResRootPath().."/effects/".."Effect_shibai",1)	
+		Utils.SetEffectSortLayer(effectShengLi.gameObject,self.sortingOrder + self.m_subPanelCount + 3)
+		Utils.SetEffectSortLayer(effectShiBai.gameObject,self.sortingOrder + self.m_subPanelCount + 3)
+		if isAskWin then
+			effectShengLi.transform:SetParent(winParentTran.transform,false)
+			effectShiBai.transform:SetParent(loseParentTran.transform,false)
+		else
+			effectShengLi.transform:SetParent(loseParentTran.transform,false)
+			effectShiBai.transform:SetParent(winParentTran.transform,false)
+		end
+	end
+
+	local whoAskViewSeat = player_seat_mgr.GetViewSeatByLogicSeatNum(tbl["_para"]["nAskChair"])
+	local winViewSeat =  player_seat_mgr.GetViewSeatByLogicSeatNum(tbl["_para"]["nWinChair"])
+	local loseViewSeat =  player_seat_mgr.GetViewSeatByLogicSeatNum(tbl["_para"]["nLooseChair"])
+	local isGameDrawn = tbl["_para"]["isGameDrawn"] or false			--是否和局，系统比牌会出现和局，和局不显示胜利失败特效
+
+	local leftUserViewSeat
+	local rightUserViewSeat	
+		if winViewSeat == whoAskViewSeat then
+			leftUserViewSeat = winViewSeat
+			rightUserViewSeat = loseViewSeat
+		elseif loseViewSeat == whoAskViewSeat then
+			leftUserViewSeat = loseViewSeat
+			rightUserViewSeat = winViewSeat
+		else
+			logError("比牌error！")
+			return
+		end
+		
+	coroutine.start(function()
+		MoveToPos(leftUserViewSeat,amin1Pos)
+		MoveToPos(rightUserViewSeat,amin2Pos)
+		coroutine.wait(0.5)
+		local effectBiPai = EffectMgr.PlayEffect(data_center.GetResRootPath().."/effects/".."Effect_bipai",1,1.5)		
+		Utils.SetEffectSortLayer(effectBiPai.gameObject,self.sortingOrder + self.m_subPanelCount + 1)
+		local leftPlayerTran = child(effectBiPai.transform,"112/player")
+		local rightPlayerTran = child(effectBiPai.transform,"113/player")
+		local leftTex = subComponentGet(leftPlayerTran,"headTex","UITexture")	
+		local rightTex = subComponentGet(rightPlayerTran,"headTex","UITexture")
+		leftTex.gameObject:SetActive(false)
+		rightTex.gameObject:SetActive(false)
+		
+		local leftFrame = child(effectBiPai.transform,"112/kuang57")
+		local rightFrame = child(effectBiPai.transform,"113/kuang58")		
+		if not isGameDrawn then
+			SetWinStateEffect(leftFrame,rightFrame,leftUserViewSeat == winViewSeat)
+		end
+		effectBiPai.transform:SetParent(self.gameObject.transform,false)
+		coroutine.wait(0.2)
+		
+		leftTex.gameObject:SetActive(true)
+		HeadImageHelper.SetImage(leftTex,2,self.playerList[leftUserViewSeat]["userdata"]["headurl"])
+		rightTex.gameObject:SetActive(true)
+		HeadImageHelper.SetImage(rightTex,2,self.playerList[rightUserViewSeat]["userdata"]["headurl"])
+		componentGet(leftPlayerTran.gameObject,"UIPanel").sortingOrder = self.sortingOrder + self.m_subPanelCount + 2
+		componentGet(rightPlayerTran.gameObject,"UIPanel").sortingOrder = self.sortingOrder + self.m_subPanelCount + 2
+		
+		coroutine.wait(1.2)
+		self.playerList[leftUserViewSeat].head.gameObject:SetActive(true)
+		self.playerList[rightUserViewSeat].head.gameObject:SetActive(true)
+		if callback then
+			callback()
+		end
+	end)
+end
+
+---系统比牌
+function yingsanzhang_ui:playAllCompareEffect(tbl)
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/dub/quanzhuobipai")
+	local effectAllBiPai = EffectMgr.PlayEffect(data_center.GetResRootPath().."/effects/".."Effect_quanzhuobipai",1)
+	Utils.SetEffectSortLayer(effectAllBiPai.gameObject,self.sortingOrder + self.m_subPanelCount + 1)
+	effectAllBiPai.transform:SetParent(self.gameObject.transform,false)
+end
+
+--显示抢庄，不抢，搓牌中的状态
+function  yingsanzhang_ui:SetState(viewSeat,isShow,str,tableObj)
+	local position = nil
+	if isShow == true then
+		local playerList = tableObj.playerList
+		for i,player in ipairs(playerList) do
+			if viewSeat == player.viewSeat then
+				if str == niuniu_rule_define.SUB_BULL_STATE.SUB_BULL_STATE_YIZHUNBEI and viewSeat == 1 then
+					position = self.before_starting_operation_view.btn_ready.localPosition
+					position = Vector3(position.x,position.y - 35,position.z)
+				else
+					position = Utils.WorldPosToScreenPos(player.gameObject.transform.position)
+					if viewSeat == 1 then
+					--	position = Vector3(position.x,position.y - 35,position.z)
+					--如果是自己，不显示任何状态
+						isShow = false
+					else
+						position = Vector3(position.x,position.y-15 ,position.z)
+					end
+				end
+				break
+			end
+		end
+	end
+	self:SetReadCardByState(viewSeat,isShow,str,position)
+end
+
+function yingsanzhang_ui:SetReadCardByState(viewSeat,state,str,position)
+	if state == true then
+		if position ~= nil then
+			self.read_card_player[tostring(viewSeat)].transform.localPosition = position
+		end
+		local obj = self.read_card_player[tostring(viewSeat)].gameObject
+		obj:SetActive(true)
+		local sprite = componentGet(child(obj.transform,"Sprite"),"UISprite")
+		if sprite ~= nil then
+			sprite.spriteName = str
+			sprite:MakePixelPerfect()
+		end
+		if str == niuniu_rule_define.SUB_BULL_STATE.SUB_BULL_STATE_QIANGZHUANGZHONG or str == niuniu_rule_define.SUB_BULL_STATE.SUB_BULL_STATE_XIAZHUZHONG or str == niuniu_rule_define.SUB_BULL_STATE.SUB_BULL_STATE_CUOPAIZHONG then
+			self:ReadCardStartTimer(state,viewSeat)
+		else
+			self:ReadCardStartTimer(false,viewSeat)
+		end
+	else
+		self.read_card_player[tostring(viewSeat)].gameObject:SetActive(false)
+	end
+end
+
+function yingsanzhang_ui:ReSetReadCard(state)
+	for i =1,6 do
+		self.read_card_player[tostring(i)].gameObject:SetActive(state)
+	end
+end
+
+function yingsanzhang_ui:ReadCardStartTimer(state,viewSeat)	
+	if self.read_card_player["time"..tostring(viewSeat)] ~= nil and self.read_card_player["time"..tostring(viewSeat)].timer_Elapse ~= nil then
+		self.read_card_player["time"..tostring(viewSeat)].timer_Elapse:Stop()
+		self.read_card_player["time"..tostring(viewSeat)].timer_Elapse = nil
+	end
+	
+	local index = 0
+	local dotList = {}
+	for i = 1 ,3 do
+		local dotTran = child(self.read_card_player[tostring(viewSeat)].transform,"dot"..tostring(i))
+		table.insert(dotList,dotTran)
+	end
+	if state == true then
+		self.read_card_player["time"..tostring(viewSeat)].timer_Elapse = Timer.New(
+		function()
+			if #dotList > 0 then
+				for i,v in ipairs(dotList) do
+					if index == 0 then
+						v.gameObject:SetActive(false)
+					else
+						if i <= index then
+							v.gameObject:SetActive(true)
+						else
+							v.gameObject:SetActive(false)
+						end
+					end
+				end
+			end
+		index = index + 1
+		index = index%4
+			
+		end,0.5,-1)
+		self.read_card_player["time"..tostring(viewSeat)].timer_Elapse:Start()
+		else
+			if #dotList > 0 then
+				for i,v in ipairs(dotList) do
+					v.gameObject:SetActive(false)
+				end
+			end
+	end
+end
+
+function yingsanzhang_ui:ResetPlayerByViewSeate(viewSeat)
+	self.playerList[viewSeat]:HideTotalPoints()
+	self.playerList[viewSeat]:IsShowBetChip(false)
+	self.playerList[viewSeat]:SetCardStateShow(false)
+end
+
+--设置赢家筹码飞动效果	endViewSeat:赢家位置，playerTotalCount：赢家总人数，playerIndex，对应的索引
+function  yingsanzhang_ui:ChipFlyAnimation(endViewSeat,playerTotalCount,playerIndex)
+	local endTrans = self.playerList[endViewSeat].transform
+	self.OperationView_93:ChipFlyToWinViewSeat(endTrans,playerTotalCount,playerIndex)
+end
+
+--飞筹码效果
+function yingsanzhang_ui:AddChip(viewSeat,coin)
+	local playerTrans = self.playerList[viewSeat].transform
+	self.OperationView_93:PlayChipAnimation(playerTrans,coin)
+end
+
+function  yingsanzhang_ui:SetAllState(isShow,str,tableObj)
+	for i,v in ipairs(self.playerList) do
+		self:SetState(i,isShow,str,tableObj)
+	end
+end
+
+--[[
+隐藏语音消息显示
+]]
+function  yingsanzhang_ui:HideVoiceLogo()
+	
+end
+
+local _xiaopaoTime = 0
+local xiaopaoTimer_Elapse = nil
+local xiaopaoCallBack = nil
+
+--通用倒计时接口
+function  yingsanzhang_ui:SetCountDown(go,time,disposefun,callback)
+	if time == nil or time <= 0 then
+		go:SetActive(false)
+	elseif xiaopaoTimer_Elapse == nil then
+		go:SetActive(true)
+		_xiaopaoTime =math.floor(time)
+		if disposefun ~= nil then 
+			disposefun(_xiaopaoTime)
+		end
+		xiaopaoTimer_Elapse = Timer.New(function()
+		_xiaopaoTime = _xiaopaoTime -1;
+		if disposefun ~= nil then 
+			disposefun(_xiaopaoTime)
+		end
+		if _xiaopaoTime <= 0 then
+			self:StopCountDownTimer()
+			go:SetActive(false)
+			if xiaopaoCallBack ~= nil then
+				xiaopaoCallBack()
+			end
+		end
+		end,1,time)
+	xiaopaoTimer_Elapse:Start()
+		xiaopaoCallBack = callback
+	end
+end
+
+function  yingsanzhang_ui:StopCountDownTimer()
+	if xiaopaoTimer_Elapse ~= nil then
+		xiaopaoTimer_Elapse:Stop()
+		xiaopaoTimer_Elapse = nil
+	end
+end
+
+function  yingsanzhang_ui:IsShowCountDownSlider(isShow)
+	self.compTbl.countDownSlider.gameObject:SetActive(isShow)
+end
+
+--倒计时proc实现
+function yingsanzhang_ui:CompareCountDown(time,totalTime)
+	time = time or 100
+	local totalTime = totalTime or time
+	if self.compTbl.countDownTimeLabel ~= nil then 
+		self.compTbl.countDownTimeLabel.text = tostring(time)
+	end
+end
+
+--设置右下角游戏信息规则
+function  yingsanzhang_ui:SetRoomInfoState(state)
+	self.widgetTbl.ruleInfoPanel.gameObject:SetActive(state)
+end
+
+function  yingsanzhang_ui:SetRoomInfo(tbl)
+	if tbl == nil then
+		self:SetRoomInfoState(false)
+	else
+		self:SetRoomInfoState(true)
+		for i=1,3 do
+			local tra = child(self.widgetTbl.ruleInfoPanel,tostring(i))
+			if i <= (#tbl) then
+				tra.gameObject:SetActive(true)
+				local infoTra = child(tra,"info")
+				infoTra.gameObject:SetActive(false)
+				componentGet(infoTra,"UILabel").text = tbl[i]
+				infoTra.gameObject:SetActive(true)
+			else
+				tra.gameObject:SetActive(false)
+			end
+		end
+		componentGet(self.widgetTbl.ruleInfoPanel,"UITable").repositionNow = true
+	end	
+end
+
+function  yingsanzhang_ui:HidePlayer(viewSeat)
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat]:Hide()
+	end
+end
+
+function yingsanzhang_ui:ShowPlayerTotalPoints(viewSeat,totalPoint)
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat]:SetTotalPoints(totalPoint)
+	end
+end
+
+function  yingsanzhang_ui:ShowInviteBtn(isShow)
+	if self.widgetTbl.btn_invite ~= nil then
+		self.widgetTbl.btn_invite.gameObject:SetActive(isShow)
+	end
+end
+
+function  yingsanzhang_ui:SetPlayerMachine(viewSeat, isMachine )
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat]:SetMachine(isMachine)
+	end
+end
+
+function  yingsanzhang_ui:SetPlayerLineState(viewSeat, isOnLine )
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat]:SetOffline(not isOnLine)
+	end
+end
+
+function  yingsanzhang_ui:SetHideTotaPoints()
+	for i,v in ipairs(self.playerList) do
+		v.HideTotalPoints()
+	end
+end
+
+function yingsanzhang_ui:SetPlayerScore(viewSeat,value)
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat]:SetScore(value)
+	end
+end
+
+function yingsanzhang_ui:AddPlayerScore(viewSeat,value)
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat]:AddScore(value)
+	end
+end
+
+function yingsanzhang_ui:SetPlayerReady( viewSeat,isReady )
+	Trace("viewSeat-------------------------------------"..tostring(viewSeat))
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat]:SetReady(isReady)
+	end
+end
+
+function yingsanzhang_ui:SetAllPlayerReady(isReady)
+	for i,v in ipairs(self.playerList) do
+		v:SetReady(isReady)
+	end
+end
+
+--设置胜利头像的光圈
+function yingsanzhang_ui:SetPlayerLightFrame(viewSeat)
+	local Player = self.playerList[viewSeat]
+	if Player ~= nil then
+		if self.playerList[viewSeat].transform == nil then 
+			Trace("+++++++++AnimationError!!!!!!!")
+		end
+		Trace("当前桌面对应的座位号"..tostring(Player.viewSeat).."transformName"..tostring(Player.transform.name))
+		local effect = EffectMgr.PlayEffect(data_center.GetResPokerCommPath().."/effects/Effect_win",1,1)
+		effect.transform:SetParent(child(Player.transform,"winFrame"),false)
+		Utils.SetEffectSortLayer(effect.gameObject,self.sortingOrder + self.m_subPanelCount + 1)
+		if Player.viewSeat == 1 then
+			effect.transform.localScale = Vector3(1.35,1.35,1.35)
+		else
+			effect.transform.localScale = Vector3(1,1,1)
+		end
+	end
+end
+
+--播放游戏开始动画效果
+function yingsanzhang_ui:PlayGameStartAnimation()
+	local effect = EffectMgr.PlayEffect(data_center.GetResPokerCommPath().."/effects/Effect_youxikaishi",1,1)
+	effect.transform:SetParent(self.gameObject.transform)
+end
+
+
+function yingsanzhang_ui:SetBanker(viewSeat)
+	if self.playerList[viewSeat] then
+		self.playerList[viewSeat]:SetBanker(true)
+	end
+end
+
+function yingsanzhang_ui:HideAllBanker()
+	for i,v in ipairs(self.playerList) do
+		if v.isBanker then
+			v:SetBanker(false)
+		end
+	end
+end
+
+function yingsanzhang_ui:HideAllBeiShu()
+	for i=1,#self.playerList do
+		self.playerList[i]:IsShowBetChip(false)
+	end
+end
+
+function yingsanzhang_ui:ResetAll()
+	for i=1,#self.playerList do				
+		self.playerList[i]:Reset()
+	end
+	self.before_starting_operation_view:HideReadyBtn()
+	self.before_starting_operation_view:IsShowOpenCardBtn(false)
+	self.before_starting_operation_view:IsShowCuoPaiBtn(false)
+	self:StopCountDownTimer()
+	self:HideDisMissCountDown()
+	self:IsShowCountDownSlider(false)
+	self:HideAllBanker()
+	
+	for i=1,#self.playerList do
+		self.playerList[i]:SetCardStateShow(false)
+	end
+end
+
+function yingsanzhang_ui:InitSettingBgm()
+	ui_sound_mgr.SceneLoadFinish() 
+    ui_sound_mgr.PlayBgSound("hall_bgm")	
+end
+
+--显示玩家下注筹码(ysz
+function yingsanzhang_ui:SetBetChip(viewSeat,beishu)
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat]:IsShowBetChip(true,beishu)
+	end 
+end
+
+--语音聊天模块
+function yingsanzhang_ui:InitChatSound()
+	self.widgetTbl.SoundPanel = child(self.widgetTbl.panel, "Anchor_Center/sound")
+	if self.widgetTbl.SoundPanel~=nil then
+	self.widgetTbl.SoundPanel.gameObject:SetActive(false)
+	end
+	self.widgetTbl.SoundSendPanel = child(self.widgetTbl.SoundPanel,"send")
+	if self.widgetTbl.SoundSendPanel~=nil then
+	self.widgetTbl.SoundSendPanel.gameObject:SetActive(true)
+	end
+	self.widgetTbl.SoundSendQuan = child(self.widgetTbl.SoundSendPanel,"quan")
+	if self.widgetTbl.SoundSendQuan~=nil then
+	self.widgetTbl.SoundSendQuan.gameObject:SetActive(false)   
+	self.widgetTbl.spriteQuan = componentGet(self.widgetTbl.SoundSendQuan.transform,"UISprite")
+	end
+
+	self.widgetTbl.SoundCancelSendPanel = child(self.widgetTbl.SoundPanel,"cancelSend")
+	if self.widgetTbl.SoundCancelSendPanel~=nil then
+	self.widgetTbl.SoundCancelSendPanel.gameObject:SetActive(false)
+	end
+end
+
+function yingsanzhang_ui:SetSoundPanel(state)
+	self.widgetTbl.SoundPanel.gameObject:SetActive(state)
+end
+
+function yingsanzhang_ui:SetSoundSendPanel(state)
+	self.widgetTbl.SoundSendPanel.gameObject:SetActive(state)
+end
+
+function yingsanzhang_ui:SetSoundCancelSendPanel(state)
+	self.widgetTbl.SoundCancelSendPanel.gameObject:SetActive(state)
+end
+
+function yingsanzhang_ui:SetSoundSendQuanAnimation(time,callback)
+  coroutine.start(function()
+		if self.widgetTbl.spriteQuan~=nil then
+			self.widgetTbl.spriteQuan.fillAmount = 1
+		end      
+		if callback ~= nil then
+			callback()
+			callback = nil
+		end
+    end)
+end
+
+local fillInternalTime = 0.3
+local timerSoundSend_Elapse = nil --消息时间间隔  
+local fillSize = 0
+
+function yingsanzhang_ui:LimitRecodeSoundShow()
+    self:LimitRecodeSoundHide()
+    
+    self:SetSoundPanel(true)
+    self:SetSoundSendPanel(true)
+    self:SetSoundCancelSendPanel(false)
+    self.widgetTbl.SoundSendQuan.gameObject:SetActive(true)
+    self.widgetTbl.spriteQuan.fillAmount=0
+    fillSize = 0
+
+    timerSoundSend_Elapse = Timer.New(slot(self.OnTimerSoundSend_Proc,self) , fillInternalTime, -1)
+    timerSoundSend_Elapse:Start()
+end
+
+function yingsanzhang_ui:LimitRecodeSoundHide()
+	if timerSoundSend_Elapse ~= nil then
+		timerSoundSend_Elapse:Stop()  
+		timerSoundSend_Elapse = nil     
+	end
+end
+
+  function yingsanzhang_ui:OnTimerSoundSend_Proc()
+    fillSize = fillSize + fillInternalTime/gvoice_sys.GetMaxRecordTime()
+    if fillSize < 1 then
+      if self.widgetTbl.spriteQuan~=nil then
+        self.widgetTbl.spriteQuan.fillAmount=fillSize
+      end
+    else
+      self.isMaxTimeSend = true
+      self:RecodeSoundEnd()
+    end
+  end
+
+  --录音结束
+function yingsanzhang_ui:RecodeSoundEnd()
+	self:LimitRecodeSoundHide()
+	self:SetSoundPanel(false)
+	Trace("录音结束，执行后续逻辑-------------------------------")
+
+	gvoice_sys.StopRecording()        -- 结束录音
+	gvoice_sys.AddRecordedFileLst()   -- 上传文件
+end
+
+--开始录音
+function yingsanzhang_ui:RecodeSoundStart()
+	Trace("录音开始,执行开始录音逻辑-------------------------------")
+	local ret = gvoice_sys.StartRecording(global_define.recordFilePath)   --开始录音
+	self:SetSoundPanel(true)
+	Trace("ret ----------------------"..tostring(ret))
+	if ret then
+		self:LimitRecodeSoundShow()    	
+	end
+	return ret
+end
+
+  --取消录音
+function yingsanzhang_ui:RecodeSoundCancel()
+    self:LimitRecodeSoundHide()
+    self:SetSoundPanel(false)
+    Trace("录音取消,执行取消录音逻辑-------------------------------")
+    gvoice_sys.StopRecording()   -- 结束录音
+end
+
+-- 录音界面
+function yingsanzhang_ui:InitSoundView()
+  local class = require "logic/mahjong_sys/ui_mahjong/views/RecordSoundView"
+  self.recordView = class:create(child(self.widgetTbl.panel, "Anchor_Center/sound").gameObject)
+  self.recordView:SetActive(false)
+end
+
+function yingsanzhang_ui:AddSoundDragEventListener(obj)
+  if not IsNil(obj) then
+    addDragCallbackSelf(obj, function (go, delta)
+      self.recordView:Drag(go, delta)
+    end)
+  end
+end
+
+function yingsanzhang_ui:Onbtn_voicePressed(go, isPress)
+	self.recordView:Press(go, isPress)
+end
+
+function yingsanzhang_ui:OnMsgVoiceInfoHandler(fileID)
+	Trace("fileID---------------------"..tostring(fileID))
+	yingsanzhang_play_sys.ChatReq(3, tostring(fileID), nil)
+end
+
+function yingsanzhang_ui:OnMsgVoicePlayEnd(viewSeat)
+ 	self.playerList[viewSeat]:SetSoundTextureState(false)
+end
+
+function yingsanzhang_ui:OnMsgVoicePlayBegin(viewSeat)
+	self.playerList[viewSeat]:SetSoundTextureState(true)
+end
+
+function yingsanzhang_ui:OnMsgChatText(para)
+	viewSeat = para["viewSeat"]
+	contentType = para["contentType"]
+	content = para["content"]
+	givewho = para["givewho"]
+	self.playerList[viewSeat]:SetChatText(content)
+end
+
+function yingsanzhang_ui:OnMsgChatImaga(para)
+	viewSeat = para["viewSeat"]
+	contentType = para["contentType"]
+	content = para["content"]
+	givewho = para["givewho"]
+	self.playerList[viewSeat]:SetChatImg(content)
+end
+
+function yingsanzhang_ui:OnMsgChatInteractin(para)
+	viewSeat = para["viewSeat"]
+	contentType = para["contentType"]
+	content = para["content"]
+	givewho = para["givewho"]
+	self.playerList[givewho]:ShowInteractinAnimation(viewSeat,content)
+end
+
+return yingsanzhang_ui

@@ -1,0 +1,154 @@
+﻿[
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+  [
+    {
+      "exData": [
+        1,
+        0
+      ],
+      "title": "玩法:",
+      "id": "bHalfSelfDraw",
+      "data": [
+        "半自摸",
+        "全自摸"
+      ],
+      "selectIndex": [
+        1
+      ],
+      "connect": [
+        {
+          "bHalfSelfDraw": [
+            {
+              "nYouJinFanNum": [
+                [   ],
+				[ 5 ]
+              ]
+            }
+          ]
+        }
+      ],
+	  "Isconnect": [
+        {
+          "bHalfSelfDraw": [
+            {
+              "nYouJinFanNum": [
+                [ 5 ],
+				[ 4 ]
+              ]
+            }
+          ]
+        }
+      ],
+      "itemHeight":-80,
+	  "itemWidth": 232,
+      "connecttype": [3 ],
+       "type": 1, 
+       "group":37
+    }
+  ],
+  [
+     {
+      "exData": [
+        4,
+        3,
+        2
+      ],
+       "itemHeight": -80,
+	  "itemWidth": 232,
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4人",
+        "3人",
+        "2人"
+      ],
+      "title": "人数:",
+      "id": "pnum", 
+       "type": 1, 
+       "group":33
+    }
+  ],
+  [
+    {
+      "exData": [
+        4,
+        8,
+        16
+      ],  
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4局",
+        "8局",
+        "16局"
+      ],
+      "itemHeight": -80,
+      "itemWidth": 232,
+      "maxPerLine": 3,
+       "type": 1, 
+       "group":34,
+      "title": "局数:",
+      "id": "rounds"
+    }
+  ],
+  [
+    {
+      "exData": [
+        4,
+        5
+      ],
+      "title": "游金:",
+      "id": "nYouJinFanNum",
+      "data": [
+        "游金4倍",
+        "游金5倍"
+      ],
+      "selectIndex": [
+        2
+      ],
+
+      "itemHeight":-160,
+	  "itemWidth": 232,
+       "type": 1, 
+       "group":36
+    }
+  ],
+  [
+   
+    {
+      "multiterm": true,
+      "selectIndex": [
+        1
+      ], 
+      "itemHeight": -80,
+	  "itemWidth": 232,
+	  "maxPerLine": 3,
+      "data": [
+        "庄家翻倍",
+		"清一色",
+		"下注"
+      ],
+      "title": "特殊:", 
+       "type":0, 
+       "group":0,
+      "id": [
+        "bBankerDouble",
+		"nOneColor",
+		"bSupportXiaPao"
+      ]
+	}
+  ] 
+]

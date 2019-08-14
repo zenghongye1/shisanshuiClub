@@ -1,0 +1,1959 @@
+require "logic/mahjong_sys/_model/room_usersdata_center"
+require "logic/mahjong_sys/_model/room_usersdata"
+require "logic/mahjong_sys/_model/operatorcachedata"
+require "logic/mahjong_sys/_model/operatordata"
+require "logic/hall_sys/openroom/room_data"
+require "logic/invite_sys/invite_sys"
+require "logic/animations_sys/animations_sys"
+require "logic/shisangshui_sys/shisangshui_play_sys"
+require "logic/shisangshui_sys/ui_shisangshui/shisanshui_player_ui"
+require "logic/hall_sys/setting_ui/setting_ui"
+require "logic/hall_sys/record_ui/recorddetails_ui"
+require "logic/gvoice_sys/gvoice_sys"
+require "logic/niuniu_sys/other/poker_table_coordinate"
+
+local base = require("logic.framework.ui.uibase.ui_window")
+local shisanshui_ui = class("shisanshui_ui",base)
+
+local instance = nil
+
+function shisanshui_ui:ctor()
+	base.ctor(self)
+	self.gvoice_engine = nil 
+	self.disTimer_Elapse = nil  --重连解散定时器
+	self.getDateTimer = nil	--获取系统时间定时器
+	self.leftTime = nil
+	self.widgetTbl = {}
+	self.compTbl = {}
+	self.scoreTran ={}	--比分
+	self.special_card_type = {}
+	self.read_card_player = {}
+	self.gameDataInfo = {}
+	self.chatTextTab = {"快点快点，这把我要全垒打","慢死了，虾米都煮成稀饭了","快点呀！我等得花都又开了","辛辛苦苦很多年，一把回到解放前","哎呀~为什么中枪的总是我？","搏一搏，单车变摩托","押得多赢得多，娶个媳妇回家暖被窝~","有运气还要什么技术啊","哈哈，你们赶快穿上防弹衣吧！"}
+	self.chatImgTab = {
+		"1","2","3","4","5",
+		"6","7","8","9","10",
+		"11","12","13","14","15",
+		"16","17","18","19","20",
+		"21","22","23","24","25",
+		"26",
+	}
+	self.operTipEX = nil
+	self.timerAlarm = nil
+	self.animationTabel = {}
+	self._xiaopaoTime = 0
+	self.xiaopaoTimer_Elapse = nil
+	self.xiaopaoCallBack = nil
+	self.rno = 0
+	self.isCancel = false
+	self.isMaxTimeSend = false
+	self.isDrag = false
+	self.lightFrameObj = nil
+	self.firstGroupScore = 0
+	self.secondGroupScore = 0
+	self.threeGroupScore = 0
+	self.before_starting_operation_view = nil
+	self.SpecialSetState = false
+
+	instance = self
+end
+
+function shisanshui_ui:PlayOpenAmination()
+end
+function shisanshui_ui:OnRefreshDepth()
+	if self.playerList then
+		for k,v in pairs(self.playerList) do
+			local playerComponent = v
+			--表情层设定
+			if playerComponent then
+				playerComponent.sortingOrder = self.sortingOrder
+				playerComponent.m_subPanelCount = self.m_subPanelCount
+			end
+
+		end
+	end
+end
+
+function shisanshui_ui:Onbtn_exitClick()
+	report_sys.EventUpload(31,player_data.GetGameId())
+  if roomdata_center.isStart then
+	Trace("+++++++++投票，投票+++++++++++++")
+	-- UI_Manager:Instance():ShowGoldBox(GetDictString(6030), {function() UI_Manager:Instance():CloseUiForms("message_box") end,
+ --  		function ()  		
+ --  		shisangshui_play_sys.VoteDrawReq(true)
+ --  		UI_Manager:Instance():CloseUiForms("message_box")
+ --  	end}, {"quxiao","fonts_01"}, {"button_03", "button_02"}, MessageBoxType.vote)
+ --  	return
+ 	MessageBox.ShowYesNoBox(GetDictString(6030), function() shisangshui_play_sys.VoteDrawReq(true) end)
+	return
+  end
+	--如果是水庄玩法，并且是庄家，游戏开始之前不能退出
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	--ui_sound_mgr.PlaySoundClip("common/audio_close_dialog")
+	local roomInfo = room_data.GetSssRoomDataInfo()
+	if roomInfo.isZhuang == true then
+		local isOwner = room_data.IsOwner()
+		if isOwner == true then
+			-- UI_Manager:Instance():ShowGoldBox(GetDictString(6047),{function()
+			-- 	UI_Manager:Instance():CloseUiForms("message_box")
+			-- end},{"fonts_01"})
+			MessageBox.ShowSingleBox(GetDictString(6047))
+		else
+			Trace("++++++++++离开，离开++++++++++")
+			local t= GetDictString(5001)
+			-- UI_Manager:Instance():ShowGoldBox(t,{function ()  		
+			-- shisangshui_play_sys.LeaveReq()
+			-- UI_Manager:Instance():CloseUiForms("message_box")
+			-- end}, {"fonts_01"}, {"button_02"})
+			MessageBox.ShowYesNoBox(t, function() shisangshui_play_sys.LeaveReq() end)
+		end
+	else
+		Trace("++++++++++离开，离开++++++++++")
+		local t= GetDictString(5001)
+		-- UI_Manager:Instance():ShowGoldBox(t,{function ()  		
+  -- 		shisangshui_play_sys.LeaveReq()
+  -- 		UI_Manager:Instance():CloseUiForms("message_box")
+		-- end}, {"fonts_01"}, {"button_02"})
+		MessageBox.ShowYesNoBox(t, function() shisangshui_play_sys.LeaveReq() end)
+	end
+end
+
+function shisanshui_ui:Onbtn_moreClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	Trace("Onbtn_moreClick")
+	self:SetMorePanel()
+end
+
+function shisanshui_ui:OnBtn_WarningClick()
+	--[[ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	report_sys.EventUpload(35,player_data.GetGameId())
+	help_ui.Show(ENUM_GAME_TYPE.TYPE_SHISHANSHUI)
+	local luaBaseComp = componentGet(help_ui.transform,typeof(LogicBaseLua))
+	if luaBaseComp ~= nil then
+		luaBaseComp.beKeepDepthValue = false
+	end--]]
+end
+
+function shisanshui_ui:Onbtn_readyClick()	
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	Trace("Onbtn_readyClick")
+	
+	if(self.disTimer_Elapse ~= nil) then
+		self:StopTime_Dis()  ----重连解散定时器关
+	end
+	shisangshui_play_sys.ReadyGameReq()
+end
+
+function shisanshui_ui:ShowDisTimerLab(state)
+	if(self.disTimer_Elapse ~= nil) then
+		self:StopTime_Dis()  ----重连解散定时器关
+	end
+	if(self.widgetTbl.dismiss_timePanel ~= nil) then
+		self.widgetTbl.dismiss_timePanel.gameObject:SetActive(state)
+	end
+end
+
+local isClick=true
+function shisanshui_ui:Onbtn_voiceClick()
+	Trace("Onbtn_voiceClick")
+	report_sys.EventUpload(32,player_data.GetGameId())
+end
+
+function shisanshui_ui:Onbtn_inviteFriend()	--邀请好友
+	Trace("Onbtn_inviteFriend")
+	report_sys.EventUpload(29,player_data.GetGameId())
+	local loginType = data_center.GetPlatform()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	invite_sys.inviteFriend(loginType,room_data.GetSssRoomDataInfo().rno,"十三水",tostring(room_data.GetSSSShareString()))
+end
+
+function shisanshui_ui:Onbtn_dimissRoom()	--解散房间
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	report_sys.EventUpload(30,player_data.GetGameId())
+	 -- UI_Manager:Instance():ShowGoldBox(GetDictString(6031), {function() UI_Manager:Instance():CloseUiForms("message_box") end, function ()  		
+  -- 		shisangshui_play_sys.DissolutionRoom()
+  -- 		UI_Manager:Instance():CloseUiForms("message_box")
+  -- 	end}, {"quxiao","fonts_01"}, {"button_03","button_02"})
+  	MessageBox.ShowYesNoBox(GetDictString(6031), function() shisangshui_play_sys.DissolutionRoom() end)
+end
+
+function shisanshui_ui:Onbtn_chatClick()
+	Trace("Onbtn_chatClick")
+	report_sys.EventUpload(33,player_data.GetGameId())
+--	chat_ui:InitUI(self.chatTextTab,self.chatImgTab)
+	 UI_Manager:Instance():ShowUiForms("chat_ui",UiCloseType.UiCloseType_CloseNothing,nil,self.chatTextTab,self.chatImgTab)
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+--	chat_ui:SetChatPanle()
+end
+
+function shisanshui_ui:OnBtn_SettingOnClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	Trace("++++++++SettingOnClick")
+	report_sys.EventUpload(36,player_data.GetGameId())
+	setting_ui.Show()
+	  local luaBaseComp = componentGet(setting_ui.transform,typeof(LogicBaseLua))
+	  if luaBaseComp ~= nil then
+		luaBaseComp.beKeepDepthValue = false
+	  end
+end
+
+--更多蒙板
+function shisanshui_ui:Onbtn_moreContainerClick()
+	self:moreContainerClickAnimation()
+end
+
+--战绩UI
+function shisanshui_ui:OnBtn_AchievementOnClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	report_sys.EventUpload(37,player_data.GetGameId())
+	http_request_interface.getRoomByRid(roomdata_center.rid,1,function (str)
+           local s=string.gsub(str,"\\/","/")  
+           local t=ParseJsonStr(s)
+           Trace(str)
+		 recorddetails_ui.Show(t) 
+		   local luaBaseComp = componentGet(recorddetails_ui.transform,typeof(LogicBaseLua))
+			if luaBaseComp ~= nil then
+				luaBaseComp.beKeepDepthValue = false
+			end
+       end)
+end
+
+function shisanshui_ui:InitVoteView()
+	-- self.voteView = vote_quit_view.New()
+	-- self.voteView:SetTransform(child(self.widgetTbl.panel, "Anchor_TopRight/voteView"))
+	self.voteView = require("logic/voteQuit/vote_view"):create(child(self.widgetTbl.panel, "Anchor_TopRight/voteView").gameObject)
+	self.voteView:Hide()
+end
+
+--[[--
+ * @Description: 获取各节点对象  
+ ]]
+function shisanshui_ui:InitWidgets()
+	self.widgetTbl.panel = child(self.transform, "Panel")
+	self.widgetTbl.bottom = child(self.widgetTbl.panel,"Anchor_Bottom")
+	--找到三个动画结点
+	for i = 1,3 do
+		local animObj = child(self.widgetTbl.panel, "Anchor_Amination/shisanshui_shoot_"..tostring(i))
+		if animObj ~= nil then
+			table.insert(self.animationTabel, animObj)
+			animObj.gameObject:SetActive(false)
+		end
+	end
+	--返回大厅按钮
+	self.widgetTbl.btn_exit = child(self.widgetTbl.panel, "Anchor_TopLeft/exit")
+	if self.widgetTbl.btn_exit~=nil then
+       addClickCallbackSelf(self.widgetTbl.btn_exit.gameObject,self.Onbtn_exitClick,self)
+    end
+    --更多按钮
+	self.moreBtnGo = self:GetGameObject("Panel/Anchor_TopRight/morePanel/more")
+	if self.moreBtnGo then
+		self.moreBtnGo:SetActive(true)
+		addClickCallbackSelf(self.moreBtnGo, self.Onbtn_moreClick, self)
+	end
+
+    self.before_starting_operation_view = require("logic.niuniu_sys.ui.sub_ui.before_starting_operation_view"):create(child(self.widgetTbl.panel, "Anchor_Center/readyBtns"),self)
+	
+    --语音按钮
+	self.widgetTbl.btn_voice = child(self.widgetTbl.panel, "Anchor_Right/voice")
+	if self.widgetTbl.btn_voice~=nil then
+       addClickCallbackSelf(self.widgetTbl.btn_voice.gameObject,self.Onbtn_voiceClick,self)
+       self.widgetTbl.btn_voice.gameObject:SetActive(true)
+
+       -- addClickCallbackSelf(self.widgetTbl.btn_voice.gameObject, self.Onbtn_voicePressed, self)
+
+       -- self:AddSoundDragEventListener(self.widgetTbl.btn_voice.gameObject)
+
+		addPressedCallbackSelf(self.widgetTbl.btn_voice.transform, "", self.Onbtn_voicePressed, self)
+       	self:AddSoundDragEventListener(self.widgetTbl.btn_voice.gameObject)
+    end
+    self:InitSoundView()
+
+    --聊天按钮
+	self.widgetTbl.btn_chat = child(self.widgetTbl.panel, "Anchor_Right/chat")
+	if self.widgetTbl.btn_chat~=nil then
+       addClickCallbackSelf(self.widgetTbl.btn_chat.gameObject,self.Onbtn_chatClick,self)
+       self.widgetTbl.btn_chat.gameObject:SetActive(true)
+     --  chat_ui:InitUI(self.chatTextTab,self.chatImgTab)
+    --   UI_Manager:Instance():ShowUiForms("chat_ui",UiCloseType.UiCloseType_CloseNothing,nil,self.chatTextTab,self.chatImgTab)
+    end
+	
+	--wifi状态
+    self.widgetTbl.sprite_network = componentGet(child(self.widgetTbl.panel,"Anchor_TopLeft/phoneInfo/network"),"UISprite")
+    --电池状态
+    self.widgetTbl.sprite_power = componentGet(child(self.widgetTbl.panel,"Anchor_TopLeft/phoneInfo/power/slider"),"UISprite")
+	--时间状态
+	self.widgetTbl.lbl_time = componentGet(child(self.widgetTbl.panel,"Anchor_TopLeft/phoneInfo/timeLbl"),"UILabel")
+
+
+    --房号
+	--[[self.widgetTbl.label_gameinfo = child(self.widgetTbl.panel, "Anchor_Bottom/gameInfo")
+	if self.widgetTbl.label_gameinfo~=nil then
+       self.widgetTbl.label_gameinfo.gameObject:SetActive(false)
+    end--]]
+	
+	--剩余牌文本提示
+	self.widgetTbl.lbl_leftCard = child(self.widgetTbl.panel,"Anchor_TopLeft/leftCardNum")
+	if self.widgetTbl.lbl_leftCard ~= nil then
+		self.widgetTbl.lbl_leftCard.gameObject:SetActive(false)
+	end
+	self.widgetTbl.leftCardNums = componentGet(self.widgetTbl.lbl_leftCard,"UILabel")
+	--剩余牌面展示
+	self.widgetTbl.tran_leftCard = child(self.widgetTbl.panel,"Anchor_TopLeft/leftCard")
+	if self.widgetTbl.tran_leftCard ~= nil then
+		self.widgetTbl.tran_leftCard.gameObject:SetActive(false)
+	end
+
+	--初始化语音信息
+   	-- self:InitChatSound()
+	
+    --[[self.widgetTbl.label_roomId = child(self.widgetTbl.panel, "Anchor_TopRight/gameCount/roomId")
+	if self.widgetTbl.label_roomId~=nil then
+       self.widgetTbl.label_roomId.gameObject:SetActive(true)
+    end--]]
+    --牌局信息
+    self.widgetTbl.gameCount = child(self.widgetTbl.panel,"Anchor_TopRight/gameCount/num")
+    self.widgetTbl.firstGroupScore = child(self.widgetTbl.panel,"Anchor_Bottom/firstScore")
+    if self.widgetTbl.firstGroupScore ~= nil then
+    	 self.widgetTbl.firstGroupScore.gameObject:SetActive(false)
+    end
+    self.widgetTbl.secondGroupScore = child(self.widgetTbl.panel,"Anchor_Bottom/secondScore")
+    if self.widgetTbl.secondGroupScore ~= nil then
+    	 self.widgetTbl.secondGroupScore.gameObject:SetActive(false)
+    end
+    self.widgetTbl.threeGroupScore = child(self.widgetTbl.panel,"Anchor_Bottom/threeScore")
+    if self.widgetTbl.threeGroupScore ~= nil then
+    	self.widgetTbl.threeGroupScore.gameObject:SetActive(false)
+    end
+     self.widgetTbl.allScore = child(self.widgetTbl.panel,"Anchor_Bottom/allScore")
+    if self.widgetTbl.allScore ~= nil then
+    	self.widgetTbl.allScore.gameObject:SetActive(false)
+    end
+	-----比分变动lbl
+	self.widgetTbl.firstScoreChange = child(self.widgetTbl.panel,"Anchor_Bottom/firstScore/socreChange")
+	self.widgetTbl.secondScoreChange = child(self.widgetTbl.panel,"Anchor_Bottom/secondScore/socreChange")
+	self.widgetTbl.thirdScoreChange = child(self.widgetTbl.panel,"Anchor_Bottom/threeScore/socreChange")
+
+	--特殊牌型图标
+	self.widgetTbl.group = child(self.widgetTbl.panel,"Anchor_Center/special_card_type_group")
+	if self.widgetTbl.group ~= nil then
+		for i =1, 6 do
+			local special_card_icon = child(self.widgetTbl.group,"special_card_type_"..i)
+			self.special_card_type["special_card_type_"..tostring(i)] = special_card_icon
+			self.special_card_type["special_card_type_"..tostring(i)].gameObject:SetActive(false)
+			
+		end
+	end
+	
+	--码牌展示
+	self.widgetTbl.codeCard = child(self.widgetTbl.panel,"Anchor_TopLeft/mapai")
+	if self.widgetTbl.codeCard ~= nil then
+		self.widgetTbl.codeCard.gameObject:SetActive(false)
+	end
+	
+	--自己的特殊牌型展示
+	self.widgetTbl.special = child(self.widgetTbl.panel,"Anchor_Center/self_specialShow")
+	if self.widgetTbl.special ~= nil then
+		self.widgetTbl.special.specialType = child(self.widgetTbl.special,"specialCard")
+		self.widgetTbl.special.gameObject:SetActive(false)
+	end
+	
+	--翻牌区域
+	self.widgetTbl.touchArea = child (self.widgetTbl.panel,"Anchor_Center/touchArea")
+	if self.widgetTbl.touchArea ~= nil then
+		UIEventListener.Get(self.widgetTbl.touchArea.gameObject).onPress = function(obj,state)
+			self:OnTouchShowCards(state)
+		end
+		self.widgetTbl.touchArea.gameObject:SetActive(false)
+	end
+
+	--理牌提示
+	self.widgetTbl.readCardGroup = child(self.widgetTbl.panel,"Anchor_Center/read_card_group")
+	if self.widgetTbl.readCardGroup~=nil then
+		self.widgetTbl.readCardGroup.gameObject:SetActive(true)
+		for i=1,6 do
+			local tReadCard = child(self.widgetTbl.readCardGroup,"read_card"..i)
+			self.read_card_player[tostring(i)] = tReadCard
+			self.read_card_player["time"..tostring(i)]={}
+			tReadCard.gameObject:SetActive(false)
+		end
+	end
+
+	--水庄倒计时
+	self.widgetTbl.xiaopao_timePanel = child(self.widgetTbl.panel,"Anchor_Center/xiaopao_time")
+	if self.widgetTbl.xiaopao_timePanel~=nil then
+		self.widgetTbl.xiaopao_timePanel.gameObject:SetActive(false)
+	end
+	self.widgetTbl.xiaopao_time= componentGet(child(self.widgetTbl.xiaopao_timePanel,"time"),"UILabel")
+
+	--[[self.widgetTbl.ruleInfoPanel = child(self.widgetTbl.panel,"Anchor_RightBottom/roomInfo")
+	if self.widgetTbl.ruleInfoPanel~=nil then
+		self.widgetTbl.ruleInfoPanel.gameObject:SetActive(false)
+	end--]]
+	
+
+    --创建用户列表
+    self.playerList = {}
+	local roomData = room_data.GetSssRoomDataInfo()
+	local peopleNum = roomData.people_num
+	Trace("PeopleNum:"..tostring(peopleNum))
+
+	--初始化聊天坐标信息
+	local chatConfigString = "{\"2\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":3,\"x\":110,\"y\":-150,\"z\":0}],\"3\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":4,\"x\":245,\"y\":0,\"z\":0}],\"4\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":2,\"x\":-220,\"y\":-95,\"z\":0},{\"index\":3,\"x\":160,\"y\":-145,\"z\":0}],\"5\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":2,\"x\":-225,\"y\":-85,\"z\":0},{\"index\":3,\"x\":120,\"y\":-153,\"z\":0},{\"index\":3,\"x\":110,\"y\":-150,\"z\":0}],\"6\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":3,\"x\":90,\"y\":-155,\"z\":0},{\"index\":3,\"x\":105,\"y\":-150,\"z\":0},{\"index\":4,\"x\":220,\"y\":-20,\"z\":0}]}"
+	local chatSoundConfigString = "{\"2\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":4,\"x\":152,\"y\":-90.1,\"z\":0}],\"3\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":35,\"y\":53,\"z\":0},{\"index\":3,\"x\":275,\"y\":53,\"z\":0}],\"4\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":31,\"y\":52,\"z\":0},{\"index\":2,\"x\":40,\"y\":-44,\"z\":0},{\"index\":4,\"x\":200,\"y\":-84,\"z\":0}],\"5\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":31,\"y\":53,\"z\":0},{\"index\":2,\"x\":39,\"y\":-30,\"z\":0},{\"index\":4,\"x\":-372,\"y\":-60,\"z\":0},{\"index\":4,\"x\":152,\"y\":-90.1,\"z\":0}],\"6\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":32,\"y\":55,\"z\":0},{\"index\":2,\"x\":32,\"y\":52,\"z\":0},{\"index\":4,\"x\":132,\"y\":-90.1,\"z\":0},{\"index\":4,\"x\":146,\"y\":-90.1,\"z\":0},{\"index\":3,\"x\":-401,\"y\":-296,\"z\":0}]}"
+	local chatJson = ParseJsonStr(chatConfigString)
+	local chatJsonItem = chatJson[tostring(peopleNum)]
+
+	local chatSoundJson = ParseJsonStr(chatSoundConfigString)
+	local chatSoundJsonItem = chatSoundJson[tostring(peopleNum)]
+
+--[[    for i=1,6 do
+    	local playerTrans = child(self.widgetTbl.panel, "Anchor_Center/Players/Player"..i)
+    	if playerTrans ~= nil then
+			if i < tonumber(peopleNum) or i == tonumber(peopleNum) then
+			local viewSeateConfig = config_data_center.getConfigDataByID("dataconfig_shisanshuitableconfig","id",tonumber(peopleNum))
+			local position = viewSeateConfig["pos"..tostring(i)]
+			local posjson = string.gsub(position,"\\/","/")  
+			local seateJson = ParseJsonStr(posjson)
+			Trace("LocalPosition frome configTable:"..tostring(seateJson))
+			
+			local x = seateJson["x"]
+			local y = seateJson["y"]
+			local z = 0
+			
+			local prepare_x = seateJson["prepare_x"]
+			local prepare_y = seateJson["prepare_y"]
+			
+			
+			playerTrans.localPosition = Vector3(x,y,z)
+			local playerComponent = shisanshui_player_ui.New(playerTrans)
+			playerComponent.SetReadyLocalPosition(prepare_x,prepare_y)
+
+			--设置聊天坐标信息
+			local chatJsonItemLast = chatJsonItem[i]
+			local tChatIndex = chatJsonItemLast.index
+			local tChatPosX = chatJsonItemLast.x
+			local tChatPosY = chatJsonItemLast.y
+			playerComponent.SetChatTextLocalPosition(tChatIndex,tChatPosX,tChatPosY)
+
+			--设置语音聊天坐标信息
+			local chatSoundJsonItemLast = chatSoundJsonItem[i]
+			local tChatSoundIndex = chatSoundJsonItemLast.index
+			local tChatSoundPosX = chatSoundJsonItemLast.x
+			local tChatSoundPosY = chatSoundJsonItemLast.y
+			playerComponent.SetChatSoundLocalPosition(tChatSoundIndex,tChatSoundPosX,tChatSoundPosY)
+    		table.insert(self.playerList, playerComponent)
+		end
+    		playerTrans.gameObject:SetActive(false)
+    	end
+    end--]]
+	
+	----设置互动表情位置
+	local posTbl = config_mgr.getConfig("cfg_ssspos",peopleNum)
+	for i=1,peopleNum do
+		local playerTrans = child(self.widgetTbl.panel, "Anchor_Center/Players/Player"..i)
+		self:InitInteractionView(playerTrans.gameObject,posTbl["pos"][i])
+	
+	end
+    
+    --赖子
+	--[[self.compTbl.laizi = child(self.widgetTbl.panel, "Anchor_TopLeft/lai")
+	if self.compTbl.laizi~=nil then
+       self.compTbl.laizi.gameObject:SetActive(false)
+    end--]]
+		
+		
+	    --倍数
+    self.compTbl.xiapao = child(self.widgetTbl.panel, "Anchor_Center/xiapao")
+	if self.compTbl.xiapao~=nil then
+		for i=1,5 do
+			local btn_xiapao = child(self.compTbl.xiapao, "pao"..i)
+			addClickCallbackSelf(btn_xiapao.gameObject,
+			function ()
+				ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+				shisangshui_play_sys.beishu(i)
+				self:SetXiaoPao(0)
+				self:IsShowBeiShuiBtn(false)
+			end,
+			self)
+		end
+       self.compTbl.xiapao.gameObject:SetActive(false)
+    end
+		
+	self.compTbl.countDownSlider = child(self.widgetTbl.panel,"Anchor_Center/countdownslider")
+	self.compTbl.countDownSliderSprite = componentGet(child(self.widgetTbl.panel,"Anchor_Center/countdownslider/foreground"),"UISprite")
+	self.compTbl.countDownTimeLabel = componentGet(child(self.widgetTbl.panel,"Anchor_Center/countdownslider/timeLbl"),"UILabel")
+	self.compTbl.countDownSlider.gameObject:SetActive(false)
+	
+	--重连未准备解散倒计时
+	self.widgetTbl.dismiss_timePanel = child(self.widgetTbl.panel,"Anchor_Center/readyBtns/timeleftlbl")
+	if self.widgetTbl.dismiss_timePanel ~= nil then
+		self.widgetTbl.dismiss_timePanel.gameObject:SetActive(false)
+	end
+	self.widgetTbl.dismiss_timelbl = componentGet(self.widgetTbl.dismiss_timePanel,"UILabel")
+	self:InitMoreBtnsView()
+	
+	-- --iPhoneX适配
+	-- local delayTimer = Timer.New(function()
+	-- local widgetPanel = child(self.transform, "Panel")
+	-- if widgetPanel and data_center.GetCurPlatform() == "IPhonePlayer" and YX_APIManage.Instance:isIphoneX() then
+	-- 	local Anchor_TopRight = child(widgetPanel, "Anchor_TopRight")
+	-- 	if Anchor_TopRight then
+	-- 		local localPos = Anchor_TopRight.gameObject.transform.localPosition
+	-- 		Anchor_TopRight.gameObject.transform.localPosition = Vector3(localPos.x -60, localPos.y, localPos.z)
+	-- 	end
+	-- 	local Anchor_Right = child(widgetPanel, "Anchor_Right")
+	-- 	if Anchor_Right then
+	-- 		local localPos = Anchor_Right.gameObject.transform.localPosition
+	-- 		Anchor_Right.gameObject.transform.localPosition = Vector3(localPos.x -60, localPos.y, localPos.z)
+	-- 	end
+	-- end
+	-- end, 0.1, 1)
+	-- delayTimer:Start()
+end
+
+ --创建用户列表
+function shisanshui_ui:CreatePlayerList()
+	local roomData = room_data.GetSssRoomDataInfo()
+	local peopleNum = roomData.people_num
+	Trace("PeopleNum:"..tostring(peopleNum))
+
+	--初始化聊天坐标信息
+	local chatConfigString = "{\"2\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":3,\"x\":110,\"y\":-150,\"z\":0}],\"3\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":4,\"x\":245,\"y\":0,\"z\":0}],\"4\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":2,\"x\":-220,\"y\":-95,\"z\":0},{\"index\":3,\"x\":160,\"y\":-145,\"z\":0}],\"5\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":2,\"x\":-225,\"y\":-85,\"z\":0},{\"index\":3,\"x\":120,\"y\":-153,\"z\":0},{\"index\":3,\"x\":110,\"y\":-150,\"z\":0}],\"6\":[{\"index\":1,\"x\":180,\"y\":160,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":2,\"x\":-230,\"y\":0,\"z\":0},{\"index\":3,\"x\":90,\"y\":-155,\"z\":0},{\"index\":3,\"x\":105,\"y\":-150,\"z\":0},{\"index\":4,\"x\":220,\"y\":-20,\"z\":0}]}"
+	local chatSoundConfigString = "{\"2\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":4,\"x\":152,\"y\":-90.1,\"z\":0}],\"3\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":35,\"y\":53,\"z\":0},{\"index\":3,\"x\":275,\"y\":53,\"z\":0}],\"4\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":31,\"y\":52,\"z\":0},{\"index\":2,\"x\":40,\"y\":-44,\"z\":0},{\"index\":4,\"x\":200,\"y\":-84,\"z\":0}],\"5\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":31,\"y\":53,\"z\":0},{\"index\":2,\"x\":39,\"y\":-30,\"z\":0},{\"index\":4,\"x\":-372,\"y\":-60,\"z\":0},{\"index\":4,\"x\":152,\"y\":-90.1,\"z\":0}],\"6\":[{\"index\":1,\"x\":221.4,\"y\":175.8,\"z\":0},{\"index\":2,\"x\":32,\"y\":55,\"z\":0},{\"index\":2,\"x\":32,\"y\":52,\"z\":0},{\"index\":4,\"x\":132,\"y\":-90.1,\"z\":0},{\"index\":4,\"x\":146,\"y\":-90.1,\"z\":0},{\"index\":3,\"x\":-401,\"y\":-296,\"z\":0}]}"
+	local chatJson = ParseJsonStr(chatConfigString)
+	local chatJsonItem = chatJson[tostring(peopleNum)]
+
+	local chatSoundJson = ParseJsonStr(chatSoundConfigString)
+	local chatSoundJsonItem = chatSoundJson[tostring(peopleNum)]
+	
+	self.currentTable = poker_table_coordinate.poker_table[peopleNum]
+	gps_data.SetTotalPlayer(self.currentTable)
+	for i = 1,6 do
+		local playerTrans = child(self.widgetTbl.panel, "Anchor_Center/Players/Player"..i)
+		playerTrans.gameObject:SetActive(false)
+		for j,viewSeat in ipairs(self.currentTable) do
+			if i == viewSeat then
+			--	playerTrans.gameObject:SetActive(true)
+				local playerComponent = shisanshui_player_ui.New(playerTrans,self)
+				playerComponent.posititon_index = viewSeat
+				table.insert(self.playerList,playerComponent)
+				break
+			end
+		end
+	end
+end
+	
+function shisanshui_ui:Onbtn_rewardsBackClick()
+	self:HideRewards()
+	self.before_starting_operation_view:ShowReadyBtn()
+end
+
+--复制房号点击事件
+function shisanshui_ui:Onbtn_CopyRoomNum(obj1,obj1)
+	local str = self.rno
+	Trace("Onbtn_CopyRoomNum:"..tostring(str))
+	YX_APIManage.Instance:onCopy(str,function()UI_Manager:Instance():FastTip(GetDictString(6043))end)
+end
+
+function shisanshui_ui:OnTouchShowCards(state)
+	Trace("---------OnTouchShowCards-------------"..tostring(state))
+	for _,player in ipairs(self.playerList) do
+		if player.viewSeat == 1 then
+			Notifier.dispatchCmd(cmd_shisanshui.OpenSelfCard,state)
+			if self.SpecialSetState == true then
+				Notifier.dispatchCmd(cmd_shisanshui.IsShowSelfSpecial,state)
+			end
+		end
+	end
+end
+
+function shisanshui_ui:IsEnableTouch(state)
+	self.widgetTbl.touchArea.gameObject:SetActive(state)
+end
+
+--设置剩余牌数量
+function shisanshui_ui:SetLeftCardNums(num)
+	if num ~= nil then
+		self.widgetTbl.lbl_leftCard.gameObject:SetActive(true)
+		self.widgetTbl.leftCardNums.text = "剩余牌数："..tostring(num)
+	else
+		self.widgetTbl.lbl_leftCard.gameObject:SetActive(false)
+	end
+end
+
+function shisanshui_ui:SetLeftCard(data)
+	if data ~= nil then
+		self:SetLeftCardShow(true)
+		for i=1,2 do
+			local card = child(self.widgetTbl.tran_leftCard,"card"..i)
+			local go = newNormalUI(data_center.GetResPokerCommPath().."/card/"..tostring(data[i]),card)
+			go.transform.localPosition = Vector3(0,0,0)
+			go.transform.localScale = Vector3(1,1,1)
+			--local pokerBack = child(self.widgetTbl.tran_leftCard,"pokerBack"..i)
+			--pokerBack.gameObject:SetActive(false)
+		end
+	end
+end
+
+function shisanshui_ui:SetLeftCardShow(state)
+	self.widgetTbl.tran_leftCard.gameObject:SetActive(state)
+end
+
+function shisanshui_ui:SetLeftCardBack(state)
+	for i=1,2 do
+		local pokerBack = child(self.widgetTbl.tran_leftCard,"pokerBack"..i)
+		pokerBack.gameObject:SetActive(state)
+	end
+end
+
+function shisanshui_ui:ReSetLeftCard()
+	self:SetLeftCardShow(false)
+	for i=1,2 do
+		local tran = child(self.widgetTbl.tran_leftCard,"card"..i)
+		if tran.childCount > 0 then
+			local card = tran.transform:GetChild(0)
+			if card ~= nil then
+				card.parent = nil
+				card.gameObject:SetActive(false)
+				GameObject.Destroy(card.gameObject)
+			end
+		end
+	end
+end
+
+function shisanshui_ui:InitBatteryAndSignal()
+	--监听电量及网络信号强度
+    -- YX_APIManage.Instance.batteryCallBack = 
+    YX_APIManage.Instance:setBatteryCallback(function(msg)
+      local msgTable = ParseJsonStr(msg)
+      local precent = tonumber(msgTable.percent)  or 0
+     self:SetPowerState(precent/100.0)
+    end)
+
+    YX_APIManage.Instance.signalCallBack = function(msg)
+    	local msgTable = ParseJsonStr(msg)
+    	local precent = tonumber(msgTable.percent)	
+    	Trace("signal:"..precent)		
+		self:SetNetworkState(precent)
+    end
+
+    local strBattery = YX_APIManage.Instance:GetPhoneBattery()
+    if strBattery and string.len(strBattery) >0 then
+      local msgTable = ParseJsonStr(strBattery)
+      local precent = tonumber(msgTable.percent)  or 0
+     self:SetPowerState(precent/100.0)
+    end
+
+end
+
+function shisanshui_ui:UnInitBatteryAndSignal()
+	YX_APIManage.Instance.batteryCallBack = nil
+	YX_APIManage.Instance.signalCallBack = nil
+end
+
+function shisanshui_ui:SetNetworkState(value)
+	local spName = ""
+	if value > 0.75 then
+		spName = "paiju_13"
+	elseif value >0.5 then
+		spName = "paiju_14"
+	elseif value >0.25 then
+		spName = "paiju_15"
+	else 
+		spName = "paiju_16"
+	end
+	self.widgetTbl.sprite_network.spriteName = spName
+end
+
+function shisanshui_ui:SetPowerState(value)
+	--[[local spName = ""
+	if value > 0.8 then
+		spName = "dc_1"
+	elseif value >0.6 then
+		spName = "dc_2"
+	elseif value >0.4 then
+		spName = "dc_3"
+	elseif value >0.2 then
+		spName = "dc_4"
+	else 
+		spName = "dc_5"
+	end
+	self.widgetTbl.sprite_power.spriteName = spName--]]
+	local sp_width = 29
+	self.widgetTbl.sprite_power.width = sp_width * value
+end
+
+--定时器每分钟刷新系统时间
+function shisanshui_ui:StartGetDateTimer()
+	self.widgetTbl.lbl_time.text = tostring(os.date("%H:%M"))
+	self.getDateTimer = Timer.New(slot(self.OnGetDateTimer_Proc,self),60,-1)
+	self.getDateTimer:Start()
+end
+
+function shisanshui_ui:OnGetDateTimer_Proc()
+	self.widgetTbl.lbl_time.text = tostring(os.date("%H:%M"))
+end
+--------重连未准备解散倒计时------------
+
+function shisanshui_ui:dismissLeftime(time)
+	if(self.disTimer_Elapse == nil) then
+		self:StartTimer_Dis(time)
+	end
+end
+
+function shisanshui_ui:StartTimer_Dis(time)
+	Trace("未准备解散定时器")	
+	if(time <= 0) then
+		self.widgetTbl.dismiss_timePanel.gameObject:SetActive(false)
+		return
+	end
+	self.widgetTbl.dismiss_timePanel.gameObject:SetActive(true)
+	self.widgetTbl.dismiss_timelbl.text = (math.floor(time).."s后解散牌局")
+	self.leftTime = time		
+	self.disTimer_Elapse = Timer.New(slot(self.OnTimer_Proc_Dis,self),1,time)
+	self.disTimer_Elapse:Start()
+end
+
+function shisanshui_ui:OnTimer_Proc_Dis()
+	if(self.leftTime >= 1) then
+		self.leftTime = self.leftTime -1;
+	end
+	self.widgetTbl.dismiss_timelbl.text = (math.floor(self.leftTime).."s后解散牌局")
+	if self.leftTime <= 0 then
+		self.widgetTbl.dismiss_timePanel.gameObject:SetActive(false)
+		self:StopTime_Dis()
+		return
+	end
+end
+
+function shisanshui_ui:StopTime_Dis()
+	if self.disTimer_Elapse ~= nil then
+		self.disTimer_Elapse:Stop()
+		Trace("重连解散定时器关")
+		self.disTimer_Elapse = nil
+	end
+	if(self.widgetTbl.dismiss_timePanel ~= nil) then
+		self.widgetTbl.dismiss_timePanel.gameObject:SetActive(false)
+	end
+end
+
+
+-------------------------------------
+
+
+--[[--
+ * @Description: 更多界面  
+ ]]
+function shisanshui_ui:SetMorePanle()
+	if self.widgetTbl.panel_more.gameObject.activeSelf == true then
+		self.widgetTbl.panel_more.gameObject:SetActive(false)
+	else
+		self.widgetTbl.panel_more.gameObject:SetActive(true)
+	end
+end
+
+function shisanshui_ui:moreContainerClickAnimation()
+  -- self.widgetTbl.btn_more.gameObject:SendMessage("OnClick")
+  instance.moreBtnGo:SendMessage("OnClick")
+end
+
+function shisanshui_ui:RegisterEvent()
+	
+	Notifier.regist(cmdName.MSG_VOICE_INFO, slot(self.OnMsgVoiceInfoHandler,self))
+	Notifier.regist(cmdName.MSG_VOICE_PLAY_BEGIN, slot(self.OnMsgVoicePlayBegin,self))
+	Notifier.regist(cmdName.MSG_VOICE_PLAY_END, slot(self.OnMsgVoicePlayEnd,self))
+
+	Notifier.regist(cmdName.MSG_CHAT_TEXT, slot(self.OnMsgChatText,self))
+  	Notifier.regist(cmdName.MSG_CHAT_IMAGA, slot(self.OnMsgChatImaga,self))
+  	Notifier.regist(cmdName.MSG_CHAT_INTERACTIN, slot(self.OnMsgChatInteractin,self))
+end
+
+function shisanshui_ui:UnRegisterEvent()
+	Notifier.remove(cmdName.MSG_VOICE_INFO, slot(self.OnMsgVoiceInfoHandler,self))
+	Notifier.remove(cmdName.MSG_VOICE_PLAY_BEGIN,  slot(self.OnMsgVoicePlayBegin,self))
+	Notifier.remove(cmdName.MSG_VOICE_PLAY_END, slot(self.OnMsgVoicePlayEnd,self))
+
+	Notifier.remove(cmdName.MSG_CHAT_TEXT,  slot(self.OnMsgChatText,self))
+  	Notifier.remove(cmdName.MSG_CHAT_IMAGA,  slot(self.OnMsgChatImaga,self))
+  	Notifier.remove(cmdName.MSG_CHAT_INTERACTIN, slot(self.OnMsgChatInteractin,self))
+end
+
+function shisanshui_ui:OnInit()
+	self:InitWidgets()
+	self:InitVoteView()
+	
+	self:StartGetDateTimer()
+	msg_dispatch_mgr.SetIsEnterState(true)	
+end
+
+function shisanshui_ui:OnOpen()
+	self:CreatePlayerList()
+	self:RegisterEvent()
+	self:InitBatteryAndSignal()
+	self.gameDataInfo = room_data.GetSssRoomDataInfo()
+	if self.gameDataInfo.isChip then
+		child(self.transform, "Panel/Anchor_TopLeft/mapai").gameObject:SetActive(true)
+	else
+		child(self.transform, "Panel/Anchor_TopLeft/mapai").gameObject:SetActive(false)
+	end
+	if(not gvoice_sys.GetIsInit()) then
+		Trace("Init Again--------------------------")
+	end
+	
+	UpdateBeat:Add(slot(self.Update, self))
+	self.gvoice_engine = gvoice_sys.GetEngine()
+	self:InitSettingBgm()
+end
+
+--[[
+语音回调检测
+]]
+function shisanshui_ui:Update()
+    if(self.gvoice_engine ~= nil) then
+		self.gvoice_engine:Poll()
+	end
+end
+
+function shisanshui_ui:OnClose()
+	gps_data.ResetGpsData()
+	self:ResetAll()
+	
+	for i ,v in ipairs(self.playerList) do
+		v.Hide()
+	end
+	self.playerList = {}
+	self:UnInitBatteryAndSignal()
+
+	self:LimitRecodeSoundHide()
+	self:UnRegisterEvent()
+	gvoice_sys.Uinit()
+	UI_Manager:Instance():CloseUiForms("chat_ui")
+	if(self.disTimer_Elapse ~= nil) then
+		self:StopTime_Dis()  ----重连解散定时器关
+	end
+	if self.getDateTimer ~= nil then
+		self.getDateTimer:Stop()
+	--	self.getDateTimer = nil
+	end
+	
+	if self.recordView then
+		self.recordView:Hide()
+	end
+	UpdateBeat:Remove(slot(self.Update, self))
+	self.gvoice_engine = nil
+end
+
+function  shisanshui_ui:SetGameInfo(wanfaStr,RoomNum)
+	local str = wanfaStr..RoomNum
+	self.rno = RoomNum
+	local configStr = {}
+	local configData = room_data.GetSssRoomDataInfo()
+	--Trace(tostring(configData.add_ghost))
+	--Trace(tostring(json.encode(t)))
+	if configData.isZhuang  == true or configData.isZhuang == 1 then
+		if tonumber(configData.add_card) == 1 then
+			table.insert(configStr,"加一色坐庄")
+		end
+	end
+--	    0x4F,   --小鬼  79
+--    0x5F,   --大鬼	95
+	if configData.add_ghost == 0 then
+	elseif configData.add_ghost == 1 then
+		table.insert(configStr,"大小鬼")
+	end
+	if configData.isChip == true or configData.isChip == 1 then
+		table.insert(configStr,"有马牌")
+	else
+		table.insert(configStr,"无马牌")
+	end
+	if configData.isZhuang == true or configData.isZhuang == 1 then
+		--table.insert(configStr,"闲家倍数:"..tostring(configData.max_multiple))
+	end
+--	self:SetRoomInfo(configStr)
+	--local label_roomId_comp = self.widgetTbl.label_roomId.gameObject:GetComponent(typeof(UILabel))
+	--label_roomId_comp.text = str
+end
+
+function shisanshui_ui:SetGameCount(subround)
+	if self.widgetTbl.gameCount_comp == nil then
+		self.widgetTbl.gameCount_comp = self.widgetTbl.gameCount.gameObject:GetComponent(typeof(UILabel))
+	end
+	local nCurrJu = room_data.GetSssRoomDataInfo().cur_playNum
+	if subround ~= nil then
+		nCurrJu = subround
+		room_data.GetSssRoomDataInfo().cur_playNum = subround
+	end
+	self.widgetTbl.gameCount_comp.text = "局数: "..tostring(nCurrJu).."/"..tostring(room_data.GetSssRoomDataInfo().play_num)
+	Trace("当前局数:"..tostring(room_data.GetSssRoomDataInfo().cur_playNum))
+end
+
+--设置用户信息
+function shisanshui_ui:SetPlayerInfo(viewSeat, usersdata)
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat].Show(usersdata,viewSeat)
+	end
+end
+
+--[[
+隐藏语音消息显示
+]]
+function shisanshui_ui:HideVoiceLogo()
+end
+
+--设置水庄倒计时
+function shisanshui_ui:SetXiaoPao(time,callback)
+	if time==nil or time<=0 then
+		self:ShowXiaoPaoPanel(false)
+	elseif (self.xiaopaoTimer_Elapse == nil) then
+		self:StartXiaoPaoTimer(time)
+		self.xiaopaoCallBack = callback
+	end
+end
+
+function shisanshui_ui:StartXiaoPaoTimer(time)
+	self:ShowXiaoPaoPanel(true)
+	self._xiaopaoTime =math.floor(time)	
+	self:SetXiaoPaoLabel(self._xiaopaoTime)	
+	self.xiaopaoTimer_Elapse = Timer.New(slot(self.OnXiaopaoTimer_Proc,self),1,time)
+	self.xiaopaoTimer_Elapse:Start()
+end
+
+function shisanshui_ui:OnXiaopaoTimer_Proc()
+	self._xiaopaoTime = self._xiaopaoTime -1;
+	self:SetXiaoPaoLabel(self._xiaopaoTime)
+	if self._xiaopaoTime <= 0 then
+		self:StopXiaopaoTimer()
+		self:ShowXiaoPaoPanel(false)
+		--时间到了处理逻辑
+		if self.xiaopaoCallBack ~=nil then
+			self.xiaopaoCallBack()
+		end
+	end
+end
+
+function shisanshui_ui:StopXiaopaoTimer()
+	if self.xiaopaoTimer_Elapse ~= nil then
+		self.xiaopaoTimer_Elapse:Stop()
+		self.xiaopaoTimer_Elapse = nil
+	end
+end
+
+function shisanshui_ui:SetXiaoPaoLabel(time)
+	if  self.widgetTbl.xiaopao_time ~= nil then 
+		self.widgetTbl.xiaopao_time.text = "等待闲家选择倍数：" .. tostring(time) .."s"
+	else
+		Trace("self.widgetTbl.xiaopao_time = nil")
+		self:StopXiaopaoTimer()
+	end
+end
+
+function shisanshui_ui:ShowXiaoPaoPanel(state)
+	self.widgetTbl.xiaopao_timePanel.gameObject:SetActive(state)
+end
+
+--设置左上角游戏信息规则
+function shisanshui_ui:SetRoomInfoState(state)
+	self.widgetTbl.ruleInfoPanel.gameObject:SetActive(state)
+end
+
+function shisanshui_ui:SetRoomInfo(tbl)
+	if tbl == nil then
+		self:SetRoomInfoState(false)
+	else
+		self:SetRoomInfoState(true)
+		for i=1,3 do
+			local tra = child(self.widgetTbl.ruleInfoPanel,tostring(i))
+			if i <= (#tbl) then
+				tra.gameObject:SetActive(true)
+				local infoTra = child(tra,"info")
+				infoTra.gameObject:SetActive(false)
+				componentGet(infoTra,"UILabel").text = tbl[i]
+				infoTra.gameObject:SetActive(true)
+			else
+				tra.gameObject:SetActive(false)
+			end
+		end
+		--componentGet(self.widgetTbl.ruleInfoPanel,"UITable"):Reposition()
+		componentGet(self.widgetTbl.ruleInfoPanel,"UITable").repositionNow = true
+	end	
+end
+
+function shisanshui_ui:HidePlayer(viewSeat)
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat].Hide()
+	end
+end
+
+function shisanshui_ui:ShowPlayerTotalPoints(viewSeat,totalPoint)
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat].SetTotalPoints(totalPoint)
+	end
+end
+
+function shisanshui_ui:IsShowBeiShuiBtn(isShow)
+	self.compTbl.xiapao.gameObject:SetActive(isShow)
+end
+
+function shisanshui_ui:SetPlayerMachine(viewSeat, isMachine )
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat].SetMachine(isMachine)
+	end
+end
+
+function shisanshui_ui:SetPlayerLineState(viewSeat, isOnLine )
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat].SetOffline(not isOnLine)
+	end
+end
+
+function shisanshui_ui:SetHideTotaPoints()
+	for i,v in ipairs(self.playerList) do
+		v.HideTotalPoints()
+	end
+end
+
+function shisanshui_ui:SetPlayerScore(viewSeat,value)
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat].SetScore(value)
+	end
+end
+
+function shisanshui_ui:AddPlayerScore(viewSeat,value)
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat].AddScore(value)
+	end
+end
+
+function shisanshui_ui:SetPlayerReady( viewSeat,isReady )
+	Trace("viewSeat-------------------------------------"..tostring(viewSeat))
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat].SetReady(isReady)
+	end
+end
+
+function shisanshui_ui:SetAllPlayerReady(isReady)
+	for i,v in ipairs(self.playerList) do
+		v.SetReady(isReady)
+	end
+end
+
+
+--设置头像的光圈
+
+function shisanshui_ui:SetPlayerLightFrame(viewSeat)
+	if self.lightFrameObj ~= nil then
+		animations_sys.StopPlayAnimation(self.lightFrameObj)
+	end
+	local Player = self.playerList[viewSeat]
+	if Player ~= nil then
+		if self.playerList[viewSeat].transform == nil then 
+			Trace("+++++++++AnimationError!!!!!!!")
+		end
+		Trace("当前桌面对应的座位号"..tostring(Player.viewSeat).."transformName"..tostring(Player.transform.name))
+		self.lightFrameObj = animations_sys.PlayAnimationWithLoop(child(Player.transform,"winFrame"),data_center.GetResRootPath().."/effects/shisanshui_icon_frame","flame",72,58)
+		componentGet(self.lightFrameObj.gameObject,"SkeletonAnimation"):ChangeQueue(3001)
+	end
+end
+
+function shisanshui_ui:DisablePlayerLightFrame()
+	if self.lightFrameObj ~= nil then
+		animations_sys.StopPlayAnimation(self.lightFrameObj)
+	end
+end
+
+--[[比分变动lbl
+	self.widgetTbl.firstScoreChange = child(self.widgetTbl.panel,"Anchor_Bottom/firstScore/socreChange")
+	self.widgetTbl.secondScoreChange = child(self.widgetTbl.panel,"Anchor_Bottom/secondScore/socreChange")
+	self.widgetTbl.thirdScoreChange = child(self.widgetTbl.panel,"Anchor_Bottom/threeScore/socreChange")
+]]
+------比牌各墩分数
+function shisanshui_ui:SetGruopScord(index, score ,scoreExt, scoreChange,allScore)
+	local  str = ""
+	self.scoreTran.labelWidget1  = child(self.widgetTbl.firstGroupScore,"Label")
+	self.scoreTran.neglabelWidget1  = child(self.widgetTbl.firstGroupScore,"negLabel")
+	
+	self.scoreTran.labelWidget2  = child(self.widgetTbl.secondGroupScore,"Label")
+	self.scoreTran.neglabelWidget2  = child(self.widgetTbl.secondGroupScore,"negLabel")
+	
+	self.scoreTran.labelWidget3  = child(self.widgetTbl.threeGroupScore,"Label")
+	self.scoreTran.neglabelWidget3  = child(self.widgetTbl.threeGroupScore,"negLabel")
+	
+	--比分变动
+	self.scoreTran.firstAddLbl = child(self.widgetTbl.firstScoreChange,"lblAdd")
+	self.scoreTran.firstReduceLbl = child(self.widgetTbl.firstScoreChange,"lblReduce")
+	
+	self.scoreTran.secondAddLbl = child(self.widgetTbl.secondScoreChange,"lblAdd")
+	self.scoreTran.secondReduceLbl = child(self.widgetTbl.secondScoreChange,"lblReduce")
+	
+	self.scoreTran.thirdAddLbl = child(self.widgetTbl.thirdScoreChange,"lblAdd")
+	self.scoreTran.thirdReduceLbl = child(self.widgetTbl.thirdScoreChange,"lblReduce")
+	
+
+	if tonumber(index) == 1 then	
+		----头墩分数
+		if(score+scoreExt <= 0)	then
+			str = tostring(score+scoreExt)
+			self.scoreTran.neglabelWidget1.gameObject:SetActive(true)
+			self.scoreTran.labelWidget1.gameObject:SetActive(false)
+			local label = componentGet(self.scoreTran.neglabelWidget1,"UILabel")
+			label.text = str
+			self.widgetTbl.firstGroupScore.gameObject:SetActive(true)
+		else
+			str = "+"..tostring(score+scoreExt)
+			self.scoreTran.labelWidget1.gameObject:SetActive(true)
+			self.scoreTran.neglabelWidget1.gameObject:SetActive(false)
+			local label = componentGet(self.scoreTran.labelWidget1,"UILabel")
+			label.text = str
+			self.widgetTbl.firstGroupScore.gameObject:SetActive(true)
+		end
+		if scoreChange~=nil then
+			if  scoreChange <= 0 then
+				self.scoreTran.firstAddLbl.gameObject:SetActive(false)
+				self.scoreTran.firstReduceLbl.gameObject:SetActive(true)
+				componentGet(self.scoreTran.firstReduceLbl,"UILabel").text = tostring(scoreChange)	
+				componentGet(self.scoreTran.firstReduceLbl,"TweenPosition"):ResetToBeginning ()
+				componentGet(self.scoreTran.firstReduceLbl,"TweenPosition").enabled =true
+				componentGet(self.scoreTran.firstReduceLbl,"TweenAlpha"):ResetToBeginning ()
+				componentGet(self.scoreTran.firstReduceLbl,"TweenAlpha").enabled =true
+				addTweenFinishedCallback(self.scoreTran.firstReduceLbl, "", function ()
+					self.scoreTran.firstReduceLbl.gameObject:SetActive(false)
+				end ,self)
+			else
+				self.scoreTran.firstAddLbl.gameObject:SetActive(true)
+				self.scoreTran.firstReduceLbl.gameObject:SetActive(false)
+				componentGet(self.scoreTran.firstAddLbl,"UILabel").text = "+"..tostring(scoreChange)		
+				componentGet(self.scoreTran.firstAddLbl,"TweenPosition"):ResetToBeginning ()
+				componentGet(self.scoreTran.firstAddLbl,"TweenPosition").enabled =true
+				componentGet(self.scoreTran.firstAddLbl,"TweenAlpha"):ResetToBeginning ()
+				componentGet(self.scoreTran.firstAddLbl,"TweenAlpha").enabled =true
+				addTweenFinishedCallback(self.scoreTran.firstAddLbl, "", function ()
+					self.scoreTran.firstAddLbl.gameObject:SetActive(false)
+				end ,self)
+			end
+		end
+	elseif tonumber(index) == 2 then
+		----中墩分数
+		if(score+scoreExt <= 0)	then
+			str = tostring(score+scoreExt)
+			self.scoreTran.neglabelWidget2.gameObject:SetActive(true)
+			self.scoreTran.labelWidget2.gameObject:SetActive(false)
+			local label = componentGet(self.scoreTran.neglabelWidget2,"UILabel")
+			label.text = str
+			self.widgetTbl.secondGroupScore.gameObject:SetActive(true)
+		else
+			str = "+"..tostring(score+scoreExt)
+			self.scoreTran.labelWidget2.gameObject:SetActive(true)
+			self.scoreTran.neglabelWidget2.gameObject:SetActive(false)
+			local label = componentGet(self.scoreTran.labelWidget2,"UILabel")
+			label.text = str
+			self.widgetTbl.secondGroupScore.gameObject:SetActive(true)
+		end	
+		if scoreChange~=nil then
+			if  scoreChange <= 0 then
+				self.scoreTran.secondAddLbl.gameObject:SetActive(false)
+				self.scoreTran.secondReduceLbl.gameObject:SetActive(true)
+				componentGet(self.scoreTran.secondReduceLbl,"UILabel").text = tostring(scoreChange)
+				componentGet(self.scoreTran.secondReduceLbl,"TweenPosition"):ResetToBeginning ()
+				componentGet(self.scoreTran.secondReduceLbl,"TweenPosition").enabled =true
+				componentGet(self.scoreTran.secondReduceLbl,"TweenAlpha"):ResetToBeginning ()
+				componentGet(self.scoreTran.secondReduceLbl,"TweenAlpha").enabled =true
+				addTweenFinishedCallback(self.scoreTran.secondReduceLbl, "", function ()
+					self.scoreTran.secondReduceLbl.gameObject:SetActive(false)
+				end ,self)
+			else
+				self.scoreTran.secondAddLbl.gameObject:SetActive(true)
+				self.scoreTran.secondReduceLbl.gameObject:SetActive(false)
+				componentGet(self.scoreTran.secondAddLbl,"UILabel").text = "+"..tostring(scoreChange)
+				componentGet(self.scoreTran.secondAddLbl,"TweenPosition"):ResetToBeginning ()
+				componentGet(self.scoreTran.secondAddLbl,"TweenPosition").enabled =true
+				componentGet(self.scoreTran.secondAddLbl,"TweenAlpha"):ResetToBeginning ()
+				componentGet(self.scoreTran.secondAddLbl,"TweenAlpha").enabled =true
+				addTweenFinishedCallback(self.scoreTran.secondAddLbl, "", function ()
+					self.scoreTran.secondAddLbl.gameObject:SetActive(false)
+				end ,self)
+			end
+		end
+	
+	elseif tonumber(index) == 3 then
+		----尾墩分数
+		if(score+scoreExt <= 0)	then
+			str = tostring(score+scoreExt)
+			self.scoreTran.neglabelWidget3.gameObject:SetActive(true)
+			self.scoreTran.labelWidget3.gameObject:SetActive(false)
+			local label = componentGet(self.scoreTran.neglabelWidget3,"UILabel")
+			label.text = str
+			self.widgetTbl.threeGroupScore.gameObject:SetActive(true)
+		else
+			str = "+"..tostring(score+scoreExt)
+			self.scoreTran.labelWidget3.gameObject:SetActive(true)
+			self.scoreTran.neglabelWidget3.gameObject:SetActive(false)
+			local label = componentGet(self.scoreTran.labelWidget3,"UILabel")
+			label.text = str
+			self.widgetTbl.threeGroupScore.gameObject:SetActive(true)
+		end
+		if scoreChange~=nil then
+			if scoreChange <= 0 then
+				self.scoreTran.thirdAddLbl.gameObject:SetActive(false)
+				self.scoreTran.thirdReduceLbl.gameObject:SetActive(true)
+				componentGet(self.scoreTran.thirdReduceLbl,"UILabel").text = tostring(scoreChange)
+				componentGet(self.scoreTran.thirdReduceLbl,"TweenPosition"):ResetToBeginning ()
+				componentGet(self.scoreTran.thirdReduceLbl,"TweenPosition").enabled =true
+				componentGet(self.scoreTran.thirdReduceLbl,"TweenAlpha"):ResetToBeginning ()
+				componentGet(self.scoreTran.thirdReduceLbl,"TweenAlpha").enabled =true
+				addTweenFinishedCallback(self.scoreTran.thirdReduceLbl, "", function ()
+					self.scoreTran.thirdReduceLbl.gameObject:SetActive(false)
+				end ,self)
+			else
+				self.scoreTran.thirdAddLbl.gameObject:SetActive(true)
+				self.scoreTran.thirdReduceLbl.gameObject:SetActive(false)
+				componentGet(self.scoreTran.thirdAddLbl,"UILabel").text = "+"..tostring(scoreChange)	
+				componentGet(self.scoreTran.thirdAddLbl,"TweenPosition"):ResetToBeginning ()
+				componentGet(self.scoreTran.thirdAddLbl,"TweenPosition").enabled =true
+				componentGet(self.scoreTran.thirdAddLbl,"TweenAlpha"):ResetToBeginning ()
+				componentGet(self.scoreTran.thirdAddLbl,"TweenAlpha").enabled =true
+				addTweenFinishedCallback(self.scoreTran.thirdAddLbl, "", function ()
+					self.scoreTran.thirdAddLbl.gameObject:SetActive(false)
+				end ,self)
+			end
+		end
+	elseif tonumber(index) == 0 then		--设置初始零分
+		self.scoreTran.neglabelWidget1.gameObject:SetActive(true)
+		self.scoreTran.labelWidget1.gameObject:SetActive(false)
+		self.scoreTran.neglabelWidget2.gameObject:SetActive(true)
+		self.scoreTran.labelWidget2.gameObject:SetActive(false)
+		self.scoreTran.neglabelWidget3.gameObject:SetActive(true)
+		self.scoreTran.labelWidget3.gameObject:SetActive(false)
+		componentGet(self.scoreTran.neglabelWidget1,"UILabel").text = tostring(0)
+		componentGet(self.scoreTran.neglabelWidget2,"UILabel").text = tostring(0)
+		componentGet(self.scoreTran.neglabelWidget3,"UILabel").text = tostring(0)
+		self.widgetTbl.firstGroupScore.gameObject:SetActive(true)
+		self.widgetTbl.secondGroupScore.gameObject:SetActive(true)
+		self.widgetTbl.threeGroupScore.gameObject:SetActive(true)
+	end
+end
+
+--设置三墩比分lbl位置以适配不同机型
+function shisanshui_ui:SetScoreAdaptPos(tbl)
+	--logError(GetTblData(tbl))
+	
+	local offsetPos = self.widgetTbl.bottom.localPosition
+	if(self.widgetTbl.firstGroupScore ~= nil)then
+		self.widgetTbl.firstGroupScore.localPosition = Vector3(tbl[1].x-offsetPos.x+180,tbl[1].y-offsetPos.y,0)
+	end
+	if(self.widgetTbl.secondGroupScore ~= nil)then
+		self.widgetTbl.secondGroupScore.localPosition = Vector3(tbl[2].x-offsetPos.x+180,tbl[2].y-offsetPos.y,0)
+	end
+	if(self.widgetTbl.threeGroupScore ~= nil)then
+		self.widgetTbl.threeGroupScore.localPosition = Vector3(tbl[3].x-offsetPos.x+180,tbl[3].y-offsetPos.y,0)
+	end
+end
+
+function shisanshui_ui:SetShootScoreChange(tbl)
+	local  str = ""
+	self.scoreTran.labelWidget1  = child(self.widgetTbl.firstGroupScore,"Label")
+	self.scoreTran.neglabelWidget1  = child(self.widgetTbl.firstGroupScore,"negLabel")
+	
+	self.scoreTran.labelWidget2  = child(self.widgetTbl.secondGroupScore,"Label")
+	self.scoreTran.neglabelWidget2  = child(self.widgetTbl.secondGroupScore,"negLabel")
+	
+	self.scoreTran.labelWidget3  = child(self.widgetTbl.threeGroupScore,"Label")
+	self.scoreTran.neglabelWidget3  = child(self.widgetTbl.threeGroupScore,"negLabel")
+	
+	--self.scoreTran.labelWidget4  = child(self.widgetTbl.allScore,"Label")
+	--self.scoreTran.neglabelWidget4  = child(self.widgetTbl.allScore,"negLabel")
+	--比分变动
+	self.scoreTran.firstAddLbl = child(self.widgetTbl.firstScoreChange,"lblAdd")
+	self.scoreTran.firstReduceLbl = child(self.widgetTbl.firstScoreChange,"lblReduce")
+	
+	self.scoreTran.secondAddLbl = child(self.widgetTbl.secondScoreChange,"lblAdd")
+	self.scoreTran.secondReduceLbl = child(self.widgetTbl.secondScoreChange,"lblReduce")
+	
+	self.scoreTran.thirdAddLbl = child(self.widgetTbl.thirdScoreChange,"lblAdd")
+	self.scoreTran.thirdReduceLbl = child(self.widgetTbl.thirdScoreChange,"lblReduce")
+	
+	local score = {}
+	score[1] = tbl.firstSoreChange
+	score[2] = tbl.secondSoreChange
+	score[3] = tbl.thirdSoreChange
+	self.firstGroupScore = tbl.firstGroupScore
+	self.secondGroupScore = tbl.secondGroupScore
+	self.threeGroupScore = tbl.threeGroupScore
+
+	----头墩分数
+	if score[1]~=nil then
+		if  score[1] <= 0 then
+			self.scoreTran.firstAddLbl.gameObject:SetActive(false)
+			self.scoreTran.firstReduceLbl.gameObject:SetActive(true)
+			componentGet(self.scoreTran.firstReduceLbl,"UILabel").text = tostring(score[1])	
+			componentGet(self.scoreTran.firstReduceLbl,"TweenPosition"):ResetToBeginning ()
+			componentGet(self.scoreTran.firstReduceLbl,"TweenPosition").enabled =true
+			componentGet(self.scoreTran.firstReduceLbl,"TweenAlpha"):ResetToBeginning ()
+			componentGet(self.scoreTran.firstReduceLbl,"TweenAlpha").enabled =true
+			addTweenFinishedCallback(self.scoreTran.firstReduceLbl, "", function ()
+				self.scoreTran.firstReduceLbl.gameObject:SetActive(false)
+			end ,self)
+		else
+			self.scoreTran.firstAddLbl.gameObject:SetActive(true)
+			self.scoreTran.firstReduceLbl.gameObject:SetActive(false)
+			componentGet(self.scoreTran.firstAddLbl,"UILabel").text = "+"..tostring(score[1])		
+			componentGet(self.scoreTran.firstAddLbl,"TweenPosition"):ResetToBeginning ()
+			componentGet(self.scoreTran.firstAddLbl,"TweenPosition").enabled =true
+			componentGet(self.scoreTran.firstAddLbl,"TweenAlpha"):ResetToBeginning ()
+			componentGet(self.scoreTran.firstAddLbl,"TweenAlpha").enabled =true
+			addTweenFinishedCallback(self.scoreTran.firstAddLbl, "", function ()
+				self.scoreTran.firstAddLbl.gameObject:SetActive(false)
+			end ,self)
+		end
+	end
+	if(self.firstGroupScore <= 0)	then
+		str = tostring(self.firstGroupScore)
+		self.scoreTran.neglabelWidget1.gameObject:SetActive(true)
+		self.scoreTran.labelWidget1.gameObject:SetActive(false)
+		local label = componentGet(self.scoreTran.neglabelWidget1,"UILabel")
+		label.text = str
+		self.widgetTbl.firstGroupScore.gameObject:SetActive(true)
+	else
+		str = "+"..tostring(self.firstGroupScore)
+		self.scoreTran.labelWidget1.gameObject:SetActive(true)
+		self.scoreTran.neglabelWidget1.gameObject:SetActive(false)
+		local label = componentGet(self.scoreTran.labelWidget1,"UILabel")
+		label.text = str
+		self.widgetTbl.firstGroupScore.gameObject:SetActive(true)
+	end
+	
+	----中墩分数
+	if score[2]~=nil then
+		if  score[2] <= 0 then
+			self.scoreTran.secondAddLbl.gameObject:SetActive(false)
+			self.scoreTran.secondReduceLbl.gameObject:SetActive(true)
+			componentGet(self.scoreTran.secondReduceLbl,"UILabel").text = tostring(score[2])
+			componentGet(self.scoreTran.secondReduceLbl,"TweenPosition"):ResetToBeginning ()
+			componentGet(self.scoreTran.secondReduceLbl,"TweenPosition").enabled =true
+			componentGet(self.scoreTran.secondReduceLbl,"TweenAlpha"):ResetToBeginning ()
+			componentGet(self.scoreTran.secondReduceLbl,"TweenAlpha").enabled =true
+			addTweenFinishedCallback(self.scoreTran.secondReduceLbl, "", function ()
+				self.scoreTran.secondReduceLbl.gameObject:SetActive(false)
+			end ,self)
+		else
+			self.scoreTran.secondAddLbl.gameObject:SetActive(true)
+			self.scoreTran.secondReduceLbl.gameObject:SetActive(false)
+			componentGet(self.scoreTran.secondAddLbl,"UILabel").text = "+"..tostring(score[2])
+			componentGet(self.scoreTran.secondAddLbl,"TweenPosition"):ResetToBeginning ()
+			componentGet(self.scoreTran.secondAddLbl,"TweenPosition").enabled =true
+			componentGet(self.scoreTran.secondAddLbl,"TweenAlpha"):ResetToBeginning ()
+			componentGet(self.scoreTran.secondAddLbl,"TweenAlpha").enabled =true
+			addTweenFinishedCallback(self.scoreTran.secondAddLbl, "", function ()
+				self.scoreTran.secondAddLbl.gameObject:SetActive(false)
+			end ,self)
+		end
+	end
+	if(self.secondGroupScore <= 0)	then
+		str = tostring(self.secondGroupScore)
+		self.scoreTran.neglabelWidget2.gameObject:SetActive(true)
+		self.scoreTran.labelWidget2.gameObject:SetActive(false)
+		local label = componentGet(self.scoreTran.neglabelWidget2,"UILabel")
+		label.text = str
+		self.widgetTbl.secondGroupScore.gameObject:SetActive(true)
+	else
+		str = "+"..tostring(self.secondGroupScore)
+		self.scoreTran.labelWidget2.gameObject:SetActive(true)
+		self.scoreTran.neglabelWidget2.gameObject:SetActive(false)
+		local label = componentGet(self.scoreTran.labelWidget2,"UILabel")
+		label.text = str
+		self.widgetTbl.secondGroupScore.gameObject:SetActive(true)
+	end	
+
+	----尾墩分数
+	if score[3]~=nil then
+		if score[3] <= 0 then
+			self.scoreTran.thirdAddLbl.gameObject:SetActive(false)
+			self.scoreTran.thirdReduceLbl.gameObject:SetActive(true)
+			componentGet(self.scoreTran.thirdReduceLbl,"UILabel").text = tostring(score[3])
+			componentGet(self.scoreTran.thirdReduceLbl,"TweenPosition"):ResetToBeginning ()
+			componentGet(self.scoreTran.thirdReduceLbl,"TweenPosition").enabled =true
+			componentGet(self.scoreTran.thirdReduceLbl,"TweenAlpha"):ResetToBeginning ()
+			componentGet(self.scoreTran.thirdReduceLbl,"TweenAlpha").enabled =true
+			addTweenFinishedCallback(self.scoreTran.thirdReduceLbl, "", function ()
+				self.scoreTran.thirdReduceLbl.gameObject:SetActive(false)
+			end ,self)
+		else
+			self.scoreTran.thirdAddLbl.gameObject:SetActive(true)
+			self.scoreTran.thirdReduceLbl.gameObject:SetActive(false)
+			componentGet(self.scoreTran.thirdAddLbl,"UILabel").text = "+"..tostring(score[3])	
+			componentGet(self.scoreTran.thirdAddLbl,"TweenPosition"):ResetToBeginning ()
+			componentGet(self.scoreTran.thirdAddLbl,"TweenPosition").enabled =true
+			componentGet(self.scoreTran.thirdAddLbl,"TweenAlpha"):ResetToBeginning ()
+			componentGet(self.scoreTran.thirdAddLbl,"TweenAlpha").enabled =true
+			addTweenFinishedCallback(self.scoreTran.thirdAddLbl, "", function ()
+				self.scoreTran.thirdAddLbl.gameObject:SetActive(false)
+			end ,self)
+		end
+	end
+	if(self.threeGroupScore <= 0)	then
+		str = tostring(self.threeGroupScore)
+		self.scoreTran.neglabelWidget3.gameObject:SetActive(true)
+		self.scoreTran.labelWidget3.gameObject:SetActive(false)
+		local label = componentGet(self.scoreTran.neglabelWidget3,"UILabel")
+		label.text = str
+		self.widgetTbl.threeGroupScore.gameObject:SetActive(true)
+	else
+		str = "+"..tostring(self.threeGroupScore)
+		self.scoreTran.labelWidget3.gameObject:SetActive(true)
+		self.scoreTran.neglabelWidget3.gameObject:SetActive(false)
+		local label = componentGet(self.scoreTran.labelWidget3,"UILabel")
+		label.text = str
+		self.widgetTbl.threeGroupScore.gameObject:SetActive(true)
+	end
+end
+
+--播放开始比牌的动画效果
+function shisanshui_ui:PlayerStartGameAnimation()
+	--animations_sys.PlayAnimation(self.gameObject.transform,data_center.GetResRootPath().."/effects/shisanshui_kaishibipai","kaishibipai",100,100,false,nil,1401)
+	local effect = EffectMgr.PlayEffect(data_center.GetResRootPath().."/effects/Effect_kaishibipai",1,1)
+	effect.transform:SetParent(self.gameObject.transform)
+	effect.transform.localScale = Vector3(1,1,1)
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/dub/kaishibipai_nv")
+end
+
+function shisanshui_ui:SetBanker( viewSeat )
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat].SetBanker(true)
+	end
+end
+
+function shisanshui_ui:ResetAll()
+	for i=1,#self.playerList do
+		self.playerList[i].HideTotalPoints()
+		if room_data.GetSssRoomDataInfo().isZhuang == false then
+			self.playerList[i].SetBanker(false)
+		end
+		self.playerList[i].HideBeiShu()
+		
+	end
+	self:ReSetReadCard(false)
+	self.before_starting_operation_view:HideReadyBtn()
+	self:HideScoreGroup()
+	self:HideSpecialCardIcon()
+	self:IsShowSelfSpecial(false)
+	self.compTbl.countDownSlider.gameObject:SetActive(false)
+	self:StopCountDownTimer()
+	self:SetLeftCardNums()
+	self:ReSetLeftCard()
+	self.SpecialSetState = false
+end
+
+function shisanshui_ui:HideScoreGroup()
+	self.widgetTbl.firstGroupScore.gameObject:SetActive(false)
+	self.widgetTbl.secondGroupScore.gameObject:SetActive(false)
+	self.widgetTbl.threeGroupScore.gameObject:SetActive(false)
+	--self.widgetTbl.allScore.gameObject:SetActive(false)
+end
+
+--设置互动表情面板位置
+function shisanshui_ui:InitInteractionView(go,tbl)
+  self.InteractionView = require "logic/interaction/InteractionView":create(go,nil,tbl)
+end
+
+--更多面板
+function shisanshui_ui:InitMoreBtnsView()
+  self.moreBtnsView = require "logic/mahjong_sys/ui_mahjong/views/MoreBtnsView":create(nil, 
+  	self.moreContainerClickAnimation, subComponentGet(self.widgetTbl.panel, "Anchor_TopRight/morePanel/more/Sprite", typeof(UIRect)))
+  self.moreBtnsView:SetGo(child(self.widgetTbl.panel, "Anchor_TopRight/morePanel/bg").gameObject)
+  self.moreBtnsView:SetActive(false)
+end
+
+--显示更多面板
+function shisanshui_ui:SetMorePanel()
+  self.moreBtnsView:SetActive(not self.moreBtnsView.isActive)
+end
+
+function shisanshui_ui:SetInteractionPos(index,tbl)
+	local playerTrans = child(self.widgetTbl.panel, "Anchor_Center/Players/Player"..index)
+	if playerTrans ~= nil then
+		local actionTran = child(playerTrans,"bg/head/personalInfo")
+		actionTran.localPosition = Vector3(tbl.x,tbl.y,tbl.z)
+	end
+end
+
+function shisanshui_ui:GetShootTran( viewSeat )
+	Trace("Shoot-------------------------------------"..tostring(viewSeat))
+	if self.playerList[viewSeat] ~= nil then
+		return self.playerList[viewSeat].ShootTran()
+	end
+end
+
+function shisanshui_ui:GetShootHoleTran(viewSeat, index)
+	Trace("Shoot-------------------------------------"..tostring(viewSeat))
+	if self.playerList[viewSeat] ~= nil then
+		return self.playerList[viewSeat].ShootHoleTran(index)
+	end
+end
+
+
+function shisanshui_ui:InitSettingBgm()
+	ui_sound_mgr.SceneLoadFinish() 
+    ui_sound_mgr.PlayBgSound("hall_bgm")	
+   -- ui_sound_mgr.controlValue(0.5)
+   -- ui_sound_mgr.ControlCommonAudioValue(0.5)
+end
+
+--显示特殊牌型的图标
+function shisanshui_ui:ShowSpecialCardIcon(tbl)
+	local iconImage = self.special_card_type["special_card_type_"..tbl.viewSeat]
+	iconImage.gameObject.transform.localPosition = tbl.position
+	iconImage.gameObject:SetActive(true)	
+end
+
+function shisanshui_ui:HideSpecialCardIcon()
+	for i =1 , 6 do
+		self.special_card_type["special_card_type_"..i].gameObject:SetActive(false)
+	end
+end
+
+--显示自己特殊牌型
+function shisanshui_ui:SetSelfChooseSpecial(tbl)
+	self.widgetTbl.special.localPosition = Vector3(tbl.position.x,tbl.position.y - 100,tbl.position.z)
+	if self.widgetTbl.special.specialType ~= nil then
+		local SpeSprite = componentGet(self.widgetTbl.special.specialType, "UISprite")
+		SpeSprite.spriteName = tbl["SpecialType"]
+		self.SpecialSetState = true
+		self.widgetTbl.special.gameObject:SetActive(false)
+	end
+end
+
+function shisanshui_ui:IsShowSelfSpecial(state)
+	self.widgetTbl.special.gameObject:SetActive(state)
+end
+
+--设置理牌提示
+function shisanshui_ui:SetReadCardState(tbl)
+	local viewSeat = tbl.viewSeat
+	local state = tbl.state
+	local postion = tbl.position
+	if state == true then
+		self.read_card_player[tostring(viewSeat)].transform.localPosition = postion
+		self.read_card_player[tostring(viewSeat)].gameObject:SetActive(true)
+		self:ReadCardStartTimer(state,viewSeat)
+	else
+		self.read_card_player[tostring(viewSeat)].gameObject:SetActive(false)
+		self:ReadCardStartTimer(state,viewSeat)
+	end
+end
+
+function shisanshui_ui:SetReadCardByState(viewSeat,state,postion)
+	if state == true then
+		self.read_card_player[tostring(viewSeat)].transform.localPosition = postion
+		self.read_card_player[tostring(viewSeat)].gameObject:SetActive(true)
+		self:ReadCardStartTimer(state,viewSeat)
+	else
+		self.read_card_player[tostring(viewSeat)].gameObject:SetActive(false)
+		self:ReadCardStartTimer(state,viewSeat)
+	end
+end
+
+function shisanshui_ui:ReSetReadCard(state)
+	for i =1,6 do
+		self.read_card_player[tostring(i)].gameObject:SetActive(state)
+	end
+	--[[for i,v in pairs(self.read_card_player) do
+		local obj = v[tostring(i)]
+		v[tostring(i)].gameObject:SetActive(state)
+	end--]]
+	--	self.read_card_player[tostring(i)] = tReadCard
+	--		self.read_card_player["time"..tostring(i)]={}
+end
+
+function shisanshui_ui:ReadCardStartTimer(state,viewSeat)
+--	logError("ReadCardStartTimer"..tostring(viewSeat))
+	if self.read_card_player["time"..tostring(viewSeat)] ~= nil and self.read_card_player["time"..tostring(viewSeat)].timer_Elapse ~= nil then
+		self.read_card_player["time"..tostring(viewSeat)].timer_Elapse:Stop()
+		self.read_card_player["time"..tostring(viewSeat)].timer_Elapse = nil
+	end
+	
+	self.count = 0
+	if state == true then
+		self.read_card_player["time"..tostring(viewSeat)].timer_Elapse = Timer.New(
+		function()
+		--	logError("index："..tostring(self.count))
+			local dotList = {}
+			for i = 1 ,3 do
+				local dotTran = child(self.read_card_player[tostring(viewSeat)].transform,"dot"..tostring(i))
+				table.insert(dotList,dotTran)
+			end
+			if #dotList > 0 then
+				for i,v in ipairs(dotList) do
+					if self.count == 0 then
+						v.gameObject:SetActive(false)
+					else
+						if i <= self.count then
+							v.gameObject:SetActive(true)
+						else
+							v.gameObject:SetActive(false)
+						end
+					end
+				end
+			end
+			self.count=self.count+1
+		self.count=self.count%4
+			
+		end,0.5,-1)
+	--	self.read_card_player["time"..tostring(viewSeat)].timer_Elapse = Timer.New(slot(self.playDot(viewSeat),self),0.5,-1)
+		self.read_card_player["time"..tostring(viewSeat)].timer_Elapse:Start()
+	end
+end
+
+function shisanshui_ui:playDot(viewSeat)
+	local index = 0
+	logError("index："..tostring(index))
+	local dotList = {}
+	for i = 1 ,3 do
+		local dotTran = child(self.read_card_player[tostring(viewSeat)].transform,"dot"..tostring(i))
+		table.insert(dotList,dotTran)
+	end
+	if #dotList > 0 then
+		for i,v in ipairs(dotList) do
+			if index == 0 then
+				v.gameObject:SetActive(false)
+			else
+				if i <= index then
+					v.gameObject:SetActive(true)
+				else
+					v.gameObject:SetActive(false)
+				end
+			end
+		end
+	end
+	index=index+1
+	index=index%4
+end
+
+
+function shisanshui_ui:SetBeiShuBtnCount()
+	local roomData = room_data.GetSssRoomDataInfo()
+	for i = 1,5 do
+		local child =  child( self.compTbl.xiapao,"pao"..tostring(i))
+		if child ~= nil then
+			if tonumber(i) <= tonumber(roomData.max_multiple) then
+				child.gameObject:SetActive(true)
+			else
+				child.gameObject:SetActive(false)
+			end
+		end
+	end
+	local gridComp =  self.compTbl.xiapao.gameObject:GetComponent(typeof(UIGrid))
+	if gridComp ~= nil then
+		gridComp:Reposition()
+	else
+		Trace("===选择倍数UIGrid为空！===")
+	end
+end
+
+--显示闲家倍数
+function shisanshui_ui:SetBeiShu(viewSeat, beishu)
+	if self.playerList[viewSeat] ~= nil then
+		self.playerList[viewSeat].SetBeiShu(beishu)
+	end 
+end
+
+--获取玩家头像坐标
+function shisanshui_ui:GetAllShootPos(viewSeat)
+	if self.playerList[viewSeat] ~= nil then
+		local shooterPos = child(self.widgetTbl.panel,"Anchor_Center/Players/Player"..tostring(viewSeat))
+		return shooterPos.localPosition
+	end
+end
+
+--播放打枪动画
+function shisanshui_ui:PlayAnimationWithIndex(index,offsetx,offsety,animationName,width,height,PlayerCallBack,renderQueue)	
+	if self.animationTabel == nil or #self.animationTabel == 0 then
+		return 	
+	end
+	
+	if tonumber(index) <= #self.animationTabel then
+		local animObj  = self.animationTabel[index]
+		if not IsNil(animObj) then
+			animations_sys.PlayAnimationByObj(animObj, offsetx, offsety, animationName, width, height, PlayerCallBack, renderQueue)
+		end
+	end
+end
+
+function shisanshui_ui:HideAnimationObject()
+	for i,v in ipairs(self.animationTabel) do
+		if v ~= nil then
+			v.gameObject:SetActive(false)
+		end
+	end
+end
+
+--语音聊天模块
+function shisanshui_ui:InitChatSound()
+  self.widgetTbl.SoundPanel = child(self.widgetTbl.panel, "Anchor_Center/sound")
+  if self.widgetTbl.SoundPanel~=nil then
+    self.widgetTbl.SoundPanel.gameObject:SetActive(false)
+  end
+  self.widgetTbl.SoundSendPanel = child(self.widgetTbl.SoundPanel,"send")
+  if self.widgetTbl.SoundSendPanel~=nil then
+    self.widgetTbl.SoundSendPanel.gameObject:SetActive(true)
+  end
+  self.widgetTbl.SoundSendQuan = child(self.widgetTbl.SoundSendPanel,"quan")
+  if self.widgetTbl.SoundSendQuan~=nil then
+    self.widgetTbl.SoundSendQuan.gameObject:SetActive(false)   
+    self.widgetTbl.spriteQuan = componentGet(self.widgetTbl.SoundSendQuan.transform,"UISprite")
+  end
+
+  self.widgetTbl.SoundCancelSendPanel = child(self.widgetTbl.SoundPanel,"cancelSend")
+  if self.widgetTbl.SoundCancelSendPanel~=nil then
+    self.widgetTbl.SoundCancelSendPanel.gameObject:SetActive(false)
+  end
+end
+function shisanshui_ui:SetSoundPanel(state)
+  self.widgetTbl.SoundPanel.gameObject:SetActive(state)
+end
+function shisanshui_ui:SetSoundSendPanel(state)
+  self.widgetTbl.SoundSendPanel.gameObject:SetActive(state)
+end
+function shisanshui_ui:SetSoundCancelSendPanel(state)
+  self.widgetTbl.SoundCancelSendPanel.gameObject:SetActive(state)
+end
+
+function shisanshui_ui:SetSoundSendQuanAnimation(time,callback)
+  coroutine.start(function()
+      if self.widgetTbl.spriteQuan~=nil then
+        self.widgetTbl.spriteQuan.fillAmount = 1
+      end      
+      if callback ~= nil then
+        callback()
+        callback = nil
+      end
+    end)
+end
+
+  local fillInternalTime = 0.3
+  local timerSoundSend_Elapse = nil --消息时间间隔  
+  local fillSize = 0
+  function shisanshui_ui:LimitRecodeSoundShow()
+    self:LimitRecodeSoundHide()
+    
+    self:SetSoundPanel(true)
+    self:SetSoundSendPanel(true)
+    self:SetSoundCancelSendPanel(false)
+    self.widgetTbl.SoundSendQuan.gameObject:SetActive(true)
+    self.widgetTbl.spriteQuan.fillAmount=0
+    fillSize = 0
+
+    timerSoundSend_Elapse = Timer.New(slot(self.OnTimerSoundSend_Proc,self) , fillInternalTime, -1)
+    timerSoundSend_Elapse:Start()
+  end
+
+  function shisanshui_ui:LimitRecodeSoundHide()
+    if timerSoundSend_Elapse ~= nil then
+        timerSoundSend_Elapse:Stop()  
+        timerSoundSend_Elapse = nil     
+    end
+  end
+
+  function shisanshui_ui:OnTimerSoundSend_Proc()
+    fillSize = fillSize + fillInternalTime/gvoice_sys.GetMaxRecordTime()
+    if fillSize < 1 then
+      if self.widgetTbl.spriteQuan~=nil then
+        self.widgetTbl.spriteQuan.fillAmount=fillSize
+      end
+    else
+      self.isMaxTimeSend = true
+      self:RecodeSoundEnd()
+    end
+  end
+
+  --录音结束
+  function shisanshui_ui:RecodeSoundEnd()
+    self:LimitRecodeSoundHide()
+    self:SetSoundPanel(false)
+    Trace("录音结束，执行后续逻辑-------------------------------")
+
+    gvoice_sys.StopRecording()        -- 结束录音
+    gvoice_sys.AddRecordedFileLst()   -- 上传文件
+  end
+
+  --开始录音
+  function shisanshui_ui:RecodeSoundStart()
+  	Trace("录音开始,执行开始录音逻辑-------------------------------")
+  	local ret = gvoice_sys.StartRecording(global_define.recordFilePath)   --开始录音
+
+  	Trace("ret ----------------------"..tostring(ret))
+  	if ret then
+    	self:LimitRecodeSoundShow()    	
+	end
+	return ret
+  end
+
+  --取消录音
+  function shisanshui_ui:RecodeSoundCancel()
+    self:LimitRecodeSoundHide()
+    self:SetSoundPanel(false)
+    Trace("录音取消,执行取消录音逻辑-------------------------------")
+    gvoice_sys.StopRecording()   -- 结束录音
+  end
+
+
+-- 录音界面
+function shisanshui_ui:InitSoundView()
+  local class = require "logic/mahjong_sys/ui_mahjong/views/RecordSoundView"
+  self.recordView = class:create(child(self.widgetTbl.panel, "Anchor_Center/sound").gameObject)
+  self.recordView:SetActive(false)
+end
+function shisanshui_ui:AddSoundDragEventListener(obj)
+  if not IsNil(obj) then
+    addDragCallbackSelf(obj, function (go, delta)
+      self.recordView:Drag(go, delta)
+    end)
+  end
+end
+function shisanshui_ui:Onbtn_voicePressed(go, isPress)
+	self.recordView:Press(go, isPress)
+end
+
+-- local isStart = false
+-- --[[
+-- 语音按钮长按
+-- ]]
+-- function shisanshui_ui:Onbtn_voicePressed( go, isPress)
+--   --Trace("isPress:"..tostring(isPress))
+--   if isPress and (not isStart)then
+--   	isStart = true
+--     self.isCancel = false
+--     self.isMaxTimeSend = false
+--     self:RecodeSoundStart()
+--   else
+--     if self.isCancel == false and self.isMaxTimeSend == false then
+--       if fillSize*gvoice_sys.GetMaxRecordTime() < gvoice_sys.GetMinRecordTime() then
+--         UI_Manager:Instance():FastTip("说话时间过短，请重新说话")
+--         self:RecodeSoundCancel()
+--       else
+--         self:RecodeSoundEnd()
+--       end
+--     end
+--     isStart = false
+--   end
+-- end
+
+
+-- function shisanshui_ui:AddSoundDragEventListener(trans)
+--   if not IsNil(trans) then
+--     addDragCallbackSelf(trans, function (go, delta)
+--       if not self.isDrag then
+--         if delta.y > 3 then 
+--           self.isDrag = true      
+--         end
+--       else
+--         if self.widgetTbl.SoundSendPanel.gameObject.activeSelf == true then
+--           self.widgetTbl.SoundSendPanel.gameObject:SetActive(false)
+--         end
+--         if self.widgetTbl.SoundCancelSendPanel.gameObject.activeSelf == false then
+--           self.widgetTbl.SoundCancelSendPanel.gameObject:SetActive(true)
+--         end
+--       end
+--     end)
+
+--     addDragEndCallbackSelf(trans, function (go)
+--         if self.isDrag then
+--           if Input.mousePosition.y > 2*Screen.height/5 then           
+--             self.isCancel = true
+--             if self.isMaxTimeSend ==false then
+--               self:RecodeSoundCancel()
+--             end
+--           end
+--           self.isDrag = false
+--         end
+--     end)
+--   end
+-- end
+
+function shisanshui_ui:OnMsgVoiceInfoHandler(fileID)
+  Trace("fileID---------------------"..tostring(fileID))
+  shisangshui_play_sys.ChatReq(3, tostring(fileID), nil)
+end
+
+function shisanshui_ui:OnMsgVoicePlayEnd(viewSeat)
+ 	self.playerList[viewSeat].SetSoundTextureState(false)
+end
+
+function shisanshui_ui:OnMsgVoicePlayBegin(viewSeat)
+	self.playerList[viewSeat].SetSoundTextureState(true)
+end
+
+function shisanshui_ui:OnMsgChatText(para)
+  viewSeat = para["viewSeat"]
+  contentType = para["contentType"]
+  content = para["content"]
+  givewho = para["givewho"]
+  self.playerList[viewSeat].SetChatText(content)
+end
+
+function shisanshui_ui:OnMsgChatImaga(para)
+  viewSeat = para["viewSeat"]
+  contentType = para["contentType"]
+  content = para["content"]
+  givewho = para["givewho"]
+  self.playerList[viewSeat].SetChatImg(content)
+end
+
+function shisanshui_ui:OnMsgChatInteractin(para)
+  viewSeat = para["viewSeat"]
+  contentType = para["contentType"]
+  content = para["content"]
+  givewho = para["givewho"]
+  self.playerList[givewho].ShowInteractinAnimation(viewSeat,content)
+end
+
+local _xiaopaoTime = 0
+local xiaopaoTimer_Elapse = nil
+local xiaopaoCallBack = nil
+
+function  shisanshui_ui:StopCountDownTimer()
+	if xiaopaoTimer_Elapse ~= nil then
+		xiaopaoTimer_Elapse:Stop()
+		xiaopaoTimer_Elapse = nil
+	end
+end
+
+
+
+function shisanshui_ui:PlaceCardCount(time)
+	self.compTbl.countDownTimeLabel.text = tostring(time)
+end
+
+--通用倒计时接口
+function  shisanshui_ui:SetCountDown(go,time,disposefun,callback)
+	if time == nil or time <= 0 then
+		go:SetActive(false)
+	elseif xiaopaoTimer_Elapse == nil then
+		go:SetActive(true)
+		_xiaopaoTime =math.floor(time)
+		if disposefun ~= nil then 
+			disposefun(_xiaopaoTime)
+		end
+		xiaopaoTimer_Elapse = Timer.New(function()
+		_xiaopaoTime = _xiaopaoTime -1;
+		if disposefun ~= nil then 
+			disposefun(_xiaopaoTime)
+		end
+		if _xiaopaoTime <= 0 then
+			self:StopCountDownTimer()
+			go:SetActive(false)
+			if xiaopaoCallBack ~= nil then
+				xiaopaoCallBack()
+			end
+		end
+		end,1,time)
+	xiaopaoTimer_Elapse:Start()
+		xiaopaoCallBack = callback
+	end
+end
+
+function shisanshui_ui:SetPlaceCardCountDown(count)
+
+	self.compTbl.countDownSlider.gameObject:SetActive(true)
+	 self:SetCountDown(self.compTbl.countDownSlider.gameObject,count,slot(self.PlaceCardCount,self),callback)
+end
+
+return shisanshui_ui

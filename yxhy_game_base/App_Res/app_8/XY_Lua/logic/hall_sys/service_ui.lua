@@ -1,0 +1,64 @@
+--region *.lua
+--Date
+--此文件由[BabeLua]插件自动生成
+
+
+
+--endregion
+service_ui = ui_base.New()
+local this = service_ui
+function this.Show()
+	if this.gameObject==nil then
+		require ("logic/hall_sys/service_ui")
+		this.gameObject = newNormalUI("app_8/ui/service_ui/service_ui")
+	else
+		this.gameObject:SetActive(true) 
+	end
+    this.addlistener()
+end
+function this.Start() 
+    this:RegistUSRelation()
+end
+
+function this.OnDestroy()
+    this:UnRegistUSRelation()
+end
+function this.Hide()
+    if this.gameObject==nil then
+		return
+	else
+		GameObject.Destroy(this.gameObject)
+        this.gameObject=nil
+	end
+end
+
+function this.addlistener() 
+    local btn_copy1=child(this.transform,"service_panel/btn_copy1")
+    if btn_copy1~=nil then
+        addClickCallbackSelf(btn_copy1.gameObject,this.copy,this)
+    end
+    local btn_copy2=child(this.transform,"service_panel/btn_copy2")
+    if btn_copy2~=nil then
+        addClickCallbackSelf(btn_copy2.gameObject,this.copy,this)
+    end
+
+    local btn_close=child(this.transform,"service_panel/btn_close")
+    if btn_close~=nil then
+        addClickCallbackSelf(btn_close.gameObject,this.Hide,this)
+    end
+end
+
+
+function  this.copy(obj2,obj2)
+    local lab_txt=child(obj2.transform,"Label")
+    local str=componentGet(lab_txt.gameObject,"UILabel").text
+    local t=string.split(str,":")
+    local s=DelS(t[2])
+    Trace(s)
+    YX_APIManage.Instance:onCopy(s,function()fast_tip.Show(GetDictString(6043))end) 
+end
+
+function DelS(s)
+        assert(type(s)=="string")
+        return s:match("^%s*(.-)%s*$")
+end

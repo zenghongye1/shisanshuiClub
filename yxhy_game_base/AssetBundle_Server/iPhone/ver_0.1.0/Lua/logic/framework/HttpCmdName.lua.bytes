@@ -1,0 +1,22 @@
+local HttpCmdName = {}
+
+-- 俱乐部相关
+HttpCmdName.ClubBindAgent = "GameClub.bindAgent"  -- 绑定代理商
+HttpCmdName.ClubGetAgentInfo = "GameClub.getAgentInfo" -- 获得自己代理身份
+HttpCmdName.ClubCreate  = "GameClub.createClub"  -- 创建俱乐部
+HttpCmdName.ClubApply = "GameClub.clubApply"  -- 加入俱乐部
+HttpCmdName.ClubGetApplyList = "GameClub.getClubApplyList" --获得俱乐部申请列表
+HttpCmdName.ClubDealClubApply = "GameClub.dealClubApply" --处理俱乐部申请信息 
+HttpCmdName.ClubGetClubUser = "GameClub.getClubUser" -- 获得俱乐部成员列表
+HttpCmdName.ClubGetUserClubList = "GameClub.getUserClubList" -- 获得用户进入的俱乐部列表
+HttpCmdName.ClubGetAgentClubList = "GameClub.getAgentClubList"  --获得自己创建的俱乐部
+HttpCmdName.ClubSetManager = "GameClub.setManager"  -- 设置管理员
+HttpCmdName.ClubKickClubUser = "GameClub.kickClubUser" -- 俱乐部T人
+HttpCmdName.ClubQuitClub = "GameClub.quitClub" -- 玩家退出俱乐部
+HttpCmdName.ClubEditClub = "GameClub.editClub" -- 编辑修改俱乐部
+HttpCmdName.ClubCreateClubRoom = "createClubRoom" -- 俱乐部开房
+HttpCmdName.ClubGetRoomList = "GameClub.getRoomList" -- 获得俱乐部房间列表
+HttpCmdName.ClubGetUserAllClubList = "GameClub.getUserAllClubList"  --获得用户所有俱乐部,加入的和创建的
+HttpCmdName.ClubSearchClubList = "GameClub.searchClubList" --获得官方俱乐部列表 
+HttpCmdName.getUserClubByCid = "GameClub.getUserClubByCid"  -- 请求指定俱乐部信息
+return HttpCmdName

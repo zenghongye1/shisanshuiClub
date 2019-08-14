@@ -1,0 +1,17 @@
+
+local base = require "logic/mahjong_sys/common/mahjong_action_base"
+local mahjong_action_voteEnd = class("mahjong_action_voteEnd", base)
+
+local mahjong_ui = mahjong_ui
+
+function mahjong_action_voteEnd:Execute(tbl)
+	local confirm = tbl._para.confirm
+	if confirm == false and roomdata_center.isSelfVote == true then
+		MessageBox.ShowSingleBox(GetDictString(6048))
+	end
+	roomdata_center.isSelfVote = false
+	UI_Manager:Instance():CloseUiForms("VoteQuitUI")
+	mahjong_ui.voteView:Hide()
+end
+
+return mahjong_action_voteEnd

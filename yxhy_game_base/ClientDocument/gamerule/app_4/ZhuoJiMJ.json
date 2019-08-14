@@ -1,0 +1,153 @@
+﻿[
+	[{
+		"exData": [1, 2, 0, 3],
+		"selectIndex": [3],
+		"maxPerLine": 6,
+		"data": ["AA支付", "大赢家支付", "房主支付", "会长支付"],
+		"title": "房费:",
+		"id": "costtype",
+		"type": 1,
+		"group": 44
+	}],
+	[{
+		"exData": [
+			4,
+			3,
+			2
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"4人",
+			"3人",
+			"2人"
+		],
+		"type": 1,
+		"group": 21,
+		"title": "人数:",
+		"id": "pnum",
+		"connecttype": [1],
+		"connect": [{
+			"2": {
+				"enable": [{
+					"bSupportMissHu": 1
+				}]
+			},
+			"3": {
+				"enable": [{
+					"bSupportMissHu": 1
+				}]
+			},
+			"4": {
+				"disable": [{
+					"bSupportMissHu": 1
+				}]
+			}
+		}],
+		"Isconnect": [{}]
+	}],
+	[{
+		"exData": [
+			4,
+			8,
+			16
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"4局",
+			"8局",
+			"16局"
+		],
+		"type": 1,
+		"group": 22,
+		"maxPerLine": 3,
+		"title": "局数:",
+		"id": "rounds"
+	}],
+	[{
+		"multiterm": true,
+		"title": "丁拐:",
+		"type": 0,
+		"group": 0,
+		"id": [
+			"bSupportMissHu"
+		],
+		"data": [
+			"缺门"
+		],
+		"selectIndex": []
+	}],
+	[{
+		"multiterm": true,
+		"title": "估卖:",
+		"type": 0,
+		"group": 0,
+		"id": [
+			"bSupportXiaPao"
+		],
+		"data": [
+			"估卖"
+		],
+		"selectIndex": []
+	}],
+	[{
+		"exData": [
+			1,
+			0
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"翻牌鸡",
+			"摇摆鸡"
+		],
+		"type": 1,
+		"group": 24,
+		"title": "鸡牌:",
+		"id": "bSupportTurnJi"
+	}],
+	[{
+		"multiterm": true,
+		"title": "鸡牌:",
+		"type": 0,
+		"group": 0,
+		"id": [
+			"bSupportSelfJi",
+			"bSupportWuGuJi",
+			"bSupportWeekJi",
+			"bSupportBlowJi"
+		],
+		"data": [
+			"本鸡",
+			"乌骨鸡",
+			"星期鸡",
+			"吹风鸡"
+		],
+		"selectIndex": [
+			1
+		]
+	}],
+	[{
+		"exData": [
+			1,
+			2,
+			3
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"一扣二",
+			"连庄",
+			"通三"
+		],
+		"type": 1,
+		"group": 25,
+		"title": "连庄:",
+		"id": "nSupportLianZhuang"
+	}]
+]

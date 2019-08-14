@@ -1,0 +1,108 @@
+local record_view_item = require "logic/hall_sys/record_ui/record_view_item"
+
+local base = require "logic/framework/ui/uibase/ui_view_base"
+local record_view = class("record_view", base)
+local ui_wrap = require "logic/framework/ui/uibase/ui_wrap"
+
+function record_view:InitView()
+	self.initItemCount = 7
+
+    self.record_wrapcontent_tr = child(self.transform,"scrollview/ui_wrapcontent")
+    self.record_item_tr = child(self.transform,"record_item")
+
+    self.itemList = {}
+end
+
+--[[--
+ * @Description: 初始化刷新事件和item  
+ ]]
+function record_view:InitRecord()
+    for i=1,self.initItemCount do
+        local go = newobject(self.record_item_tr.gameObject)
+        go.transform:SetParent(self.record_wrapcontent_tr,false)
+        local item = record_view_item:create(go)
+        item:SetActive(true)
+        addClickCallbackSelf(item.gameObject,self.opendetails,self)
+        table.insert(self.itemList,item)
+    end
+end
+
+--[[--
+ * @Description: 显示  
+ ]]
+function record_view:Initdate(record_data)
+    self.record_wrap = ui_wrap:create(self.gameObject)
+    self.record_wrap.OnUpdateItemInfo=function (go,realindex,index)
+        self:UpdateRecord(go,realindex,index)
+    end 
+    self.record_wrap:InitUI(110)
+    self.record_wrap.OnUpdateToEnd=function ()
+        self:OnUpdateToEnd()
+    end
+	self.record_wrap:Initdate(record_data)
+end
+    
+--[[--
+ * @Description: item刷新  
+ ]]
+function record_view:UpdateRecord(go,realindex,index) 
+    if self.record_wrap.wraprecord[realindex] == nil then
+        return
+    end
+
+    local item = self.itemList[index]
+    if item then
+        item:UpdateRecord(realindex,self.record_wrap.wraprecord[realindex])
+    end
+end
+
+--[[--
+ * @Description: 战绩详情点击事件  
+ ]]
+function record_view:opendetails(obj1)
+    ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+	report_sys.EventUpload(14)
+    local rid=self.record_wrap.wraprecord[tonumber(obj1.name)].rid   
+    if rid==0 then
+        recorddetails_ui.Show()    
+    else 
+        -- waiting_ui.Show()
+        UI_Manager:Instance():ShowUiForms("waiting_ui")
+        http_request_interface.getRoomByRid(rid,1,function (str)   
+           local s=string.gsub(str,"\\/","/")  
+           local t=ParseJsonStr(s) 
+           -- recorddetails_ui.Show(t)  
+
+            UI_Manager:Instance():ShowUiForms("recorddetails_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+                                    Trace("Close recorddetails_ui")
+                                  end,t)
+            
+           -- waiting_ui.Hide() 
+           UI_Manager:Instance():CloseUiForms("waiting_ui")
+       end)
+    end  
+end
+
+--[[--
+ * @Description: 底部刷新  
+ ]]
+function record_view:OnUpdateToEnd()
+    http_request_interface.getRoomSimpleByUid(nil,2,self.record_wrap.page,function (str)
+        if self.record_wrap then
+	        local s=string.gsub(str,"\\/","/")  
+	        local t=ParseJsonStr(s)
+	        local count=table.getCount(self.record_wrap.wraprecord)
+	        if table.getCount(t.data)<=0 then
+	            return
+	        end
+	        for i=1,table.getCount(t.data) do
+	            self.record_wrap.wraprecord[i+count]=t.data[i]
+	        end
+	        self.record_wrap.page=self.record_wrap.page+1
+	        self.record_wrap.maxCount=table.getCount(self.record_wrap.wraprecord)
+	        self.record_wrap.wrap.minIndex = -self.record_wrap.maxCount+1 
+        end
+    end) 
+end
+
+return record_view

@@ -1,0 +1,527 @@
+--[[--
+ * @Description: 河南麻将玩法
+ * @Author:      shine
+ * @FileName:    play_mode_henan.lua
+ * @DateTime:    2017-06-13 10:22:49
+ ]]
+require "logic/mahjong_sys/mode_base"
+require "logic/mahjong_sys/mode_components/comp_clickevent"
+require "logic/mahjong_sys/mode_components/comp_resMgr"
+require "logic/mahjong_sys/mode_components/comp_mjItemMgr"
+require "logic/mahjong_sys/mode_components/comp_table"
+require "logic/mahjong_sys/mode_components/comp_playerMgr"
+require "logic/mahjong_sys/mode_components/comp_dice"
+
+play_mode_henan = {}
+local instance = nil
+
+function play_mode_henan.GetInstance()
+    if (instance == nil) then
+        instance = play_mode_henan.create()
+    end
+
+    return instance
+end
+
+function play_mode_henan.create(levelID)
+    local this = mode_base.create(levelID)
+    this.Class = play_mode_henan
+    this.name = "play_mode_henan"
+    --------------------------------  
+
+    local gvbl = room_usersdata_center.GetViewSeatByLogicSeat
+    local gvbln = room_usersdata_center.GetViewSeatByLogicSeatNum
+    local gmls = room_usersdata_center.GetMyLogicSeat
+
+    local ConstructComponents = nil
+
+    local compTable = nil
+    local compPlayerMgr = nil
+    local compResMgr = nil
+    local compDice = nil
+
+    local isInit = false
+
+    local lightDirTbl = {}--下标为本地视图下标
+
+
+    local function InitForReady()
+        compMJItemMgr:InitMJItems()
+        compTable:InitWall()
+        compDice.Init()
+        --compTable:InitDice()
+        compPlayerMgr:ResetPlayer()
+        compResMgr:HideOutCardEfObj()
+        roomdata_center.leftCard = 136
+        mahjong_ui.SetLeftCard(roomdata_center.leftCard)
+        for i,v in ipairs(lightDirTbl) do
+            v.gameObject:SetActive(false)
+        end
+    end
+
+    local function OnPlayerEnter(tbl)
+        local logicSeat = tbl["_src"]
+        local viewSeat = gvbl(logicSeat)
+        if viewSeat == 1 then
+            local logicSeat_number = room_usersdata_center.GetLogicSeatByStr(logicSeat)            
+            local mjDirObj = compTable:GetMJDirObj()
+            if mjDirObj ~= nil then
+                local dirTran = child(mjDirObj.transform, "dark_dir/direction_0"..tostring(logicSeat_number))
+                local dirLightTran = child(mjDirObj.transform, "light_dir/direction_"..tostring(logicSeat_number))
+                if dirTran ~= nil then
+                    dirTran.gameObject:SetActive(true)
+                end
+                if dirLightTran ~= nil then
+                    dirLightTran.gameObject:SetActive(true)
+                    for i=1,4 do
+                        local t = child(dirLightTran, "direction_0"..tostring(i))
+                        table.insert(lightDirTbl,t)
+                    end
+                end
+            end
+        end     
+    end
+
+    local function OnPlayerReady( tbl )
+        local logicSeat = tbl["_src"]
+        local viewSeat = gvbl(logicSeat)
+
+        if viewSeat == 1 then
+            InitForReady()
+            isInit = true
+        end
+
+        --Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.GAME_SOCKET_READY)
+    end
+
+    local function OnGameStart( tbl )
+        if isInit == false then
+            InitForReady()
+            isInit = true
+        end
+        compTable:ShowWall()
+    end
+
+    local function OnGoXiaPao( tbl )
+        local time = roomdata_center.timersetting.XiaPaoTimeOut - tbl.time
+        compTable:SetTime(time)
+    end
+
+    local function OnALLPlayerXiaPao( tbl )
+        compTable:StopTime()
+    end
+
+    local function OnGameDeal(tbl)
+        Trace(GetTblData(tbl))
+
+        local dice_big = tbl["_para"]["dice"][1]
+        local dice_small = tbl["_para"]["dice"][2]
+
+        if dice_big < dice_small then
+            local temp = dice_big
+            dice_big = dice_small
+            dice_small = temp
+        end
+
+        Trace("Dice========="..dice_big.." "..dice_small)
+
+        --compTable:ShowDoce(tbl["_para"]["dice"][1],tbl["_para"]["dice"][2],function ()
+        compDice.Play(tbl["_para"]["dice"][1],tbl["_para"]["dice"][2],function ()
+            Trace("roomdata_center.zhuang_viewSeat========="..roomdata_center.zhuang_viewSeat)
+
+            local viewSeat = roomdata_center.zhuang_viewSeat + dice_big + dice_small -1
+            viewSeat = viewSeat % 4
+            if viewSeat == 0 then
+                viewSeat = 4
+            end
+
+            local cards = tbl["_para"]["cards"]
+
+            compTable:SendAllHandCard(
+                this.config.MahjongDunCount-dice_small,
+                viewSeat,
+                cards,
+                function ()
+                    compPlayerMgr:AllSortHandCard()                        
+                    Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.GAME_SOCKET_GAME_DEAL)
+                end
+            )
+        end)
+
+    end
+
+    local function OnGameLaiZi( tbl )
+        Trace(GetTblData(tbl))
+
+        roomdata_center.hun = tbl["_para"]["laizi"][1]
+
+        local cardValue = tbl._para.cards[1]
+        local dun = tbl._para.sits[1]/2
+        Trace("OnGameLaiZi !!!!!!!!!!!!! dun "..dun.." cardValue "..cardValue)
+        compTable:ShowLai( dun,cardValue,true,function()
+            compPlayerMgr:GetPlayer(1):ShowLaiInHand()
+            compPlayerMgr:AllSortHandCard()
+        end )
+
+        Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmd_zhengzhoumahjong.F1_GAME_LAIZI)
+    end
+
+    local function OnAskPlay( tbl )
+        local time = roomdata_center.timersetting.giveTimeOut - tbl.time
+        compTable:SetTime(time)
+
+        local viewSeat = gvbl(tbl._src)
+        if viewSeat == 1 then
+            compPlayerMgr:GetPlayer(viewSeat):SetCanOut(true)            
+        end
+
+        --展示东南西北
+        for i,v in ipairs(lightDirTbl) do
+            v.gameObject:SetActive(false)
+        end
+
+        lightDirTbl[viewSeat].gameObject:SetActive(true)
+
+        -- body
+        Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.MAHJONG_GO_PLAY_CARD)
+    end
+
+    local function OnPlayCard( tbl )
+        --compTable:StopTime()
+        Trace(GetTblData(tbl))
+
+        local src = tbl["_src"]
+        local viewSeat = room_usersdata_center.GetViewSeatByLogicSeat(src)
+
+        local value = tbl["_para"]["cards"][1]
+
+        --Trace("!!!!!!!!!!!!!!!viewSeat"..tostring(viewSeat))
+        compPlayerMgr:GetPlayer(viewSeat):OutCard(value, function (pos)
+            compResMgr:SetOutCardEfObj(pos)
+        end)
+
+        if viewSeat == 1 then
+            compPlayerMgr:GetPlayer(viewSeat):SetCanOut(false)
+            compPlayerMgr:HideHighLight()
+        end
+
+        ui_sound_mgr.PlaySoundClip("woman/"..value)
+
+        Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.MAHJONG_PLAY_CARD)
+    end
+
+    local function OnGiveCard( tbl )
+        Trace(GetTblData(tbl))
+
+        local src = tbl["_src"]
+        local viewSeat = room_usersdata_center.GetViewSeatByLogicSeat(src)
+
+        local value = MahjongTools.GetRandomCard()
+        if viewSeat == 1 then
+            value = tbl["_para"]["cards"][1]
+        end
+
+        compTable:SendCard( viewSeat,value )
+        Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.MAHJONG_GIVE_CARD)
+    end
+
+    local function OnGameAskBlock( tbl )
+        local time = roomdata_center.timersetting.blockTimeOut - tbl.time
+        compTable:SetTime(time)
+    end
+
+    local function OnTriplet( tbl )
+        --Trace(GetTblData(tbl))
+        compTable:StopTime()
+
+        local operPlayViewSeat = gvbl(tbl._src)
+        local lastPlayViewSeat = gvbln(tbl._para.tripletWho)
+        local offset = lastPlayViewSeat - operPlayViewSeat 
+        local mj = compPlayerMgr:GetPlayer(lastPlayViewSeat):GetLastOutCard()
+
+        if offset<1 then
+            offset = offset +roomdata_center.MaxPlayer()
+        end
+
+        local operType
+        -- 3：左 2：中 1：右
+        if(offset == 3) then
+            operType = MahjongOperAllEnum.TripletLeft
+        end
+        if(offset == 2) then
+            operType = MahjongOperAllEnum.TripletCenter
+        end
+        if(offset == 1) then
+            operType = MahjongOperAllEnum.TripletRight
+        end
+        local operData = operatordata:New(operType,tbl._para.cardTriplet.triplet,tbl._para.cardTriplet.useCards)
+
+        compResMgr:HideOutCardEfObj()
+        compPlayerMgr:GetPlayer(operPlayViewSeat):OperateCard(operData,mj)
+
+        ui_sound_mgr.PlaySoundClip("woman/peng")
+
+        Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.MAHJONG_TRIPLET_CARD)
+
+    end
+
+    local function OnQuadruplet( tbl )
+        --Trace(GetTblData(tbl))
+        compTable:StopTime()
+
+        local operPlayViewSeat = gvbl(tbl._src)
+        local lastPlayViewSeat = gvbln(tbl._para.quadrupletWho)
+        local offset = lastPlayViewSeat - operPlayViewSeat 
+        local mj = compPlayerMgr:GetPlayer(lastPlayViewSeat):GetLastOutCard()
+
+        if offset<1 then
+            offset = offset +roomdata_center.MaxPlayer()
+        end
+
+        local quadrupletType = tbl._para.quadrupletType
+
+        local operType
+        local operData
+        -- 3：左 2：中 1：右
+        if quadrupletType == 1 then     --明杠
+            if(offset == 3) then
+                operType = MahjongOperAllEnum.BrightBarLeft
+            end
+            if(offset == 2) then
+                operType = MahjongOperAllEnum.BrightBarCenter
+            end
+            if(offset == 1) then
+                operType = MahjongOperAllEnum.BrightBarRight
+            end
+            operData = operatordata:New(operType,tbl._para.cardQuadruplet.quadruplet,tbl._para.cardQuadruplet.useCards)
+            compResMgr:HideOutCardEfObj()
+        end
+
+        if quadrupletType == 2 then
+            operType = MahjongOperAllEnum.AddBar
+            operData = operatordata:New(operType,tbl._para.cardQuadruplet.useCards[1],nil)
+        end
+
+        if quadrupletType == 3 then
+            operType = MahjongOperAllEnum.DarkBar
+            table.remove(tbl._para.cardQuadruplet.useCards)
+            operData = operatordata:New(operType,tbl._para.cardQuadruplet.useCards[1],tbl._para.cardQuadruplet.useCards)
+        end
+
+        compPlayerMgr:GetPlayer(operPlayViewSeat):OperateCard(operData,mj)
+
+        ui_sound_mgr.PlaySoundClip("woman/gang")
+
+        Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.MAHJONG_QUADRUPLET_CARD)
+    end
+
+    local function OnGameRewards()
+        compTable:StopTime()
+        isInit = false
+
+        ui_sound_mgr.PlaySoundClip("woman/hu")
+    end
+
+    local function OnSyncTable( tbl )
+        --[[
+        game_state:
+        prepare     
+        deal        
+        laizi       
+        xiapao      
+        round       
+        reward      
+        gameend  
+        ]]
+
+        local ePara = tbl._para
+        local game_state = ePara.game_state         -- 游戏阶段
+        local dealer = ePara.dealer                 -- 庄家
+        local dice = ePara.dice                     -- 骰子
+        local laizi = ePara.laizi                   -- 癞子
+        local player_state = ePara.player_state     -- 玩家状态
+        local tileCount = ePara.tileCount           -- 各玩家手牌数
+        local tileLeft = ePara.tileLeft             -- 剩余牌子
+        local tileList = ePara.tileList             -- 玩家手牌值
+        local combineTile = ePara.combineTile       -- 各玩家吃碰杠
+        local xiapao = ePara.xiapao                 -- 下跑
+        local winTile = ePara.winTile               -- 各家所赢
+        local discardTile = ePara.discardTile       -- 各玩家出的牌
+        local whoisOnTurn = ePara.whoisOnTurn       -- 谁的回合
+        --local nleftTime = ePara.nleftTime             -- 
+        --local cardLastDraw = ePara.cardLastDraw       -- 
+
+
+        if game_state == "prepare" then         --准备阶段
+
+        elseif game_state == "xiapao" then      --下跑阶段
+            InitForReady()
+            compTable:ReShowWall()
+        elseif game_state == "deal" then        --发牌阶段
+            InitForReady()
+            compTable:ReShowWall()
+        elseif game_state == "laizi" then       --癞子阶段
+            InitForReady()
+            --恢复牌墙
+            this:OnResetWall(dice)
+            --恢复玩家牌
+            this:OnResetCard( discardTile ,combineTile,tileCount,tileList)
+        elseif game_state == "round" then       --出牌阶段
+            InitForReady()
+            --恢复牌墙
+            this:OnResetWall(dice)
+            --恢复癞子
+            this:OnResetLai(laizi)
+            --恢复玩家牌
+            this:OnResetCard( discardTile ,combineTile,tileCount,tileList)
+            --是否玩家出牌
+            if whoisOnTurn == gmls() then
+                compPlayerMgr:GetPlayer(1):SetCanOut(true)
+            end
+            
+        elseif game_state == "reward" then      --结算阶段
+            --todo
+        elseif game_state == "gameend" then     --结束阶段
+            --todo
+        end
+        
+    end
+
+    --恢复牌墙
+    function this:OnResetWall( dice)
+        roomdata_center.leftCard = 136
+
+        local dice_big = dice[1]
+        local dice_small = dice[2]
+        if dice_big < dice_small then
+            local temp = dice_big
+            dice_big = dice_small
+            dice_small = temp
+        end
+        local viewSeat = roomdata_center.zhuang_viewSeat + dice_big + dice_small -1
+        viewSeat = viewSeat % 4
+        if viewSeat == 0 then
+            viewSeat = 4
+        end
+
+
+
+        compTable:ResetWall(this.config.MahjongDunCount-dice_small,viewSeat)
+    end
+
+    function this:OnResetLai( laizi )
+        if laizi.sit[1]~=nil and laizi.card[1]~=nil then
+            roomdata_center.hun = laizi.laizi[1]
+            compTable:ShowLai(laizi.sit[1]/2,laizi.card[1])
+        end
+    end
+
+    --恢复玩家牌
+    function this:OnResetCard( discardTile ,combineTile,tileCount,tileList)
+        --出牌
+        for i=1,roomdata_center.MaxPlayer() do
+            local count = #discardTile[i]
+            local viewSeat = gvbln(i)
+            local cardItems = compTable:GetResetCards(count)
+            compPlayerMgr:GetPlayer(viewSeat):ResetOutCard(cardItems,discardTile[i])
+        end
+
+        --操作牌
+        for i=1,roomdata_center.MaxPlayer() do
+            local operData = combineTile[i]
+            local viewSeat = gvbln(i)
+            compPlayerMgr:GetPlayer(viewSeat):ResetOperCard(
+                function( count )
+                    return compTable:GetResetCards(count)
+                end,
+                operData)
+        end
+
+        --手牌
+        for i=1,roomdata_center.MaxPlayer() do
+            local count = tileCount[i]
+            local viewSeat = gvbln(i)
+            local cardItems = compTable:GetResetCards(count)
+            if viewSeat == 1 then
+                compPlayerMgr:GetPlayer(viewSeat):ResetHandCard(cardItems,tileList)
+            else
+                compPlayerMgr:GetPlayer(viewSeat):ResetHandCard(cardItems)
+            end
+        end
+    end
+
+    this.base_init = this.Initialize
+
+    function this:Initialize()
+        this.base_init()
+        
+        Notifier.regist(cmdName.GAME_SOCKET_ENTER, OnPlayerEnter)--玩家进入
+        Notifier.regist(cmdName.GAME_SOCKET_READY,OnPlayerReady)--玩家准备
+        Notifier.regist(cmdName.GAME_SOCKET_GAMESTART,OnGameStart)--游戏开始
+        Notifier.regist(cmd_zhengzhoumahjong.F1_GAME_GOXIAPAO,OnGoXiaPao)--通知下跑
+        Notifier.regist(cmd_zhengzhoumahjong.F1_GAME_ALLXIAPAO,OnALLPlayerXiaPao)--所有玩家下跑
+        Notifier.regist(cmdName.GAME_SOCKET_GAME_DEAL,OnGameDeal)--发牌
+        Notifier.regist(cmd_zhengzhoumahjong.F1_GAME_LAIZI,OnGameLaiZi)--定赖
+        Notifier.regist(cmdName.MAHJONG_GO_PLAY_CARD,OnAskPlay)--通知出牌
+        Notifier.regist(cmdName.MAHJONG_PLAY_CARD,OnPlayCard)--出牌
+
+        Notifier.regist(cmdName.MAHJONG_ASK_BLOCK,OnGameAskBlock)--提示吃碰杠胡操作
+        Notifier.regist(cmdName.MAHJONG_GIVE_CARD,OnGiveCard)--摸牌
+        Notifier.regist(cmdName.MAHJONG_TRIPLET_CARD,OnTriplet)--碰牌
+        Notifier.regist(cmdName.MAHJONG_QUADRUPLET_CARD,OnQuadruplet)--杠牌
+
+        Notifier.regist(cmdName.GAME_SOCKET_SMALL_SETTLEMENT,OnGameRewards)--结算
+
+        Notifier.regist(cmdName.GAME_SOCKET_SYNC_TABLE,OnSyncTable)--重连同步表
+    end
+
+    this.base_uninit = this.Uninitialize
+
+    function this:Uninitialize()
+        this.base_uninit()
+
+        Notifier.remove(cmdName.GAME_SOCKET_ENTER, OnPlayerEnter)--玩家进入
+        Notifier.remove(cmdName.GAME_SOCKET_READY,OnPlayerReady)--玩家准备
+        Notifier.remove(cmdName.GAME_SOCKET_GAMESTART,OnGameStart)--游戏开始
+        Notifier.remove(cmd_zhengzhoumahjong.F1_GAME_GOXIAPAO,OnGoXiaPao)--通知下跑
+        Notifier.remove(cmd_zhengzhoumahjong.F1_GAME_ALLXIAPAO,OnALLPlayerXiaPao)--所有玩家下跑
+        Notifier.remove(cmdName.GAME_SOCKET_GAME_DEAL,OnGameDeal)--发牌
+        Notifier.remove(cmd_zhengzhoumahjong.F1_GAME_LAIZI,OnGameLaiZi)--定赖
+        Notifier.remove(cmdName.MAHJONG_GO_PLAY_CARD,OnAskPlay)--通知出牌
+        Notifier.remove(cmdName.MAHJONG_PLAY_CARD,OnPlayCard)--出牌
+        Notifier.remove(cmdName.MAHJONG_GIVE_CARD,OnGiveCard)--摸牌
+
+        Notifier.remove(cmdName.MAHJONG_ASK_BLOCK,OnGameAskBlock)--提示吃碰杠胡操作
+        Notifier.remove(cmdName.MAHJONG_TRIPLET_CARD,OnTriplet)--碰牌
+        Notifier.remove(cmdName.MAHJONG_QUADRUPLET_CARD,OnQuadruplet)--杠牌
+
+        Notifier.remove(cmdName.GAME_SOCKET_SMALL_SETTLEMENT,OnGameRewards)--结算
+
+        Notifier.remove(cmdName.GAME_SOCKET_SYNC_TABLE,OnSyncTable)--重连同步表
+
+        instance = nil
+    end
+
+    --[[--
+     * @Description: 组装所需要的组件
+     ]]
+    function ConstructComponents()
+        Trace("ConstructComponents---------------------------------------")
+        -- 组装
+        this:AddComponent(comp_clickevent.create())
+        compResMgr = this:AddComponent(comp_resMgr.create())
+        compMJItemMgr = this:AddComponent(comp_mjItemMgr.create())
+        compTable = this:AddComponent(comp_table.create())
+        compPlayerMgr = this:AddComponent(comp_playerMgr.create())
+        compDice = this:AddComponent(comp_dice.create()) 
+    end
+
+    function this:PreloadObjects()
+        --预加载场景物体
+    end
+
+    -- 执行下组装
+    ConstructComponents()
+
+    return this
+end

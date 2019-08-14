@@ -1,0 +1,31 @@
+local base = require "logic/framework/ui/uibase/ui_view_base"
+local HallClubBtnsView = class("HallClubBtnsView", base)
+local UIManager = UI_Manager:Instance() 
+
+function HallClubBtnsView:InitView()
+	self.recommendBtnGo = self:GetGameObject("Grid/Sprite_recommend")
+	self.createBtnGo = self:GetGameObject("Grid/Sprite_create")
+	self.joinBtnGo = self:GetGameObject("Grid/Sprite_join")
+	addClickCallbackSelf(self.joinBtnGo, self.OnJoinBtnClick, self)
+	addClickCallbackSelf(self.createBtnGo, self.OnCreateBtnClick, self)
+	addClickCallbackSelf(self.recommendBtnGo, self.OnRecommendClick, self)
+end
+
+function HallClubBtnsView:OnRecommendClick()
+	UIManager:ShowUiForms("ClubSelectUI")
+end
+
+function HallClubBtnsView:OnCreateBtnClick()
+	if model_manager:GetModel("ClubModel"):CanCreateClub() then
+		UIManager:ShowUiForms("ClubCreateUI")
+	else
+		UIManager:ShowUiForms("ClubInputUI", nil, nil, ClubInputUIEnum.InputCode)
+	end
+end
+
+function HallClubBtnsView:OnJoinBtnClick()
+	UIManager:ShowUiForms("ClubInputUI", nil, nil, ClubInputUIEnum.InputClubID)
+end
+
+
+return HallClubBtnsView

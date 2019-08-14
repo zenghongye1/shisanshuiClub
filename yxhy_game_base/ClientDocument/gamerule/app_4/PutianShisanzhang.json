@@ -1,0 +1,141 @@
+﻿[
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+  [
+    {
+      "multiterm": true,
+      "title": "玩法:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -80,
+	  "itemWidth": 232,
+      "id": [
+        "nSubGameStyle",
+        "hutype"
+      ],
+      "data": [
+        "有金",
+        "点炮胡"
+      ],
+      "selectIndex": [
+      ],
+	  "connecttype": [ 1 ],
+	  "connect": [
+            {
+              "hutype": {
+				"disable": []
+                "enable": [{ "nGunAll": [ 0, 1 ] }]
+              }
+            } 
+          ],
+          "Isconnect": [
+            {
+              "hutype": {
+              "select": [
+                  { "nGunAll": [ 0 ] }
+                ]
+              }
+            } 
+          ]
+    }
+  ],
+  [
+    {
+      "exData": [
+	  4,
+	  3,
+	  2
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4人",
+        "3人",
+        "2人"
+      ],
+      "type": 1,
+      "itemHeight": -80,
+	  "itemWidth": 232,
+      "group": 21,
+      "title": "人数:",
+      "id": "pnum"
+    }
+  ],
+  [
+    {
+	 "exData": [
+	  4,
+	  8,
+	  16
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4局(房卡X1)",
+        "8局(房卡X2)",
+        "16局(房卡X4)"
+      ],
+      "type": 1,
+      "group": 22,
+      "itemHeight": -80,
+      "itemWidth": 232,
+      "maxPerLine": 3,
+      "title": "局数:",
+      "id": "rounds"
+    }
+  ], 
+  [ 
+    {
+	 "exData": [
+	   1,
+	   0
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "点炮全赔",
+        "点炮单赔"
+      ],
+      "type": 1,
+      "group": 23,
+      "itemHeight": -160,
+	  "itemWidth": 232,
+      "title": "结算:",
+      "id": "nGunAll"
+    } 
+  ],
+    [
+    {
+      "multiterm": true,
+      "selectIndex": [
+      ], 
+      "itemHeight": -80,
+	  "itemWidth": 232,
+	  "maxPerLine": 2,
+      "data": [
+		"清一色",
+		"下注"
+      ],
+      "title": "特殊:", 
+       "type":0, 
+       "group":0,
+      "id": [
+		"nOneColor",
+		"bSupportXiaPao"
+      ]
+	}
+  ] 
+]

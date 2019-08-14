@@ -1,0 +1,14 @@
+local base = require "logic/mahjong_sys/common/mahjong_action_base"
+local mahjong_action_gameHuaCardUpdate_40 = class("mahjong_action_gameHuaCardUpdate_40", base)
+
+local mahjong_ui = mahjong_ui
+
+function mahjong_action_gameHuaCardUpdate_40:Execute(tbl)
+	mahjong_ui:SetFlowerCardNum(tbl[1], tbl[2])
+
+	if tbl[1] == 1 and tbl[2] == 4 then
+		mahjong_effectMgr:PlayUIEffectByName("sizhonghui",mahjong_ui.playerList[1].transform.parent)
+	end
+end
+
+return mahjong_action_gameHuaCardUpdate_40

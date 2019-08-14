@@ -1,0 +1,237 @@
+local openroom_poplist = require"logic/hall_sys/openroom/openroom_poplist"
+local openroom_gameItemBtn = require"logic/hall_sys/openroom/openroom_gameItemBtn"
+local openroom_content_view = require "logic/hall_sys/openroom/openroom_content_view"
+local openroom_window = require "logic/hall_sys/openroom/openroom_window"
+
+local openroom_model = model_manager:GetModel("openroom_model")
+local cfg_game = config_mgr.getConfigs("cfg_game")
+
+local base = require("logic.framework.ui.uibase.ui_window")
+local openroom_ui = class("openroom_ui",base)
+
+function openroom_ui:ctor()
+	base.ctor(self)
+	self.curGameGid = 0
+	self.clubGameGidList = nil
+	self.gameBtnObjList = {}
+
+end
+
+function openroom_ui:OnInit()
+	base.OnInit(self)
+	self:FindChild()
+end
+
+--[[--
+ * @Description: 默认不传俱乐部gid列表  
+ ]]
+function openroom_ui:OnOpen(cid,clubGameGidList,flag)
+	base.OnOpen(self,clubGameGidList)
+	self.cid = cid
+	self.clubGameGidList = clubGameGidList
+	self.isOfficial = flag == 1
+
+	FrameTimer.New(
+		function() 
+			self:Show()
+		end,1,1):Start()
+end
+
+function openroom_ui:close()
+	self.content:DelCache()
+	ui_sound_mgr.PlayCloseClick()
+	UI_Manager:Instance():CloseUiForms("openroom_ui")
+end
+
+function openroom_ui:PlayOpenAmination()
+end
+
+function openroom_ui:OnRefreshDepth()
+
+  local uiEffect = child(self.gameObject.transform, "Panel_Top/Background/Title/Effect_chengyuan")
+  if uiEffect and self.sortingOrder then
+    local topLayerIndex = self.sortingOrder +self.m_subPanelCount +1
+    Utils.SetEffectSortLayer(uiEffect.gameObject, topLayerIndex)
+  end
+end
+
+function openroom_ui:FindChild()
+	self.btn_close=child(self.transform,"Panel_Top/backBtn")
+	addClickCallbackSelf(self.btn_close.gameObject,self.close,self)
+
+	self.poplist_go = child(self.transform,"Panel_Left/Sprite_menuPanel").gameObject
+	self.openroom_poplist = openroom_poplist:create(self.poplist_go)
+	self.openroom_poplist:SetToggleCallback(function (gameType) self:OnPopListToggleClick(gameType) end )
+
+	self.gameList_scrollView = subComponentGet(self.transform,"Panel_Left/gameBtn_list","UIScrollView")
+	self.gameListGrid_tr = child(self.transform,"Panel_Left/gameBtn_list/grid")
+	self.gameItemBtn_tr = child(self.transform,"Panel_Left/gameBtn_list/grid/gameItemBtn")
+	table.insert(self.gameBtnObjList,openroom_gameItemBtn:create(self.gameItemBtn_tr.gameObject))
+
+	self.createBtn_tr = child(self.transform,"Panel_Right/createBtn")
+	addClickCallbackSelf(self.createBtn_tr.gameObject,self.OnCreateBtnClick,self)
+
+	self.hideRidToggle = subComponentGet(self.transform,"Panel_Right/hideRoom","UIToggle")
+
+	self.roonCard_lb = subComponentGet(self.transform,"Panel_Right/roonCard","UILabel")
+
+	self.content_go = child(self.transform,"Panel_Right/content").gameObject
+	self.content = openroom_content_view:create(self.content_go)
+	self.content.main_ui = self
+
+	self.toggleWindowBg_go = child(self.transform,"Panel_Center/window").gameObject
+	self.toggleWindow = openroom_window:create(self.toggleWindowBg_go)
+	self.toggleWindow.content = self.content
+	self.content.toggleWindow = self.toggleWindow
+end
+
+--[[--
+ * @Description:  0,1,2  
+ ]]
+function openroom_ui:OnPopListToggleClick(gameType)
+	local gidList = self:GetGidList(gameType)
+	for i=#gidList + 1,#self.gameBtnObjList do
+		local item = self.gameBtnObjList[i]
+		if not IsNil(item.gameObject) then
+			item:SetActive(false)
+		end
+	end
+	for i,gid in ipairs(gidList) do
+		local item
+		if i<=#self.gameBtnObjList then
+			item = self.gameBtnObjList[i]
+		else
+			local obj = newobject(self.gameItemBtn_tr.gameObject)
+			obj.transform:SetParent(self.gameListGrid_tr,false)
+			item = openroom_gameItemBtn:create(obj)
+			table.insert(self.gameBtnObjList,item)
+		end
+		item:SetCallback(function (obj) self:OnGameItemBtnClick(obj) end )
+		item:SetName(gid)
+		item:SetText(cfg_game[gid].name)
+		item:SetActive(true)
+	end
+	componentGet(self.gameListGrid_tr,"UIGrid"):Reposition()
+	self.gameList_scrollView:ResetPosition()
+end
+
+function openroom_ui:GetGidList(gameType)
+	local gidList = {}
+	if gameType == 0 then
+		gidList = openroom_model:GetGidList()
+	elseif gameType == 1 then
+		gidList = openroom_model:GetTypeList()[1]
+	elseif gameType == 2 then
+		gidList = openroom_model:GetTypeList()[2]
+	end
+	return self:SelectClubGid(gidList)
+end
+
+function openroom_ui:SelectClubGid(gidList)
+	if self.clubGameGidList then
+		local selectList = {}
+		for _,clubGid in ipairs(self.clubGameGidList) do
+			for _,gid in ipairs(gidList) do
+				if clubGid == gid then
+					table.insert(selectList,gid)
+				end
+			end
+		end
+		return selectList
+	end
+	return gidList
+end
+
+function openroom_ui:OnGameItemBtnClick(obj)
+	local gid = tonumber(obj.name)
+	if self.curGameGid == gid then
+		return
+	end
+	self.curGameGid = gid
+	self:ReflashPanel()
+end
+
+function openroom_ui:Show()
+	self.openroom_poplist:SetMenuLabel()
+	self:OnPopListToggleClick(0)
+	local curGameID
+	if PlayerPrefs.HasKey("CUR_GAME_ID") then
+    	curGameID = PlayerPrefs.GetString("CUR_GAME_ID")    	
+    end 
+    local isMemory = false
+    if curGameID then
+    	local gids = self:GetGidList(0)
+    	for i,v in ipairs(self.gameBtnObjList) do
+    		if gids[i] == tonumber(curGameID) then
+    			v.self_toggle.value = true
+    			if #gids > 6 then
+    				self.gameList_scrollView:SetDragAmount(0, (i-1)/#gids, false)
+    			end
+    			self.curGameGid = tonumber(curGameID)
+    			isMemory = true
+    			break
+    		end
+    	end
+    end
+    if not isMemory then
+		self.gameBtnObjList[1].self_toggle.value = true
+		self.curGameGid = self:GetGidList(0)[1]
+	end
+	self:ReflashPanel()
+end
+
+function openroom_ui:ReflashPanel()
+
+	local paneltable = openroom_model:GetPanelTableByGid(self.curGameGid,self:IsClub())
+	self.content:RecyleToggle()
+	self.content:Show(paneltable)
+end
+
+function openroom_ui:IsClub()
+	local isClub = false
+	if self.clubGameGidList and not self.isOfficial then
+		isClub = true
+	end
+	return isClub
+end
+
+function openroom_ui:GetHideRidValue()
+	if self.hideRidToggle then
+		return self.hideRidToggle.value
+	end
+	return false
+end
+
+function openroom_ui:SetRoomCard(str)
+	if self.roonCard_lb and str then
+		self.roonCard_lb.text = str
+	end
+end
+
+function openroom_ui:OnCreateBtnClick()
+	ui_sound_mgr.PlayButtonClick()
+    local tables,newPanelTable = self.content:GetSelect() 
+    tables.gid = self.curGameGid
+    tables.ishide = self:GetHideRidValue()
+
+    -- 待整理
+	if self.curGameGid == 25 or self.curGameGid == 20 then
+		tables.bsupportju = tables.bsupportke == 1 and 0 or 1
+	end
+
+	if self.clubGameGidList and self.cid then
+		tables.cid = self.cid
+		join_room_ctrl.CreateClubRoom(tables)
+	else
+    	join_room_ctrl.CreateRoom(tables)   
+    end
+
+    -- 记忆
+    PlayerPrefs.SetString(global_define.CUR_GAME_ID, self.curGameGid)
+
+    local str= json.encode(newPanelTable)
+    PlayerPrefs.SetString(global_define.CreateRoomPlayerPrefs..self.curGameGid,str)
+end
+
+
+return openroom_ui

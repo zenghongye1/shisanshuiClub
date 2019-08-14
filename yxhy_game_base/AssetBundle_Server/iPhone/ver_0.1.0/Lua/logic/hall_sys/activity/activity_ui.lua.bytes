@@ -1,0 +1,114 @@
+--region *.lua
+--Date
+--此文件由[BabeLua]插件自动生成
+
+
+
+--endregion
+local base = require("logic.framework.ui.uibase.ui_window")
+local activity_ui = class("activity_ui",base)
+
+function activity_ui:ctor()
+	base.ctor(self) 
+	self.detail = {}
+end
+
+function activity_ui:OnInit()
+	self:InitView()
+end
+
+function activity_ui:OnOpen()
+	self:UpdateView()
+
+	if self.webView then
+		self.webView:Show()
+	end
+end
+function activity_ui:PlayOpenAmination()
+end
+
+function activity_ui:OnRefreshDepth()
+
+  local Effect_zuixihuodong = child(self.gameObject.transform, "panel_activity/Panel_Top/Title/Effect_zuixihuodong")
+  if Effect_zuixihuodong and self.sortingOrder then
+    local topLayerIndex = self.sortingOrder +self.m_subPanelCount +1
+    Utils.SetEffectSortLayer(Effect_zuixihuodong.gameObject, topLayerIndex)
+  end
+end
+
+function activity_ui:OnClose()
+	if self.webView then
+		self.webView:Hide()
+	end
+end
+
+function activity_ui:InitView()
+    local btn_close = child(self.gameObject.transform,"panel_activity/Panel_Top/btn_close")
+    if btn_close ~= nil then
+        addClickCallbackSelf(btn_close.gameObject,self.CloseWin,self)
+    end 
+	
+	local btn_action = child(self.gameObject.transform,"panel_activity/Panel_Middle/detail/btnAction")
+    if btn_action ~= nil then
+        addClickCallbackSelf(btn_action.gameObject,self.ActionClick,self)
+    end
+	self.gridList = child(self.gameObject.transform,"panel_activity/Panel_Middle/btnGrid")
+	self.detail.title = child(self.gameObject.transform,"panel_activity/Panel_Middle/detail/title")
+	self.detail.tex = child(self.gameObject.transform,"panel_activity/Panel_Middle/detail/Texture")
+
+	self:InitWebView()
+end
+
+function activity_ui:UpdateView()
+	
+end
+
+function activity_ui:ActionClick()
+	ui_sound_mgr.PlaySoundClip(data_center.GetAppConfDataTble().appPath.."/sound/common/audio_button_click")
+	
+end
+
+function activity_ui:CloseWin()  
+    ui_sound_mgr.PlayCloseClick()
+	UI_Manager:Instance():CloseUiForms("activity_ui")
+end
+
+
+function activity_ui:InitWebView()
+	local url = global_define.GetUrlData()
+	if not self.webView then
+		local WebComponent = require "logic/common/WebComponent"
+		self.webView = WebComponent:create(self:GetGameObject("panel_activity/Panel_Middle/WebComponent"), url)
+
+		self.webView:AddReceiveFunction(function(webView, message)
+			if message.path=="move" then
+				self:CloseWin()
+				if not model_manager:GetModel("ClubModel"):HasClub() then
+					UI_Manager:Instance():FastTip("请先加入俱乐部")
+					return
+				end
+				UI_Manager:Instance():ShowUiForms("openroom_ui")
+			end
+			if message.path=="yaoqing" then    
+				self:CloseWin()
+				UI_Manager:Instance():ShowUiForms("share_ui",UiCloseType.UiCloseType_CloseNothing,function() 
+					Trace("Close share_ui")
+				end)
+			end
+
+			-- 打开全屏网页
+			if message.path=="web" and message.rawMessage then
+				local strTbl = string.split(message.rawMessage, "=")
+				-- "https://www.baidu.com"
+				if strTbl and string.len(strTbl[2] or "") >0 then
+					local webpage= SingleFullWeb.Instance:InitWebPage(strTbl[2], -1,-1, -1,-1, false)
+					if webpage then
+						webpage:Show()
+					end
+				end
+			end
+		end) 
+	end
+end
+ 
+return activity_ui

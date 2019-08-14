@@ -1,0 +1,86 @@
+local base = require("logic.framework.ui.uibase.ui_window")
+local cuopai_ui = class("cuopai_ui",base)
+
+function cuopai_ui:ctor()
+	base.ctor(self)
+end
+
+function cuopai_ui:OnOpen()
+	local tbl = {}
+	tbl.isShowAnchor = true
+	Notifier.dispatchCmd(cmd_niuniu.ONDRAGACTION,tbl)
+	require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().IsOpenCuoPaiUI = true
+end
+
+function cuopai_ui:OnInit()
+	self.closeBtn = child(self.transform,"closebtn")
+	if self.closeBtn ~= nil then
+		addClickCallbackSelf(self.closeBtn.gameObject,self.OnCloseClick,self)
+	end
+end
+
+function cuopai_ui:OnClose()
+	require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().IsOpenCuoPaiUI = false
+end
+
+function cuopai_ui:OnCloseClick()
+	Trace("关闭搓牌界面")
+	local anchor = GameObject.Find("CuoPaiAnchor")
+	if anchor ~= nil then
+		anchor.gameObject:SetActive(false)
+	end
+
+	UI_Manager:Instance():CloseUiForms("cuopai_ui")
+end
+
+
+
+function cuopai_ui:Update()
+	local normalizedTime =  LuaHelper.GetCuoPaiAnimationNormalizedTime("up")
+--	Trace("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"..tostring(normalizedTime))
+	if normalizedTime >= 0.90 then
+		local sceneControl = require ("logic.niuniu_sys.cmd_manage.niuniu_msg_manage"):GetInstance():GetNiuNiuSceneControllerInstance()
+		sceneControl.tableComponent:OpenLastCard()
+		self:OnCloseClick()
+	end
+end
+
+
+
+--[[function this.Show()
+	if this.gameObject == nil then
+		require("logic/niuniu_sys/ui/cuopai_ui")
+		this.gameObject=newNormalUI(data_center.GetResRootPath().."/ui/cuopai_ui")
+		require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().IsOpenCuoPaiUI = true
+	else
+		GameObject.Destroy(this.gameObject)
+        this.gameObject=nil
+	end
+end--]]
+
+function cuopai_ui:OnSwipe(myself,direction,fingerSwipe)
+	Trace("Direction:"..tostring(direction))
+	
+end
+
+function cuopai_ui:OnDragRecognizer(deltaMove,normalizedTime)
+--	Trace("CuoPai On Drag"..tostring(GetTblData(gesture)))
+	
+	local gesture = {}
+	gesture.isShowAnchor = false
+	gesture.DeltaMove = deltaMove
+	gesture.normalizedTime = normalizedTime
+	Notifier.dispatchCmd(cmd_niuniu.ONDRAGACTION,gesture)
+end
+
+--[[function this.Hide()
+	if this.gameObject == nil then
+		return
+	else
+		require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().IsOpenCuoPaiUI = false
+		GameObject.Destroy(this.gameObject)
+		this.gameObject = nil
+	end
+end--]]
+
+return cuopai_ui

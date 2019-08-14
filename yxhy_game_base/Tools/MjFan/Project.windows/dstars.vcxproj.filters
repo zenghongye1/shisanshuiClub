@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{bec63695-15e1-4f0c-b3f2-5f0578c698b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\common">
+      <UniqueIdentifier>{5e8bf552-f325-4841-9cd4-42d64be51e05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\mj">
+      <UniqueIdentifier>{c8765aa6-0149-43c8-bde3-d3aa51c7145e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="jsoncpp-src-0.5.0">
+      <UniqueIdentifier>{e007f2f1-90f0-4c41-aba5-b8c1a293a397}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="jsoncpp-src-0.5.0\include">
+      <UniqueIdentifier>{fe2829b0-6c66-48de-bf6f-b32412a69458}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="jsoncpp-src-0.5.0\lib_json">
+      <UniqueIdentifier>{3577a882-670c-41ec-8f02-e37731bdee32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="jsoncpp-src-0.5.0\include\json">
+      <UniqueIdentifier>{1f86a640-e593-4d10-9616-f37436707e84}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\MjFan.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\common\environment.h">
+      <Filter>Source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\common\MJ_sc_def.h">
+      <Filter>Source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\common\MJFanCounter.h">
+      <Filter>Source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\mj\MJFun.h">
+      <Filter>Source\mj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsoncpp-src-0.5.0\include\json\autolink.h">
+      <Filter>jsoncpp-src-0.5.0\include\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsoncpp-src-0.5.0\include\json\config.h">
+      <Filter>jsoncpp-src-0.5.0\include\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsoncpp-src-0.5.0\include\json\features.h">
+      <Filter>jsoncpp-src-0.5.0\include\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsoncpp-src-0.5.0\include\json\forwards.h">
+      <Filter>jsoncpp-src-0.5.0\include\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsoncpp-src-0.5.0\include\json\json.h">
+      <Filter>jsoncpp-src-0.5.0\include\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsoncpp-src-0.5.0\include\json\reader.h">
+      <Filter>jsoncpp-src-0.5.0\include\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsoncpp-src-0.5.0\include\json\value.h">
+      <Filter>jsoncpp-src-0.5.0\include\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsoncpp-src-0.5.0\include\json\writer.h">
+      <Filter>jsoncpp-src-0.5.0\include\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsoncpp-src-0.5.0\lib_json\json_batchallocator.h">
+      <Filter>jsoncpp-src-0.5.0\lib_json</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="dstars.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\MjFan.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\common\environment.cpp">
+      <Filter>Source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\common\MJFanCounter.cpp">
+      <Filter>Source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\mj\MJFun.cpp">
+      <Filter>Source\mj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\mj\MJFunExtend.cpp">
+      <Filter>Source\mj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsoncpp-src-0.5.0\lib_json\json_reader.cpp">
+      <Filter>jsoncpp-src-0.5.0\lib_json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsoncpp-src-0.5.0\lib_json\json_value.cpp">
+      <Filter>jsoncpp-src-0.5.0\lib_json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsoncpp-src-0.5.0\lib_json\json_writer.cpp">
+      <Filter>jsoncpp-src-0.5.0\lib_json</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Source\mjFan.def">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\jsoncpp-src-0.5.0\lib_json\json_internalarray.inl">
+      <Filter>jsoncpp-src-0.5.0\lib_json</Filter>
+    </None>
+    <None Include="..\jsoncpp-src-0.5.0\lib_json\json_internalmap.inl">
+      <Filter>jsoncpp-src-0.5.0\lib_json</Filter>
+    </None>
+    <None Include="..\jsoncpp-src-0.5.0\lib_json\json_valueiterator.inl">
+      <Filter>jsoncpp-src-0.5.0\lib_json</Filter>
+    </None>
+  </ItemGroup>
+</Project>

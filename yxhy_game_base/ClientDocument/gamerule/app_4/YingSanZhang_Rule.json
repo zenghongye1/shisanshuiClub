@@ -1,0 +1,212 @@
+﻿[
+    [
+		{
+			"exData": [1,2,0,3],
+			"selectIndex":[3],
+			"itemHeight": -58,
+			"itemWidth": 220,
+			"maxPerLine": 6, 
+			"data":["AA支付","大赢家支付","房主支付","会长支付"],
+			"title":"房费:",
+			"id": "costtype",
+			"type": 1, 
+			"group":23
+		}
+    ],
+ 
+	[
+		{
+			"exData": [
+				1,
+				2,
+				5
+			],
+			"itemHeight": -78,
+			"itemWidth": 220,
+			"selectIndex": [ 1 ],
+			"data": [
+				"1分",
+				"2分",
+				"5分"
+			],
+			"title": "底分:",
+			"id": "baseScoreNum" ,
+			"type": 1, 
+			"group":28
+		}
+	], 
+	
+	[
+		{
+			"exData": [
+				2,
+				3,
+				4,
+				5,
+				6
+			],
+			"selectIndex": [
+				5
+			],
+			"itemWidth": 190,
+			"itemHeight": -58,
+			"maxPerLine": 6, 
+			"data": [
+				"2人",
+				"3人",
+				"4人",
+				"5人",
+				"6人"
+			],
+			"title": "人数:",
+			"id": "pnum",
+			"type": 1,
+			"group": 26
+		}
+	],
+
+	[
+		{
+			"exData": [
+				8,
+				12,
+				16
+			],
+			"data": [
+				"8局",
+				"12局",
+				"16局"
+			],
+			"itemHeight": -78,
+			"itemWidth": 220,
+			"distance": 84,
+			"maxPerLine": 3,
+			"selectIndex": [ 1 ],
+			"title": "局数:",
+			"id": "rounds",
+			"type": 1, 
+			"group":25
+		}
+	], 
+	
+	[
+		{
+			"exData": [
+				2,
+				1
+			],
+			"itemHeight": -156,
+			"itemWidth": 380,
+			"selectIndex": [ 2 ],
+			"data": [
+				"激情玩法(去除2~6)",
+				"传统玩法"
+			],
+			"title": "玩法:",
+			"id": "playsMode", 
+			"type": 1, 
+			"group":27,
+			"connecttype": [1 ],
+			"connect": [
+				{
+				  "1": {
+					"enable": [ { "sp235Single": [ 0 ],
+								  "n234Min":[ 0 ] } ]
+				  }
+				  "2": {
+					"disable": [
+					  { "sp235Single": [ 0 ],
+						"n234Min":[ 0 ] }
+					]
+				  }
+				}
+			],
+			"Isconnect": [
+				{
+				  "1": {
+					"select": [
+					]
+				  },
+				  "2": {
+					"select": [
+					]
+				  }
+				}
+			],
+			"iosconnect": [
+
+			]
+		}
+	],
+	
+		[
+        {
+            "multiterm": true,
+            "title": "附加:",
+            "id": [
+                "sp235Single",
+				"n234Min"
+            ],
+          "data": [
+            "235 > 豹子",
+			"234最小"			
+          ],
+          "itemHeight": -78,
+          "itemWidth": 220,
+          "selectIndex": [
+			0
+          ],
+          "type": 0, 
+          "group":0
+        }
+    ],
+
+	[
+		{
+			"exData": [
+				7,
+				10,
+				15
+			],
+			"itemWidth": 220,
+			"itemHeight": -78,
+			"maxPerLine": 6, 
+			"selectIndex": [ 2 ],
+			"data": [
+				"7轮",
+				"10轮",
+				"15轮"
+			],
+			"title": "上限:",
+			"id": "maxTurn",
+			"type": 1,
+			"group":29
+		}
+	],
+
+	[
+		{
+			"exData": [
+				0,
+				1,
+				2,
+				3
+			],
+			"itemWidth": 220,
+			"itemHeight": -78,
+			"maxPerLine": 6, 
+			"selectIndex": [ 2 ],
+			"data": [
+			"无限制",
+				"1轮",
+				"2轮",
+				"3轮"
+			],
+			"title": "闷牌:",
+			"id": "blindTurn",
+			"type": 1,
+			"group":30
+		}
+	]
+	
+]

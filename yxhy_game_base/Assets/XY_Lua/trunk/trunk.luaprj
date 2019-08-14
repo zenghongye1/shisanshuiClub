@@ -1,0 +1,307 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<Project Name="trunk.luaprj" Cmd="" Arg="" Dir="" Toggle="false" >
+    <Filter Name="XY_Lua" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua" Toggle="false" >
+        <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\Global.lua" />
+        <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\Main.lua" />
+        <Filter Name="common" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\common" Toggle="true" >
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\common\bitExtend.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\common\functions.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\common\json.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\common\Notifier.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\common\Object.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\common\TestMode.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\common\ucoder.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\common\Utils.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\common\XArray.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\common\XList.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\common\XTree.lua" />
+        </Filter>
+        <Filter Name="logic" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic" Toggle="false" >
+            <Filter Name="animations_sys" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\animations_sys" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\animations_sys\animations_sys.lua" />
+            </Filter>
+            <Filter Name="common" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common\after_cmd_base.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common\after_cmds_mgr.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common\AsyncActionSet.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common\config_data_center.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common\global_define.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common\join_room_ctrl.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common\link_ctrl.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common\local_storage_sys.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common\pool_manager.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common\prefab_pool.lua" />
+            </Filter>
+            <Filter Name="common_ui" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\chat_ui.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\exit_ui.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\fast_tip.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\link_ctrl.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\message_box.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\notice_ui.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\ui_base.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\ui_base_grid.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\ui_base_tween.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\ui_player.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\ui_player_mgr.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\ui_sound_mgr.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\ui_stack_mgr.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\waiting_ui.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\common_ui\webview_ui.lua" />
+            </Filter>
+            <Filter Name="dotween_sys" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\dotween_sys" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\dotween_sys\dotween_sys.lua" />
+            </Filter>
+            <Filter Name="framework" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\framework" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\framework\cmdName.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\framework\data_center.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\framework\game.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\framework\logicLuaObjMgr.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\framework\msg_dispatch_mgr.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\framework\msgEventTable.lua" />
+            </Filter>
+            <Filter Name="game_state" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\game_state" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\game_state\gs_base.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\game_state\gs_cg.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\game_state\gs_level_guide.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\game_state\gs_login.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\game_state\gs_mahjong.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\game_state\gs_main_hall.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\game_state\gs_mgr.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\game_state\gs_scene_loading.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\game_state\gs_update_version.lua" />
+            </Filter>
+            <Filter Name="gvoice_sys" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\gvoice_sys" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\gvoice_sys\gvoice_sys.lua" />
+            </Filter>
+            <Filter Name="hall_sys" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys" Toggle="false" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\certification_ui.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\hall_data.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\hall_ui.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\hall_ui_ctrl.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\help_ui.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\service_ui.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\user_ui.lua" />
+                <Filter Name="activity" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\activity" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\activity\activity_ui.lua" />
+                </Filter>
+                <Filter Name="announcement_ui" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\announcement_ui" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\announcement_ui\announcement_ui.lua" />
+                </Filter>
+                <Filter Name="feedback_ui" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\feedback_ui" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\feedback_ui\feedback_data.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\feedback_ui\feedback_msg.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\feedback_ui\feedback_ui.lua" />
+                </Filter>
+                <Filter Name="friendroom_ui" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\friendroom_ui" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\friendroom_ui\friendroom.lua" />
+                </Filter>
+                <Filter Name="invite_code_input" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\invite_code_input" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\invite_code_input\invite_code_input_ui.lua" />
+                </Filter>
+                <Filter Name="join_room" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\join_room" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\join_room\join_room_ui.lua" />
+                </Filter>
+                <Filter Name="openroom" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\openroom" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\openroom\fuzhoumj_room_ui.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\openroom\openroom_main_ui.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\openroom\room_data.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\openroom\shisangshui_room_ui.lua" />
+                </Filter>
+                <Filter Name="record_ui" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\record_ui" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\record_ui\carddetails_ui.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\record_ui\openrecord_ui.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\record_ui\record_ui.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\record_ui\recorddetails_ui.lua" />
+                </Filter>
+                <Filter Name="setting_ui" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\setting_ui" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\setting_ui\setting_ui.lua" />
+                </Filter>
+                <Filter Name="share" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\share" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\share\share_ui.lua" />
+                </Filter>
+                <Filter Name="shop" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\shop" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\hall_sys\shop\shop_ui.lua" />
+                </Filter>
+            </Filter>
+            <Filter Name="invite_sys" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\invite_sys" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\invite_sys\invite_sys.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\invite_sys\inviteConfig.lua" />
+            </Filter>
+            <Filter Name="login_sys" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\login_sys" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\login_sys\login_sys.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\login_sys\login_ui.lua" />
+            </Filter>
+            <Filter Name="mahjong_sys" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys" Toggle="false" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mahjong_play_sys.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_base.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_manager.lua" />
+                <Filter Name="comp_show" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\comp_show" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\comp_show\comp_show_base.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\comp_show\mahjong_anim_state_control.lua" />
+                </Filter>
+                <Filter Name="fuzhou_mahjong" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\fuzhou_mahjong" Toggle="false" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\fuzhou_mahjong\fuzhou_comp_show.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\fuzhou_mahjong\play_mode_fuzhou.lua" />
+                    <Filter Name="components" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\fuzhou_mahjong\components" Toggle="true" >
+                        <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\fuzhou_mahjong\components\comp_operatorcard_fuzhou.lua" />
+                        <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\fuzhou_mahjong\components\comp_player_fuzhou.lua" />
+                        <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\fuzhou_mahjong\components\comp_playerMgr_fuzhou.lua" />
+                        <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\fuzhou_mahjong\components\comp_table_fuzhou.lua" />
+                    </Filter>
+                    <Filter Name="config" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\fuzhou_mahjong\config" Toggle="true" >
+                        <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\fuzhou_mahjong\config\play_mode_config_fuzhou.lua" />
+                    </Filter>
+                    <Filter Name="ui_fuzhou" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\fuzhou_mahjong\ui_fuzhou" Toggle="true" />
+                </Filter>
+                <Filter Name="henan_mahjong" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\henan_mahjong" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\henan_mahjong\play_mode_config_henan.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\henan_mahjong\play_mode_henan.lua" />
+                </Filter>
+                <Filter Name="mode_components" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_components" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_components\comp_clickevent.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_components\comp_dice.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_components\comp_mjItem.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_components\comp_mjItemMgr.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_components\comp_operatorcard.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_components\comp_player.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_components\comp_playerMgr.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_components\comp_resMgr.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_components\comp_table.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\mode_components\mode_comp_base.lua" />
+                </Filter>
+                <Filter Name="ui_mahjong" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\ui_mahjong" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\ui_mahjong\bigSettlement_ui.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\ui_mahjong\mahjong_player_ui.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\ui_mahjong\mahjong_rewards_ui.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\ui_mahjong\mahjong_show_card_ui.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\ui_mahjong\mahjong_ui.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\ui_mahjong\mahjong_ui_sys.lua" />
+                </Filter>
+                <Filter Name="utils" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\utils" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\utils\MahjongTools.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\utils\player_seat_mgr.lua" />
+                </Filter>
+                <Filter Name="_config" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\_config" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\_config\mahjongConst.lua" />
+                </Filter>
+                <Filter Name="_model" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\_model" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\_model\operatorcachedata.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\_model\operatordata.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\_model\player_data.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\_model\room_usersdata.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\_model\room_usersdata_center.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\mahjong_sys\_model\roomdata_center.lua" />
+                </Filter>
+            </Filter>
+            <Filter Name="network" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\network" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\network\global_rsp_handler.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\network\http_request_interface.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\network\majong_request_interface.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\network\majong_request_protocol.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\network\messagedefine.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\network\netdata_rsp_handler.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\network\network_mgr.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\network\shisanshui_request_interface.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\network\shisanshui_request_protocol.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\network\SocketClient.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\network\SocketManager.lua" />
+            </Filter>
+            <Filter Name="recharge" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\recharge" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\recharge\recharge_sys.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\recharge\rechargeConfig.lua" />
+            </Filter>
+            <Filter Name="scene_sys" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\scene_sys" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\scene_sys\game_scene.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\scene_sys\map_controller.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\scene_sys\scene_type.lua" />
+            </Filter>
+            <Filter Name="shisangshui_sys" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys" Toggle="false" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\card_component.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\card_data_manage.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\card_define.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\cardMgr_component.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\extern.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\lib_base.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\lib_card_deal.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\lib_card_pool.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\lib_game.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\lib_laizi.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\lib_laizi_card_logic.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\lib_mult.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\lib_normal_card_logic.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\lib_recomand.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\lib_sp_card_logic.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\play_mode_shisangshui.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\player_component.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\reset_connect_room.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\resMgr_component.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\room_prepare.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\shisangshui_play_sys.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\table_component.lua" />
+                <Filter Name="common" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common\array.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common\bit.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common\coroutine.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common\debug.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common\debug_e.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common\debug_ext.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common\extern.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common\list.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common\readonly.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common\test.lua" />
+                </Filter>
+                <Filter Name="common_card" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common_card" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\common_card\common_card.lua" />
+                </Filter>
+                <Filter Name="config" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\config" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\config\shisanshui_table_config.lua" />
+                </Filter>
+                <Filter Name="large_result" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\large_result" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\large_result\large_result.lua" />
+                </Filter>
+                <Filter Name="lib" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\lib" Toggle="true" />
+                <Filter Name="place_card" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\place_card" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\place_card\place_card.lua" />
+                </Filter>
+                <Filter Name="prepare_special" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\prepare_special" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\prepare_special\prepare_special.lua" />
+                </Filter>
+                <Filter Name="shoot_ui" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\shoot_ui" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\shoot_ui\shoot_ui.lua" />
+                </Filter>
+                <Filter Name="small_result" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\small_result" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\small_result\small_result.lua" />
+                </Filter>
+                <Filter Name="special_card_show" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\special_card_show" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\special_card_show\special_card_show.lua" />
+                </Filter>
+                <Filter Name="ui_shisangshui" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\ui_shisangshui" Toggle="true" >
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\ui_shisangshui\shisangshui_ui.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\ui_shisangshui\shisangshui_ui_sys.lua" />
+                    <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\shisangshui_sys\ui_shisangshui\shisanshui_player_ui.lua" />
+                </Filter>
+            </Filter>
+            <Filter Name="testCmd" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\testCmd" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\testCmd\testCmd_ui.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\testCmd\testUrl.lua" />
+            </Filter>
+            <Filter Name="voteQuit" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\voteQuit" Toggle="true" >
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\voteQuit\vote_quit_ui.lua" />
+                <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\logic\voteQuit\vote_quit_view.lua" />
+            </Filter>
+        </Filter>
+        <Filter Name="protobuf_conf_parser" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\protobuf_conf_parser" Toggle="true" >
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\protobuf_conf_parser\dataconfig_dicinfoconfig_pb.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\protobuf_conf_parser\dataconfig_friendroomconfig_pb.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\protobuf_conf_parser\dataconfig_sceneconfig_pb.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\protobuf_conf_parser\dataconfig_shisanshuitableconfig_pb.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\protobuf_conf_parser\dataconfig_shopconfig_pb.lua" />
+        </Filter>
+        <Filter Name="utils" Directory=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\utils" Toggle="true" >
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\utils\strict.lua" />
+            <LuaFile RelativePath=".\..\..\..\..\..\yxhy_game_base\Assets\XY_Lua\utils\string_handler.lua" />
+        </Filter>
+    </Filter>
+</Project>

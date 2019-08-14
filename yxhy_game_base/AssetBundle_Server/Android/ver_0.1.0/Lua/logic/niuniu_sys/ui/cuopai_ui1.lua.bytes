@@ -1,0 +1,79 @@
+
+cuopai_ui = ui_base.New()
+local this = cuopai_ui
+this.transform = {}
+
+local function OnCloseClick()
+	Trace("关闭搓牌界面")
+	local anchor = GameObject.Find("CuoPaiAnchor")
+	if anchor ~= nil then
+		anchor.gameObject:SetActive(false)
+	end
+	this.Hide()
+end
+
+function this.Awake()
+	this.closeBtn = child(this.transform,"closebtn")
+	if this.closeBtn ~= nil then
+		addClickCallbackSelf(this.closeBtn.gameObject,OnCloseClick,this)
+	end
+	
+end
+
+function this.Update()
+	local normalizedTime =  LuaHelper.GetCuoPaiAnimationNormalizedTime("up")
+--	Trace("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"..tostring(normalizedTime))
+	if normalizedTime >= 0.90 then
+		local sceneControl = require ("logic.niuniu_sys.cmd_manage.niuniu_msg_manage"):GetInstance():GetNiuNiuSceneControllerInstance()
+		sceneControl.tableComponent:OpenLastCard()
+		OnCloseClick()
+	end
+end
+
+function this.Start()
+	local tbl = {}
+	tbl.isShowAnchor = true
+	Notifier.dispatchCmd(cmd_niuniu.ONDRAGACTION,tbl)
+end
+
+function this.Show()
+	if this.gameObject == nil then
+		require("logic/niuniu_sys/ui/cuopai_ui")
+		this.gameObject=newNormalUI(data_center.GetResRootPath().."/ui/cuopai_ui")
+		require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().IsOpenCuoPaiUI = true
+	else
+		GameObject.Destroy(this.gameObject)
+        this.gameObject=nil
+	end
+end
+
+function this.OnSwipe(myself,direction,fingerSwipe)
+	Trace("Direction:"..tostring(direction))
+	
+end
+
+function this.OnDrag(myself,deltaMove,normalizedTime)
+--	Trace("CuoPai On Drag"..tostring(GetTblData(gesture)))
+	
+	local gesture = {}
+	gesture.isShowAnchor = false
+	gesture.DeltaMove = deltaMove
+	gesture.normalizedTime = normalizedTime
+	Notifier.dispatchCmd(cmd_niuniu.ONDRAGACTION,gesture)
+end
+
+function this.Hide()
+	if this.gameObject == nil then
+		return
+	else
+		require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().IsOpenCuoPaiUI = false
+		GameObject.Destroy(this.gameObject)
+		this.gameObject = nil
+	end
+end
+
+--[[--
+ * @Description: 销毁  
+ ]]
+function this.OnDestroy()
+end

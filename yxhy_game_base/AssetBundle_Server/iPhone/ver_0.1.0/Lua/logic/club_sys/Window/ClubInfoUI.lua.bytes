@@ -1,0 +1,88 @@
+local base = require("logic.framework.ui.uibase.ui_window")
+local ClubInfoUI = class("ClubInfoUI", base)
+local UIManager = UI_Manager:Instance() 
+local addClickCallbackSelf = addClickCallbackSelf
+local ClubInfoView = require('logic/club_sys/View/ClubInfoView')
+local ClubMemberView = require ("logic/club_sys/View/ClubMembersView")
+
+function ClubInfoUI:OnInit()
+	self.model = model_manager:GetModel("ClubModel")
+	self.closeBtnGo = self:GetGameObject("backBtn")
+	addClickCallbackSelf(self.closeBtnGo, self.OnCloseClick, self)
+
+	self.applyBtnGo = self:GetGameObject("applyBtn")
+	addClickCallbackSelf(self.applyBtnGo, self.OnApplyBtnClick, self)
+
+	self.infoView = ClubInfoView:create(self:GetGameObject("infoView"))
+	self.infoView:SetActive(true)
+	self.tipsGo = self:GetGameObject("tips")
+
+	self.memberView = ClubMemberView:create(self:GetGameObject("container"))
+	self.memberView:SetActive(true)
+end
+
+-- 俱乐部信息，标签页
+function ClubInfoUI:OnOpen(clubInfo, type)
+	self.clubInfo = clubInfo
+	self.infoView:SetInfo(clubInfo)
+	self.memberView:SetInfo(clubInfo.cid)
+	if self.model:IsClubMember(clubInfo.cid) then
+		self.model:ReqGetClubUser(clubInfo.cid)
+		self.tipsGo:SetActive(false)
+	else
+		self.tipsGo:SetActive(true)
+	end
+	self:UpdateView()
+	Notifier.regist(GameEvent.OnCurrentClubChange, self.OnClubInfoUpdate, self)
+	Notifier.regist(GameEvent.OnSelfClubNumUpdate, self.OnClubInfoUpdate, self)
+	Notifier.regist(GameEvent.OnClubMemberUpdate, self.OnClubMemberUpdate, self)
+end
+
+function ClubInfoUI:OnClose()
+	self.model:ClearMemberData()
+	Notifier.remove(GameEvent.OnCurrentClubChange, self.OnClubInfoUpdate, self)
+	Notifier.remove(GameEvent.OnSelfClubNumUpdate, self.OnClubInfoUpdate, self)
+	Notifier.remove(GameEvent.OnClubMemberUpdate, self.OnClubMemberUpdate, self)
+end
+
+
+function ClubInfoUI:UpdateView()
+	self.applyBtnGo:SetActive(self.model:IsClubManager(self.clubInfo.cid))
+end
+
+function ClubInfoUI:OnApplyBtnClick()
+	UIManager:ShowUiForms("ClubApplyUI", nil,nil, self.clubInfo.cid)
+end
+
+function ClubInfoUI:OnClubMemberUpdate()
+	self.memberView:UpdateView()
+end
+
+function ClubInfoUI:OnClubInfoUpdate()
+	if self.model.currentClubInfo ~= nil and self.clubInfo.cid == self.model.currentClubInfo.cid then
+		self.infoView.clubInfo = self.model.currentClubInfo
+	end
+	self:UpdateView()
+	self.memberView:UpdateView()
+	self.infoView:SetInfo(self.infoView.clubInfo)
+end
+
+function ClubInfoUI:OnCloseClick()
+	UIManager:CloseUiForms("ClubInfoUI")
+end
+
+function ClubInfoUI:PlayOpenAmination()
+
+end
+
+function ClubInfoUI:OnRefreshDepth()
+
+  local uiEffect = child(self.gameObject.transform, "bg/top/tittle/Effect_chengyuan")
+  if uiEffect and self.sortingOrder then
+    local topLayerIndex = self.sortingOrder +self.m_subPanelCount +1
+    Utils.SetEffectSortLayer(uiEffect.gameObject, topLayerIndex)
+  end
+end
+
+
+return ClubInfoUI

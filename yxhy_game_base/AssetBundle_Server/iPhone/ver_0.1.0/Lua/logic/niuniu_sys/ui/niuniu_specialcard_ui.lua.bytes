@@ -1,0 +1,141 @@
+
+
+ 
+niuniu_specialcard_ui = ui_base.New()
+local this = niuniu_specialcard_ui 
+local transform;  
+
+--最大等待时间
+local timeSecond = 2
+--所有牌
+local my_cards = {}
+
+local cardTranTbl = {}
+--特殊牌型
+local card_type
+
+local animalPar
+
+
+
+function this.Awake()
+   this.initinfor()
+  	--this.registerevent() 
+end
+
+function this.Show(cards, nSpecialType,viewSeat,show_time,nBeiShu)
+--	cards = Array.CardSort(cards, nSpecialType)
+--	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/cardtpye_girl/specialtype/".. SpecialTypeMusicConfig[nSpecialType])
+	if show_time == nil then
+		show_time = 2
+	end
+	timeSecond = show_time
+	Trace("---------cards------"..tostring(cards).."  dun: "..tostring(dun))
+	my_cards = cards
+	if this.gameObject==nil then
+		require ("logic/niuniu_sys/ui/niuniu_specialcard_ui")
+		this.gameObject = newNormalUI(data_center.GetResRootPath().."/ui/niuniu_specialcard_ui")
+	else
+		GameObject.Destroy(this.gameObject)
+        this.gameObject=nil
+	end
+	this.LoadUserInfo(viewSeat)
+	this.LoadAllCard(cards, nSpecialType,nBeiShu)
+  	--this.addlistener()
+end
+
+function this.Hide()
+	for i, v in ipairs(cardTranTbl) do
+		if v ~= nil then
+			GameObject.Destroy(v.gameObject)
+		end
+	end
+	
+	if this.gameObject == nil then
+		return
+	else
+		GameObject.Destroy(this.gameObject)
+		this.gameObject = nil
+	end
+end
+
+--[[--
+ * @Description: 逻辑入口  
+ ]]
+function this.Start()
+	this.registerevent()
+end
+
+--[[--
+ * @Description: 销毁  
+ ]]
+function this.OnDestroy()
+end
+
+function this.initinfor()
+	animalPar = child(this.transform, "animalPar")
+end
+
+--注册事件
+function this.registerevent()
+end
+
+function this.LoadAllCard(cards, nSpecialType,nBeiShu)
+---[[
+	local cardGrid = child(this.transform, "cardGrid")
+	if cardGrid == nil then
+		print("cardGrid == nil")
+		return
+	end
+	if cards == nil then
+	print("cards: ")
+end
+	for i, v in pairs(cards) do
+		local cardObj = newNormalUI(data_center.GetResPokerCommPath().."/card/"..tostring(v), cardGrid)
+		cardTranTbl[v] = cardObj
+		componentGet(child(cardTranTbl[v].transform, "bg"),"UISprite").depth = i * 2 + 3
+		componentGet(child(cardTranTbl[v].transform, "num"),"UISprite").depth = i * 2 + 5
+		componentGet(child(cardTranTbl[v].transform, "color1"),"UISprite").depth = i * 2 + 5
+		componentGet(child(cardTranTbl[v].transform, "color2"),"UISprite").depth = i * 2 + 5
+		if room_data.GetSssRoomDataInfo().isChip == true and v == 40 then
+			child(cardTranTbl[v].transform,"ma").gameObject:SetActive(true)
+			componentGet(child(cardTranTbl[v].transform, "ma"),"UISprite").depth = i * 2 + 4
+		end
+
+	end
+	animations_sys.PlayAnimation(animalPar,data_center.GetResRootPath().."/effects/niuniu_special_card",niuniu_rule_define.PT_BULL_Animation[nSpecialType],100,100,false, callback,3500)
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/cardtype_audio/"..tostring(niuniu_rule_define.PT_BULL_SpriteName[nSpecialType]))  ---按键声音
+	if nBeiShu ~= nil and nBeiShu > 1 then
+		local beishuAnim = niuniu_rule_define.PT_BULL_BEISHUANIM[nBeiShu]
+		animations_sys.PlayAnimationByScreenPosition(animalPar,0,-100,data_center.GetResRootPath().."/effects/niuniu_special_card",beishuAnim,100,100,false,callback,3501,true)
+	end
+	--obj.transform.localPosition = Vector3.New(delte.x, delte.y, obj.transform.localPosition.z)
+end
+
+function this.Update()
+	if timeSecond <= 0 then
+		this.Hide()
+		return
+	end
+	timeDelt = Time.deltaTime
+	timeSecond =  timeSecond - timeDelt
+end
+
+function this.LoadUserInfo(viewSeat)
+	
+	local tex_photo= componentGet(child(this.transform, "head/headPic"), "UITexture")
+	local NameLbl = componentGet(child(this.transform,"head/Label"), "UILabel")
+	local isShow = false
+	if viewSeat ~= nil then
+		isShow = true
+	end
+	tex_photo.gameObject:SetActive(isShow)
+	NameLbl.gameObject:SetActive(isShow)
+	local userData = room_usersdata_center.GetUserByViewSeat(viewSeat)
+	Trace(GetTblData(userData))
+	NameLbl.text = userData.name
+	hall_data.getuserimage(tex_photo,2,userData.headurl)
+	--hall_data.getuserimage(tex_photo,2,room_usersdata_center.GetTempUserByLogicSeat(number).headurl)
+end
+
+

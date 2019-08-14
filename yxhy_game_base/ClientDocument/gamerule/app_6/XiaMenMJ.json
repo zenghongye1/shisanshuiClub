@@ -1,0 +1,185 @@
+﻿[
+  [
+    {
+      "exData": [
+        0,
+        1
+      ],
+      "title": "玩        法:",
+      "id": "bsupportke",
+      "data": [
+        "打局",
+        "打课"
+      ],
+      "selectIndex": [
+        1
+      ],
+      "connect": [
+        {
+          "bsupportke": [
+            {
+              "rounds": [
+                [ 0 ],
+                [  16,8,4]
+              ]
+            }
+          ]
+        }
+      ],
+      "Isconnect": [
+        {
+          "bsupportke": [
+            {
+              "rounds": [
+                [ 16,8,4],
+                [ 0 ]
+              ]
+            }
+          
+          ]
+        }
+      ],
+      "itemHeight":-80,
+    "itemWidth": 200,
+      "connecttype": [3 ],
+       "type": 1, 
+       "group":37
+    }
+  ],
+  [
+     {
+      "exData": [
+        4,
+        3,
+        2
+      ],
+      "itemHeight": -80,
+    "itemWidth": 200,
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4人",
+        "3人",
+        "2人"
+      ],
+      "title": "人        数:",
+      "id": "pnum", 
+       "type": 1, 
+       "group":33,
+	   "connecttype": [2,1 ],
+      "connect": [
+        {
+          "2": [
+            { "rounds": [ "4局(房卡x2)", "8局(房卡x2)", "16局(房卡x4)","打课(房卡x2)" ] }
+          ],
+          "3": [
+            { "rounds": [ "4局(房卡x2)", "8局(房卡x3)", "16局(房卡x6)","打课(房卡x3)" ] }
+          ],
+          "4": [
+            { "rounds": [ "4局(房卡x2)", "8局(房卡x4)", "16局(房卡x8)","打课(房卡x4)" ] }
+          ]
+        }
+      ],
+      "Isconnect": [
+        {
+          "2": { 
+          },
+          "3": { 
+          },
+          "4": { 
+          }
+        }
+      ],
+      "iosconnect": [
+        {
+          "2": [
+            { "rounds": [ "4局(x2)",  "8局(x2)", "16局(x4)","打课(x2)" ]  }
+          ],
+          "3": [ 
+            { "rounds": [ "4局(x2)", "8局(x3)", "16局(x6)","打课(x3)" ] }
+          ],
+          "4": [
+           { "rounds": [ "4局(x2)",  "8局(x4)", "16局(x8)","打课(x4)" ]  }
+          ]
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "exData": [
+        4,
+        8,
+        16,
+        0
+      ],  
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4局(房卡x2)",
+        "8局(房卡x4)",
+        "16局(房卡x8)",
+        "打课(房卡x4)"
+      ],
+      "itemHeight": -80,
+      "itemWidth": 330,
+      "maxPerLine": 2,
+      "iosdata": [
+        "4局(x2)",
+        "8局(x4)",
+        "16局(x8)",
+        "打课(x4)" 
+      ], 
+       "type": 1, 
+       "group":34,
+      "title": "局        数:",
+      "id": "rounds"
+    }
+  ],
+  [
+   
+    {
+      "multiterm": true,
+      "selectIndex": [
+        1,
+        2
+      ], 
+      "itemHeight": -160,
+	  "itemWidth": 330,
+      "maxPerLine": 2,
+      "data": [
+        "单金不能平胡",
+        "双金及以上要游金",
+		"清一色"
+      ],
+      "title": "牌        型:", 
+       "type":0, 
+       "group":0,
+      "id": [
+        "nonegold",
+        "ntwogold",
+		"nOneColor"
+      ]  
+    } 
+  ],
+  [
+    {
+      "multiterm": true,
+      "title": "加        注:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -160,
+	  "itemWidth": 232,
+      "id": [
+        "bSupportXiaPao"
+      ],
+      "data": [
+        "下注"
+      ],
+      "selectIndex": [
+      ]
+    }
+  ]
+]

@@ -1,0 +1,101 @@
+--region *.lua
+--Date
+--此文件由[BabeLua]插件自动生成
+
+require "logic/common/global_define"
+require "logic/hall_sys/openroom/fuzhoumj_room_ui"
+require "logic/hall_sys/openroom/shisangshui_room_ui"
+require "logic/shisangshui_sys/card_data_manage"
+ 
+join_room_ui = ui_base.New()
+local this = join_room_ui 
+
+local i=0
+this.roomnumber={}
+
+function this.Show()
+	if this.gameObject==nil then
+		require ("logic/hall_sys/join_room/join_room_ui")
+		this.gameObject=newNormalUI("Prefabs/UI/OpenRoom/join_room")
+	else  
+        this.gameObject:SetActive(true)
+	end 
+    this.addlistener()
+end
+
+function this.Start() 
+    this:RegistUSRelation()
+end
+
+function this.OnDestroy()
+    this:UnRegistUSRelation()
+end
+function this.addlistener()
+    local btn_close=child(this.transform,"join_panel/btn_close")
+    if btn_close~=nil then
+        addClickCallbackSelf(btn_close.gameObject,this.Hide,this)
+    end
+
+    this.grid_number=child(this.transform,"join_panel/Panel_Middle/gird_number")
+
+    local btn_grid=child(this.transform,"join_panel/Panel_Middle/grid_input")
+    
+    for k=0,btn_grid.transform.childCount-1,1 do
+        local btn_n=btn_grid.transform:GetChild(k)
+        addClickCallbackSelf(btn_n.gameObject,this.setnumber,this)
+    end
+end
+
+
+function this.setnumber(obj,obj2) 
+    ui_sound_mgr.PlaySoundClip("common/audio_button_click")
+    if obj2.name~="clear" and obj2.name~="delete" then
+        local sp_current=this.grid_number.transform:GetChild(i)
+        local sp_number=child(sp_current.transform,"Sprite")
+        sp_number.gameObject:SetActive(true)
+        componentGet(sp_number,"UISprite").spriteName="j"..obj2.name
+        i=i+1
+        this.roomnumber[i]=obj2.name
+        if i==6 then 
+            clear() 
+            this.RequestGetInRoom(this.roomnumber)
+        end
+    end
+    if obj2.name=="clear" then
+        clear()  
+    end
+
+    if obj2.name=="delete" and i>0 then
+        i=i-1
+        local sp=child(this.grid_number.transform:GetChild(i).transform,"Sprite")
+        sp.gameObject:SetActive(false)
+    end
+end
+
+function clear()
+   for m=0,this.grid_number.childCount-1,1 do
+       local sp=child(this.grid_number.transform:GetChild(m).transform,"Sprite")
+       sp.gameObject:SetActive(false)
+       i=0
+   end
+end
+
+
+function this.RequestGetInRoom(t)
+    local rno=""
+    for i,v in ipairs(t) do
+        rno=rno..v
+    end
+    --this.Hide()
+    join_room_ctrl.JoinRoomByRno(rno)
+end 
+
+
+function  this.Hide()
+    ui_sound_mgr.PlaySoundClip("common/audio_button_click")
+    if not IsNil(this.gameObject) then  
+        i=0
+		GameObject.Destroy(this.gameObject)
+        this.gameObject=nil
+	end
+end

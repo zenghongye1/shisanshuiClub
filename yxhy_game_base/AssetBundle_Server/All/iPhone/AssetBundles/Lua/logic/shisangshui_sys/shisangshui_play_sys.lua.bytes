@@ -1,0 +1,150 @@
+--region *.lua
+--Date
+--此文件由[BabeLua]插件自动生成
+
+--endregion
+
+require  "logic/network/shisanshui_request_interface"
+require "logic/gameplay/cmd_shisanshui"
+require "logic/shisangshui_sys/cmd_manage/shisanshui_msg_manage"
+require "logic/hall_sys/openroom/room_data"
+
+require "logic/poker_sys/utils/poker3D_dictionary"
+require "logic/shisangshui_sys/common/array"
+require "logic/shisangshui_sys/card_define"
+require "logic/poker_sys/common/poker2d_factory"
+
+require "logic/shisangshui_sys/Utils/sss_recommendHelper"
+
+shisangshui_play_sys = {}
+local this = shisangshui_play_sys
+local sessionData = {}
+
+local heartTimer = nil
+
+local shisanshui_msg_manage_Inst = nil
+
+function this.RegisterEvent()
+
+end
+
+function this.UnRegisterEvents()
+
+end
+
+function this.Initialize()
+    this.RegisterEvent()
+end
+
+function this.Uninitialize()   
+    this.UnRegisterEvents()
+
+	mode_manager.UninitializeCurrMode()
+	msg_dispatch_mgr.SetIsEnterState(false)
+	msg_dispatch_mgr.ResetMsgQueue()  
+	if heartTimer~=nil then
+		heartTimer:Stop()
+		heartTimer = nil
+	end    
+end
+
+function this.HandlerEnterGame()
+	sss_recommendHelper.SetRecommendHelper(player_data.GetGameId())   ----设置不同十三水的推荐算法,现已统一
+    map_controller.LoadLevelScene(900002, shisangshui_play_sys)
+	sessionData = player_data.GetSessionData()	
+end
+
+
+--[[--
+ * @Description: 进入游戏请求  
+ ]]
+function this.EnterGameReq(enterData, dst)
+	shisanshui_request_interface.EnterGameReq(enterData, dst)
+end
+
+--加载完场景后第一件事
+function this.HandleLevelLoadComplete()
+    Trace("============================shisangshui_play_sys")
+	
+	UI_Manager:Instance():ShowUiForms("shisanshui_ui",UiCloseType.UiCloseType_CloseOther)
+    gs_mgr.ChangeState(gs_mgr.state_mahjong)
+    map_controller.SetIsLoadingMap(false)
+	shisanshui_msg_manage_Inst = require ("logic.shisangshui_sys.cmd_manage.shisanshui_msg_manage"):GetInstance()
+	msg_dispatch_mgr.SetIsEnterState(true)
+	
+end
+
+function this.ExitSystem()
+	shisanshui_msg_manage_Inst:Uninitialize()
+    this.Uninitialize()
+    roomdata_center.ClearData()
+    UI_Manager:Instance():CloseUiForms("VoteQuitUI")
+	UI_Manager:Instance():CloseUiForms("shisanshui_ui")
+	 msg_dispatch_mgr.SetIsEnterState(false)
+end
+
+
+
+
+--重置所有游戏状态，用于打完一局游戏进入下一局
+-- function this.ReSetAllStatus()
+-- --	local instance = play_mode_shisangshui.GetInstance()
+-- --instance:ReSetAllStatus()
+-- end
+
+function this.ReadyGameReq()	
+	shisanshui_request_interface.ReadyGameReq(sessionData["_gt"], sessionData["_chair"])
+end
+
+--比牌动画结束发送给服务端的消息
+function this.CompareFinish()
+	shisanshui_request_interface.CompareFinish(sessionData["_gt"], sessionData["_chair"])
+end
+
+--摆牌
+function this.PlayCardAnimation(args)
+
+end
+
+function this.beishu(beishu)
+	shisanshui_request_interface.beishuReq(beishu,sessionData["_gt"], sessionData["_chair"])
+end
+
+--是否选择特殊牌型
+function this.ChooseCardTypeReq(nSelect)	
+	shisanshui_request_interface.ChooseCardTypeReq(sessionData["_gt"], sessionData["_chair"], nSelect)
+end
+
+--摆牌
+function this.PlaceCard(cards)
+	shisanshui_request_interface.PlaceCard(sessionData["_gt"], sessionData["_chair"], cards)
+end
+
+--玩家退出
+function this.LeaveReq()
+  shisanshui_request_interface.LeaveReq(sessionData["_gt"],sessionData["_chair"])
+end
+
+-- 解散房间
+function this.DissolutionRoom()
+  shisanshui_request_interface.Dissolution(sessionData["_gid"], sessionData["_gt"],sessionData["_chair"])
+end
+
+
+--心跳
+function this.HeartBeatReq()
+	-- local beatTbl = {}
+	-- beatTbl["_gt"] = sessionData["_gt"]
+	-- beatTbl["_chair"] = sessionData["_chair"]
+ --    shisanshui_request_interface.HeartBeatReq(beatTbl)
+end
+
+function this.VoteDrawReq(flag)
+	shisanshui_request_interface.VoteDrawReq(flag, sessionData["_gt"], sessionData["_chair"])
+end
+
+--聊天
+function this.ChatReq(contenttype,content,givewho)
+    shisanshui_request_interface.ChatReq(contenttype,content,sessionData["_gt"],sessionData["_chair"],givewho)
+end
+

@@ -1,0 +1,63 @@
+local base = require "logic/framework/ui/uibase/ui_view_base"
+local reward_mahjongCard_view = class("reward_mahjongCard_view", base)
+
+function reward_mahjongCard_view:InitView()
+	self.opercardList = {}
+	self.handcard = nil
+end
+
+--[[--
+ * @Description:   
+ * info
+ * function mahjong_small_reward_player_data:ctor()
+	self.uid = 0
+	self.nickname = ""
+	self.headUrl = ""
+	self.headType = 0
+	self.isBanker = false
+	self.isWin = false
+	self.totalScore = 0
+	self.nJiePao = 0
+	self.scoreItem = {}
+	self.valueList = {} -- {{1,2,3},{4,4,4,4}}
+	self.handCards = {} -- {4,15,7,2,31,22}
+end
+ * pool_ui
+function this.RecycleOperCard(item)
+	if not IsNil(item.gameObject) then
+		table.insert(opercardList,item)
+		item:SetActive(false)
+	end
+end
+function this.GetHandCard()
+	local go = newobject(this.cardItemList_EX)
+	local handcard = mahjong_handcard_view:create(go)
+	return handcard
+end
+ ]]
+function reward_mahjongCard_view:SetMahjongList(info,isWin,specialCardValues,pool_ui)
+	local distance = 151
+	for i=1,#self.opercardList do
+		pool_ui:RecycleOperCard(self.opercardList[i])
+	end
+	self.opercardList = {}
+	for i=1,#info.valueList do
+		local operItem = pool_ui:GetOperCard()
+		operItem:SetActive(true)
+		operItem.transform.parent = self.transform
+		operItem.transform.localPosition = Vector3((i-1)*distance,0,0)
+		operItem.transform.localScale = Vector3.one
+		operItem:SetInfo(info.valueList[i],specialCardValues) -- 金的值，待优化
+		table.insert(self.opercardList,operItem)
+	end
+	if self.handcard==nil or IsNil(self.handcard.gameObject) then
+		self.handcard = pool_ui:GetHandCard()
+		self.handcard:SetActive(true)
+	end
+	self.handcard.transform.parent = self.transform
+	self.handcard.transform.localPosition = Vector3((#info.valueList)*distance,0,0)
+	self.handcard.transform.localScale = Vector3.one
+	self.handcard:SetInfo(info.handCards,isWin,specialCardValues) -- 金的值，待优化
+end
+
+return reward_mahjongCard_view

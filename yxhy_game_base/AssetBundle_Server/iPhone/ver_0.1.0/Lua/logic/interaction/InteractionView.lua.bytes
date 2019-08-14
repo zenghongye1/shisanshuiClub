@@ -1,0 +1,61 @@
+local base = require "logic/framework/ui/uibase/ui_view_base"
+local InteractionView = class("InteractionView", base)
+local addClickCallbackSelf = addClickCallbackSelf
+function InteractionView:ctor(go,callback,tbl,gid)
+
+	-- @todo  单个player为基准
+	self.hideCallback = callback
+	self.logicSeat = 0
+	self.posTbl = tbl
+	self.actionTran = nil
+	base.ctor(self,go)
+end
+
+--初始化位置
+function InteractionView:InitViewByConfig()	
+	local playerTrans = self.transform
+	if playerTrans ~= nil then
+		local actionTran = child(playerTrans,"bg/head/personalInfo")
+		actionTran.localPosition = Vector3(self.posTbl.x,self.posTbl.y,self.posTbl.z)
+	end
+end
+
+
+
+--添加按键点击事件
+function InteractionView:RegisterOnClick()
+	if self.actionTran == nil then
+		logError("self.actionTran == nil")
+		return
+	end
+	local playerInteractionTran = child(self.actionTran,"btn/ScrollView/interfaceGrid")
+	local actionNum = playerInteractionTran.childCount
+	for k = 1, actionNum do
+		self.PlayerInteraction = child(playerInteractionTran,"Sprite"..tostring(k))		
+		if (self.PlayerInteraction ~= nil) then
+			addClickCallbackSelf(self.PlayerInteraction.gameObject,self.Onbtn_PlayerInteraction,self)
+		end
+	end
+end
+
+function InteractionView:Onbtn_PlayerInteraction(obj)
+	local k = string.sub(tostring(obj.name),7,8)
+	local logicSeat = self.logicSeat
+	Trace("Onbtn_PlayerInteraction"..tostring(k).."------->p"..logicSeat)
+	self:hidePlayerInfoClick()
+	if game_scene.getCurSceneType() == scene_type.FUJIANSHISANGSHUI then
+		shisangshui_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	elseif game_scene.getCurSceneType() == scene_type.NIUNIU then
+		niuniu_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	elseif game_scene.getCurSceneType() == scene_type.HENANMAHJONG then
+		mahjong_play_sys.ChatReq(4,tostring(k),"p"..logicSeat)
+	end
+end
+
+function InteractionView:hidePlayerInfoClick()
+	if self.actionTran and self.actionTran.gameObject then
+		self.actionTran.gameObject:SetActive(false)
+	end
+end
+
+return InteractionView

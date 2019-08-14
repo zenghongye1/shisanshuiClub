@@ -1,0 +1,47 @@
+local base = require "logic/framework/ui/uibase/ui_view_base"
+local vote_view = class("vote_view", base)
+
+function vote_view:InitView()
+	self.spList = {}
+	for i = 1, 6 do
+		self.spList[i] = self:GetComponent("item" .. i, typeof(UISprite))
+		self.spList[i].gameObject:SetActive(false)
+	end
+end
+
+function vote_view:Show(playerNum)
+	self:ResetAll()
+	self:SetActive(true)
+	for i = 1, playerNum do
+		self.spList[i].gameObject:SetActive(true)
+	end
+end
+
+function vote_view:AddVote(value, viewSeat)
+	if viewSeat > #self.spList then
+		return
+	end
+	local spName = "room_14"
+	if value then
+		spName = "room_15"
+	end
+	self.spList[viewSeat].spriteName = spName
+end
+
+
+function vote_view:ResetAll()
+	for i = 1, #self.spList do
+		self.spList[i].spriteName = "room_13"
+		self.spList[i].gameObject:SetActive(false)
+	end
+end
+
+
+function vote_view:Hide()
+	self:SetActive(false)
+end
+
+
+
+return vote_view
+

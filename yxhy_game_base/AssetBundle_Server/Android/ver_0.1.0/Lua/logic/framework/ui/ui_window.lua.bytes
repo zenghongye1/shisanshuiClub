@@ -1,0 +1,162 @@
+UILayerEnum = 
+{
+	
+	UILayerEnum_Normal = 100,  	--用于普通的UI类型
+	UILayerEnum_Main = 1000,    --不受任何约束。得自己手动打开或者关闭。要不然会一直显示在最上层。一般用于导航栏。牌局主UI
+	UILayerEnum_Top = 1600,  	--针对于弹对话框用这个类型
+}
+
+UiCloseType = {
+	UiCloseType_CloseNothing = 0, --打开后不影响其他UI
+	UiCloseType_CloseOther =1,	  --打开会关闭其他Normal层的UI
+	UiCloseType_Navigation = 2,	  --导航栏UI，会压入导航栏堆栈
+}
+
+local ui_window = class("ui_window")
+
+function ui_window:ctor()
+	self.m_UiRoot = nil
+	self.args = nil
+	self.gameObject = nil
+	self.UiFormName = nil
+	self.IsOpened = false
+	self.m_CloseType = UiCloseType.CloseType_Nothing
+	self.m_OpenAnim = nil
+	self.m_CloseAnim = nil
+	self.m_OnBack = nil
+	self.m_inited = false
+	self.m_OnClose = nil
+	self.m_UiLayer = UILayerEnum.UILayerEnum_Normal
+	self.m_defaultLayer = {}
+	
+	self.m_count = 0
+	
+end
+
+function ui_window:Init()
+	if self.m_inited == true then return end
+	self.m_inited = true
+	self.m_UiLayer = UILayerEnum.UILayerEnum_Normal
+	local path = ui_prefab_enum["ui_enum_"..self.UiFormName]
+	self.gameObject = newNormalUI(path)
+	Trace("Init self.gameObject"..self.gameObject.name)
+	self.gameObject.transform.parent = self.m_UiRoot.gameObject.transform
+	self:SaveDefaultDepth()
+	self:OnInit()
+end
+
+--初始化，相当于awake生命周期内只执行一次
+function ui_window:OnInit()
+	Trace("ui_window OnInit")
+	
+end
+
+function ui_window:Open(CloseType,OnCloseCb,...)
+--	if self.IsOpened == true then return end
+	if {...} ~= nil then
+		self.args = {...}
+	end
+	if CloseType ~= nil then
+		self.m_CloseType = CloseType
+	end
+	self:Init()
+	if OnCloseCb ~= nil then
+		self.m_OnClose = OnCloseCb
+	end
+	self.gameObject:SetActive(true)
+	self.IsOpened =true
+	self.m_count = self.m_count + 1
+	if self.m_count > 1 then
+		logError("UI Open 被多次调用")
+	end
+	self:OnOpen({...})
+	
+	self:PlayOpenAmination(self.m_OpenAnim)
+end
+
+--每次打开界面都会调用
+function ui_window:OnOpen(...)
+	Trace("ui_window OnOpen")
+
+	
+end
+
+function ui_window:Refresh()
+	
+end
+--刷新界面
+function ui_window:OnRefresh()
+	
+end
+
+--保存子panel的默认深度
+function ui_window:SaveDefaultDepth()
+	local childPanel = self.gameObject:GetComponentsInChildren(typeof(UIPanel))
+	if childPanel ~= nil then
+		for j = 0,childPanel.Length -1,1 do
+			local obj = childPanel[j]
+			if obj.name ~= self.gameObject.name then
+				local data = {}
+				data.name = obj.gameObject.name
+				data.depth = obj.depth
+				data.panel = obj
+				Trace("index"..tostring(j))
+				table.insert(self.m_defaultLayer,data)
+			end
+		end
+	end
+end
+
+--重置子panel的默认深度
+function ui_window:ReSetDefaultDepth()
+	if self.m_defaultLayer ~= nil and #self.m_defaultLayer > 0 then
+		for i,v in ipairs(self.m_defaultLayer) do
+			v.panel.depth = v.depth
+		end
+	end
+end
+
+--刷新界面下子panel的深度
+function ui_window:RefreshDepth()
+	self:ReSetDefaultDepth()
+	if self.m_defaultLayer ~= nil and #self.m_defaultLayer > 0 then
+		local panel = componentGet(self.gameObject.transform,"UIPanel")
+		local rootDepth = panel.depth
+		for i,v in ipairs(self.m_defaultLayer) do
+			v.panel.depth = v.panel.depth + rootDepth
+			Trace("panelName:"..v.panel.gameObject.name.." depth:"..tostring(v.panel.depth).." rootDepth:"..tostring(rootDepth))
+		end
+	end
+end
+
+function ui_window:Close()
+--	if self.IsOpened == false then return end
+	if self == nil or self.gameObject == nil then
+		logError("this forms is already destory!")
+	end
+	if self.m_OnClose ~= nil then
+		self.m_OnClose()
+		self.m_OnClose = nil
+	end
+	self:PlayOpenAmination(self.m_CloseAnim)
+	self:OnClose()
+	self.gameObject:SetActive(false)
+	self.IsOpened = false
+	self.m_count = self.m_count - 1
+end
+
+function ui_window:OnClose()
+	
+	
+end
+
+
+function ui_window:PlayOpenAmination(anim)
+	self.gameObject.transform.localScale = Vector3(0,0,0)
+	self.gameObject.transform:DOScale(Vector3.one,0.2)
+	
+end
+
+
+
+return ui_window

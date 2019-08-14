@@ -1,0 +1,114 @@
+﻿[
+	[{
+		"exData": [1, 2, 0, 3],
+		"selectIndex": [3],
+		"maxPerLine": 6,
+		"data": ["AA支付", "大赢家支付", "房主支付", "会长支付"],
+		"title": "房费:",
+		"id": "costtype",
+		"type": 1,
+		"group": 44
+	}],
+	[{
+		"exData": [
+			4,
+			3,
+			2
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"4人",
+			"3人",
+			"2人"
+		],
+		"type": 1,
+		"group": 21,
+		"title": "人数:",
+		"id": "pnum",
+		"connecttype": [1],
+		"connect": [{
+			"2": {
+				"disable": [{
+					"bKaiMenLimit": 1
+				}]
+			},
+			"3": {
+				"disable": [{
+					"bKaiMenLimit": 1
+				}]
+			},
+			"4": {
+				"enable": [{
+					"bKaiMenLimit": 1
+				}]
+			}
+		}],
+		"Isconnect": [{}]
+	}],
+	[{
+		"exData": [
+			4,
+			8,
+			16
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"4局",
+			"8局",
+			"16局"
+		],
+		"type": 1,
+		"group": 22,
+		"maxPerLine": 3,
+		"title": "局数:",
+		"id": "rounds"
+	}],
+	[{
+		"exData": [
+			1,
+			0
+		],
+		"selectIndex": [
+			1
+		],
+		"data": [
+			"快听",
+			"慢听"
+		],
+		"type": 1,
+		"group": 23,
+		"title": "模式:",
+		"id": "nTingMode"
+	}],
+	[{
+		"multiterm": true,
+		"title": "玩法:",
+		"type": 0,
+		"group": 0,
+		"id": [
+			"bSupportKuaiBao",
+			"bSupportKanDuiBao",
+			"bNoTingBaoHu",
+			"bKaiMenLimit",
+			"byCheck7pairs",
+			"bSupportGangFlowAdd",
+			"bSupportBianAdd"
+		],
+		"data": [
+			"快宝",
+			"砍对宝",
+			"未上听包胡",
+			"四清",
+			"七小对",
+			"杠上开花",
+			"三七夹"
+		],
+		"selectIndex": [
+			1
+		]
+	}]
+]

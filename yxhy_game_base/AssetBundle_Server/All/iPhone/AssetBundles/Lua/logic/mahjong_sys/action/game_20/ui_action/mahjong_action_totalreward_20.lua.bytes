@@ -1,0 +1,65 @@
+local base = require "logic.mahjong_sys.action.game_18/ui_action/mahjong_action_totalreward_18"
+local mahjong_action_totalreward_20 = class("mahjong_action_totalreward_20", base)
+
+local mahjong_ui = mahjong_ui
+
+function mahjong_action_totalreward_20:SetPlayerTlist(scoreLog,index)
+	-- 计算详细信息
+	local tList = {}
+	for i,v in ipairs(self.config.big_settlement_mustShow or {}) do
+		tList[v] = 0
+	end
+
+	for _,v in ipairs(scoreLog) do
+		local win_type = v.win_type
+		local who_win = v.who_win
+		local win_info = v.win_info
+		local pStr = "p"..index
+
+		-- 细目
+		if IsTblIncludeValue(index, who_win) then
+			if win_info and win_info[pStr] then
+				local nFanDetailInfo = win_info[pStr]["nFanDetailInfo"]
+				if nFanDetailInfo then
+					local isFan = false
+					for _,detailInfo in ipairs(nFanDetailInfo) do
+						-- 不同玩法，一般通过判断 byFanType 过滤
+						if detailInfo.byFanType ~= 0 then
+							local byFanType = detailInfo.byFanType
+							if self.config.byFanType[byFanType] then
+								byFanType = self.config.byFanType[byFanType]
+							end
+
+							local serverName = config_mgr.getConfig("cfg_hutype",byFanType).serverName
+							if serverName then
+								if tList[serverName] then
+									tList[serverName] = tList[serverName] + 1
+								else
+									tList[serverName] = 1
+								end
+							else
+								logError("无法获取serverName,cfg_hutype byFanType:"..byFanType)
+							end
+							isFan = true
+							break
+						end
+					end
+					if not isFan then
+						local w_type = self.config.big_settlement_show.win_type[win_type]
+						if w_type then
+							if tList[w_type] then
+								tList[w_type] = tList[w_type] + 1
+							else
+								tList[w_type] = 1
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+
+	return tList
+end
+
+return mahjong_action_totalreward_20

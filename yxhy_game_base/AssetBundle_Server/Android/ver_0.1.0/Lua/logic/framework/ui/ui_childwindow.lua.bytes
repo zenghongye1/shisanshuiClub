@@ -1,0 +1,61 @@
+--[[
+	这个类用于UI里面的子UI处理。
+]]
+
+local ui_childwindow = class("ui_childwindow")
+
+function ui_childwindow:ctor(...)
+	self.parent = nil
+	self.UiFormName = nil
+	self.gameObject = nil
+	self.args = nil
+	self.openAnim = nil
+	self.AnimDelay = 0
+	self.inited = false
+	self.m_OnClose = nil
+end
+
+function ui_childwindow:Init()
+	if self.inited == true then return end
+	self.OnInit()
+	self.inited = true
+end
+
+function ui_childwindow:Open(parent,...)
+	self.parent = parent
+	if {...} ~= nil then
+		self.args = {...}
+	end
+	self:Init()
+end
+
+function ui_childwindow:PlayAnimation()
+	if self.openAnim ~= nil then
+		
+	end
+end
+
+function ui_childwindow:OnInit()
+	
+end
+
+function ui_childwindow:OnOpen()
+	
+end
+
+function ui_childwindow:OnClose()
+end
+
+function ui_childwindow:Close()
+	if self == nil or self.gameObject == nil then
+		logError("this childwindow is alrady destory")
+	end
+	if self.m_OnClose ~= nil then
+		self.m_OnClose()
+		self.m_OnClose = nil
+	end
+	self:OnClose()
+	self.gameObject:SetActive(false)
+end
+
+return ui_childwindow

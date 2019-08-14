@@ -1,0 +1,50 @@
+--region *.lua
+--Date
+--此文件由[BabeLua]插件自动生成
+
+
+
+--endregion
+niuniu_room_ui=MJRoom_UI.New()
+
+local this=niuniu_room_ui
+this.name="NN"
+function this.Init()    
+    if PlayerPrefs.HasKey(this.name) and  PlayerPrefs.GetString(this.name)~=nil then
+        local str=PlayerPrefs.GetString(this.name)  
+        local t=ParseJsonStr(str)
+        for k,v in pairs(t) do 
+            this.paneltable[k]=v
+        end
+    end
+    if this.paneltable==nil or table.getCount(this.paneltable)==0 then
+        local str = FileReader.ReadFile(global_define.appConfig.niuniu_path) 
+ 	    local roomConfData = nil
+ 	    if nil ~= str and "" ~= str then
+		    roomConfData = ParseJsonStr(str)
+	    end
+        room_data.ReadInfo(roomConfData,this)    
+    end  
+    niuniu_room_ui.UI_Pos=openroom_main_ui.UI_Pos 
+    niuniu_room_ui:Show() 
+    openroom_main_ui.RegisterCreateHandle(this.OnCreateBtnClick) 
+end
+
+function this.OnCreateBtnClick() 
+    local tables=niuniu_room_ui:GetSelect() 
+    local confData={}   
+    confData = tables
+    confData.gid = ENUM_GAME_TYPE.TYPE_NIUNIU	
+    table.foreach(confData,print)	 
+   --room_data.SetQzmjRoomDataInfo(tables) 
+   -- roomdata_center.gameRuleStr = room_data.GetQZShareString()
+    join_room_ctrl.CreateRoom(confData)   
+    local str= json.encode(this.paneltable)
+    PlayerPrefs.SetString(this.name,str)
+end
+
+function this.EnterGameReq(dataTbl)
+	--PHP返回的开房信息
+	require("logic.niuniu_sys.cmd_manage.niuniu_data_manage"):GetInstance().phpData = dataTbl.data
+    niuniu_request_interface.EnterGameReq(dataTbl.data)
+end 

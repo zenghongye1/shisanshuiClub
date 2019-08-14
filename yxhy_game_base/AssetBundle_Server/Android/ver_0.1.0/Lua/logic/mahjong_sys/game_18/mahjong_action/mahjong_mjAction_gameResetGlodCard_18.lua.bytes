@@ -1,0 +1,13 @@
+local base = require "logic/mahjong_sys/common/mahjong_action_base"
+local mahjong_mjAction_gameResetGlodCard_18 = class("mahjong_mjAction_gameResetGlodCard_18", base)
+
+function mahjong_mjAction_gameResetGlodCard_18:Execute(jin,pos)
+     if jin ~= nil then
+        roomdata_center.SetSpecialCard(jin)
+        self.compTable:ShowJin(jin, true)
+        roomdata_center.AddMj(jin)
+        self.compPlayerMgr:GetPlayer(1):ShowSpecialInHand()
+    end
+end
+
+return mahjong_mjAction_gameResetGlodCard_18

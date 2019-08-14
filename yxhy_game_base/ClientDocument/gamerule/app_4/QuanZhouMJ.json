@@ -1,0 +1,162 @@
+﻿[
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+  [
+    {
+      "exData": [
+        0,
+        1
+      ],
+      "title": "玩法:",
+      "id": "bsupportke",
+      "data": [
+        "打局",
+        "打课"
+      ],
+      "selectIndex": [
+        1
+      ],
+      "connect": [
+        {
+          "bsupportke": [
+            {
+              "rounds": [
+                [ 0 ],
+                [  16,12,8]
+              ],
+			  "bSupportXiaPao": [
+                [ 1 ],[ 0 ]
+              ]
+            }
+          ]
+        }
+      ],
+      "Isconnect": [
+        {
+          "bsupportke": [
+            {
+              "rounds": [
+                [ 16,12,8],
+                [ 0 ]
+              ],
+			  "bSupportXiaPao": [
+                [ 0 ],[ 1 ]
+              ]
+            }
+          
+          ]
+        }
+      ],
+      "itemHeight":-80,
+	  "itemWidth": 232,
+      "connecttype": [3 ],
+       "type": 1, 
+       "group":37
+    }
+  ],
+  [
+     {
+      "exData": [
+        4,
+        3,
+        2
+      ],
+      "itemHeight": -80,
+	  "itemWidth": 232,
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4人",
+        "3人",
+        "2人"
+      ],
+      "title": "人数:",
+      "id": "pnum", 
+       "type": 1, 
+       "group":33
+    }
+  ],
+  [
+    {
+      "exData": [
+        4,
+        8,
+        16,
+        0
+      ],  
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4局(房卡X1)",
+        "8局(房卡X2)",
+        "16局(房卡X4)",
+        "打课(房卡X4)"
+      ],
+      "itemHeight": -80,
+      "itemWidth": 232,
+      "maxPerLine": 4,
+       "type": 1, 
+       "group":34,
+      "title": "局数:",
+      "id": "rounds"
+    }
+  ],
+  [
+   
+    {
+      "multiterm": true,
+      "selectIndex": [
+        1,
+        2
+      ], 
+      "itemHeight": -160,
+	  "itemWidth": 330,
+      "maxPerLine": 2,
+      "data": [
+        "单金不能平胡",
+        "双金及以上要游金",
+        "三金倒",
+		"清一色"
+      ],
+      "title": "牌型:", 
+       "type":0, 
+       "group":0,
+      "id": [
+        "nonegold",
+        "ntwogold",
+        "nSanJinDao",
+		"nOneColor"
+      ]  
+    } 
+  ],
+  [
+    {
+      "multiterm": true,
+      "title": "加注:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -160,
+	  "itemWidth": 232,
+      "id": [
+        "bSupportXiaPao"
+      ],
+      "data": [
+        "下注"
+      ],
+      "selectIndex": [
+      ]
+    }
+  ]
+]

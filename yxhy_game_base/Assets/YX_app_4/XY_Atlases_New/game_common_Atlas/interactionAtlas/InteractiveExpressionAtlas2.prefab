@@ -1,0 +1,800 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 1000013491920302}
+  m_IsPrefabParent: 1
+--- !u!1 &1000013491920302
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000010578967410}
+  - 114: {fileID: 114000013215957390}
+  m_Layer: 0
+  m_Name: InteractiveExpressionAtlas2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4000010578967410
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013491920302}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+--- !u!114 &114000013215957390
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013491920302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ebd2e0fe8fa5534486602b7b88e97f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  material: {fileID: 2100000, guid: 8c30f030dea5d2e489fd336ca53ede9f, type: 2}
+  mSprites:
+  - name: diujidan0
+    x: 421
+    y: 672
+    width: 65
+    height: 52
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 0
+    paddingBottom: 0
+  - name: diujidan1
+    x: 686
+    y: 232
+    width: 120
+    height: 105
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 14
+    paddingRight: 16
+    paddingTop: 21
+    paddingBottom: 24
+  - name: diujidan10
+    x: 623
+    y: 551
+    width: 140
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 10
+    paddingRight: 0
+    paddingTop: 21
+    paddingBottom: 23
+  - name: diujidan11
+    x: 131
+    y: 366
+    width: 140
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 10
+    paddingRight: 0
+    paddingTop: 21
+    paddingBottom: 23
+  - name: diujidan12
+    x: 764
+    y: 445
+    width: 139
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 10
+    paddingRight: 1
+    paddingTop: 21
+    paddingBottom: 23
+  - name: diujidan13
+    x: 549
+    y: 337
+    width: 136
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 11
+    paddingRight: 3
+    paddingTop: 21
+    paddingBottom: 23
+  - name: diujidan14
+    x: 849
+    y: 342
+    width: 135
+    height: 102
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 11
+    paddingRight: 4
+    paddingTop: 24
+    paddingBottom: 24
+  - name: diujidan2
+    x: 0
+    y: 153
+    width: 134
+    height: 105
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 10
+    paddingRight: 6
+    paddingTop: 21
+    paddingBottom: 24
+  - name: diujidan3
+    x: 260
+    y: 237
+    width: 135
+    height: 105
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 11
+    paddingRight: 4
+    paddingTop: 21
+    paddingBottom: 24
+  - name: diujidan4
+    x: 410
+    y: 327
+    width: 136
+    height: 105
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 10
+    paddingRight: 4
+    paddingTop: 21
+    paddingBottom: 24
+  - name: diujidan5
+    x: 712
+    y: 338
+    width: 136
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 10
+    paddingRight: 4
+    paddingTop: 21
+    paddingBottom: 23
+  - name: diujidan6
+    x: 272
+    y: 343
+    width: 137
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 10
+    paddingRight: 3
+    paddingTop: 21
+    paddingBottom: 23
+  - name: diujidan7
+    x: 122
+    y: 259
+    width: 137
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 10
+    paddingRight: 3
+    paddingTop: 21
+    paddingBottom: 23
+  - name: diujidan8
+    x: 410
+    y: 433
+    width: 138
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 10
+    paddingRight: 2
+    paddingTop: 21
+    paddingBottom: 23
+  - name: diujidan9
+    x: 572
+    y: 444
+    width: 139
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 10
+    paddingRight: 1
+    paddingTop: 21
+    paddingBottom: 23
+  - name: ganbei0
+    x: 630
+    y: 804
+    width: 75
+    height: 95
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 0
+    paddingBottom: 0
+  - name: ganbei1
+    x: 990
+    y: 837
+    width: 29
+    height: 73
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 121
+    paddingRight: 0
+    paddingTop: 40
+    paddingBottom: 37
+  - name: ganbei10
+    x: 770
+    y: 552
+    width: 150
+    height: 120
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 20
+    paddingBottom: 10
+  - name: ganbei11
+    x: 770
+    y: 673
+    width: 150
+    height: 126
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 17
+    paddingBottom: 7
+  - name: ganbei12
+    x: 421
+    y: 540
+    width: 150
+    height: 111
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 25
+    paddingBottom: 14
+  - name: ganbei13
+    x: 665
+    y: 149
+    width: 150
+    height: 82
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 55
+    paddingBottom: 13
+  - name: ganbei14
+    x: 807
+    y: 313
+    width: 40
+    height: 24
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 59
+    paddingRight: 51
+    paddingTop: 75
+    paddingBottom: 51
+  - name: ganbei15
+    x: 336
+    y: 899
+    width: 13
+    height: 14
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 87
+    paddingRight: 50
+    paddingTop: 73
+    paddingBottom: 63
+  - name: ganbei2
+    x: 706
+    y: 824
+    width: 47
+    height: 75
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 103
+    paddingRight: 0
+    paddingTop: 43
+    paddingBottom: 32
+  - name: ganbei3
+    x: 921
+    y: 692
+    width: 100
+    height: 107
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 24
+    paddingRight: 26
+    paddingTop: 19
+    paddingBottom: 24
+  - name: ganbei4
+    x: 150
+    y: 473
+    width: 132
+    height: 133
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 11
+    paddingRight: 7
+    paddingTop: 4
+    paddingBottom: 13
+  - name: ganbei5
+    x: 150
+    y: 607
+    width: 143
+    height: 141
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 6
+    paddingRight: 1
+    paddingTop: 9
+    paddingBottom: 0
+  - name: ganbei6
+    x: 0
+    y: 605
+    width: 149
+    height: 143
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 1
+    paddingRight: 0
+    paddingTop: 7
+    paddingBottom: 0
+  - name: ganbei7
+    x: 336
+    y: 725
+    width: 150
+    height: 148
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 2
+    paddingBottom: 0
+  - name: ganbei8
+    x: 352
+    y: 874
+    width: 150
+    height: 150
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 0
+    paddingBottom: 0
+  - name: ganbei9
+    x: 92
+    y: 749
+    width: 150
+    height: 150
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 0
+    paddingRight: 0
+    paddingTop: 0
+    paddingBottom: 0
+  - name: tuoxie0
+    x: 921
+    y: 621
+    width: 100
+    height: 70
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 8
+    paddingRight: 6
+    paddingTop: 6
+    paddingBottom: 3
+  - name: tuoxie1
+    x: 0
+    y: 260
+    width: 109
+    height: 89
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 12
+    paddingRight: 29
+    paddingTop: 1
+    paddingBottom: 60
+  - name: tuoxie10
+    x: 547
+    y: 229
+    width: 117
+    height: 107
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 24
+    paddingRight: 9
+    paddingTop: 29
+    paddingBottom: 14
+  - name: tuoxie11
+    x: 904
+    y: 445
+    width: 115
+    height: 106
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 24
+    paddingRight: 11
+    paddingTop: 30
+    paddingBottom: 14
+  - name: tuoxie2
+    x: 0
+    y: 42
+    width: 123
+    height: 110
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 18
+    paddingRight: 9
+    paddingTop: 29
+    paddingBottom: 11
+  - name: tuoxie3
+    x: 0
+    y: 350
+    width: 121
+    height: 121
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 20
+    paddingRight: 9
+    paddingTop: 29
+    paddingBottom: 0
+  - name: tuoxie4
+    x: 283
+    y: 450
+    width: 126
+    height: 128
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 24
+    paddingRight: 0
+    paddingTop: 22
+    paddingBottom: 0
+  - name: tuoxie5
+    x: 0
+    y: 472
+    width: 130
+    height: 132
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 20
+    paddingRight: 0
+    paddingTop: 18
+    paddingBottom: 0
+  - name: tuoxie6
+    x: 487
+    y: 652
+    width: 135
+    height: 136
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 15
+    paddingRight: 0
+    paddingTop: 14
+    paddingBottom: 0
+  - name: tuoxie7
+    x: 630
+    y: 658
+    width: 139
+    height: 141
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 11
+    paddingRight: 0
+    paddingTop: 9
+    paddingBottom: 0
+  - name: tuoxie8
+    x: 294
+    y: 579
+    width: 126
+    height: 145
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 24
+    paddingRight: 0
+    paddingTop: 5
+    paddingBottom: 0
+  - name: tuoxie9
+    x: 849
+    y: 226
+    width: 117
+    height: 115
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 24
+    paddingRight: 9
+    paddingTop: 21
+    paddingBottom: 14
+  - name: zhujipng0
+    x: 243
+    y: 749
+    width: 82
+    height: 67
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 4
+    paddingRight: 3
+    paddingTop: 3
+    paddingBottom: 4
+  - name: zhujipng1
+    x: 243
+    y: 817
+    width: 92
+    height: 96
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 30
+    paddingRight: 28
+    paddingTop: 34
+    paddingBottom: 20
+  - name: zhujipng10
+    x: 757
+    y: 914
+    width: 112
+    height: 110
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 20
+    paddingRight: 18
+    paddingTop: 18
+    paddingBottom: 22
+  - name: zhujipng11
+    x: 866
+    y: 800
+    width: 123
+    height: 110
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 14
+    paddingRight: 13
+    paddingTop: 21
+    paddingBottom: 19
+  - name: zhujipng12
+    x: 503
+    y: 900
+    width: 114
+    height: 124
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 18
+    paddingRight: 18
+    paddingTop: 19
+    paddingBottom: 7
+  - name: zhujipng13
+    x: 239
+    y: 914
+    width: 112
+    height: 110
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 20
+    paddingRight: 18
+    paddingTop: 18
+    paddingBottom: 22
+  - name: zhujipng2
+    x: 0
+    y: 815
+    width: 91
+    height: 98
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 30
+    paddingRight: 29
+    paddingTop: 32
+    paddingBottom: 20
+  - name: zhujipng3
+    x: 757
+    y: 800
+    width: 108
+    height: 113
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 30
+    paddingRight: 12
+    paddingTop: 17
+    paddingBottom: 20
+  - name: zhujipng4
+    x: 503
+    y: 789
+    width: 126
+    height: 110
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 11
+    paddingRight: 13
+    paddingTop: 21
+    paddingBottom: 19
+  - name: zhujipng5
+    x: 618
+    y: 900
+    width: 138
+    height: 124
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 3
+    paddingRight: 9
+    paddingTop: 19
+    paddingBottom: 7
+  - name: zhujipng6
+    x: 135
+    y: 148
+    width: 123
+    height: 110
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 14
+    paddingRight: 13
+    paddingTop: 21
+    paddingBottom: 19
+  - name: zhujipng7
+    x: 870
+    y: 911
+    width: 132
+    height: 113
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 5
+    paddingRight: 13
+    paddingTop: 18
+    paddingBottom: 19
+  - name: zhujipng8
+    x: 0
+    y: 914
+    width: 123
+    height: 110
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 14
+    paddingRight: 13
+    paddingTop: 21
+    paddingBottom: 19
+  - name: zhujipng9
+    x: 124
+    y: 900
+    width: 114
+    height: 124
+    borderLeft: 0
+    borderRight: 0
+    borderTop: 0
+    borderBottom: 0
+    paddingLeft: 18
+    paddingRight: 18
+    paddingTop: 19
+    paddingBottom: 7
+  mPixelSize: 1
+  mReplacement: {fileID: 0}
+  mCoordinates: 0
+  sprites: []

@@ -1,0 +1,14 @@
+local panelTableBase = class("panelTableBase")
+
+function panelTableBase:ctor()
+	self.ToggleTable={}
+    self.selectIndex={1}
+    self.title=""
+    self.height=0
+    self.itemWidth=330
+    self.itemHeight=80
+    self.maxperLine=4
+    self.connect=0
+end
+
+return panelTableBase

@@ -1,0 +1,147 @@
+-- 通用分数刷新
+
+local base = require "logic/mahjong_sys/common/mahjong_action_base"
+local mahjong_action_getBigSettlementData = class("mahjong_action_getBigSettlementData_18", base)
+
+function mahjong_action_getBigSettlementData:Execute(reward)
+	local tList = {}	
+	if reward.score == nil or #(reward.score) == 0 then
+		return tList
+	end
+
+	local exitTbl = {false,false,false}
+	for i,v in ipairs(reward.score) do
+		if v.nGoldBird~=nil then
+			exitTbl[1] = true
+		end
+		if v.nGoldDragon~=nil then
+			exitTbl[2] = true
+		end
+		if v.nQYS ~=nil then
+			exitTbl[3] = true
+		end
+	end
+
+	if exitTbl[1]==false then
+		local item = {}
+		item.nGoldBird = 0
+		table.insert(reward.score,item)
+	end
+
+	if exitTbl[2]==false then
+		local item = {}
+		item.nGoldDragon = 0
+		table.insert(reward.score,item)
+	end
+
+	if exitTbl[3]==false then
+		local item = {}
+		item.nQYS = 0
+		table.insert(reward.score,item)
+	end
+
+	for kk, score in ipairs(reward.score) do
+		--固定
+		if score["selfdraw"] ~= nil then
+			local item = {}
+			item.selfdraw = score["selfdraw"]
+			item.name = "自摸胡"
+			item.num = score["selfdraw"]
+			table.insert(tList,item)
+		end
+		if score["gunwin"] ~= nil then
+			local item = {}
+			item.gunwin = score["gunwin"]
+			item.name = "平胡"
+			item.num = score["gunwin"]
+			table.insert(tList,item)
+		end
+
+		if score["nGoldBird"] ~= nil then --金雀
+			local item = {}
+			item.nGoldBird = score["nGoldBird"]
+			item.name = "金雀"
+			item.num = score["nGoldBird"]
+			table.insert(tList,item)
+		end
+		if score["nGoldDragon"] ~= nil then --金龙
+			local item = {}
+			item.nGoldDragon = score["nGoldDragon"]
+			item.name = "金龙"
+			item.num = score["nGoldDragon"]
+			table.insert(tList,item)
+		end
+		if score["nQYS"] ~= nil then --清一色
+			local item = {}
+			item.nQYS = score["nQYS"]
+			item.name = "清一色"
+			item.num = score["nQYS"]
+			table.insert(tList,item)
+		end
+
+		--不固定
+		if score["nXianJin"] ~= nil and score["nXianJin"] >0 then
+			local item = {}
+			item.nXianJin = score["nXianJin"]
+			item.name = "闲金"
+			item.num = score["nXianJin"]
+			table.insert(tList,item)
+		end
+		if score["nWuHuaWuGang"] ~= nil and score["nWuHuaWuGang"] >0 then
+			local item = {}
+			item.nWuHuaWuGang = score["nWuHuaWuGang"]
+			item.name = "无花无杠"
+			item.num = score["nWuHuaWuGang"]
+			table.insert(tList,item)
+		end
+		if score["nOneFlower"] ~= nil and score["nOneFlower"] >0 then
+			local item = {}
+			item.nOneFlower = score["nOneFlower"]
+			item.name = "一张花"
+			item.num = score["nOneFlower"]
+			table.insert(tList,item)
+		end
+		
+		if score["nHalfQYS"] ~= nil and score["nHalfQYS"] >0 then
+			local item = {}
+			item.nHalfQYS = score["nHalfQYS"]
+			item.name = "半清一色"
+			item.num = score["nHalfQYS"]
+			table.insert(tList,item)
+		end
+		
+		if score["nSanJinDao"] ~= nil and score["nSanJinDao"] >0 then
+			local item = {}
+			item.nSanJinDao = score["nSanJinDao"]
+			item.name = "三金倒"
+			item.num = score["nSanJinDao"]
+			table.insert(tList,item)
+		end
+	end
+
+	if reward["flowerFan"] ~= nil and reward["flowerFan"] > 0 then
+		local item = {}
+		item.flowerFan = reward["flowerFan"]
+		item.name = "花"
+		item.num = reward["flowerFan"]
+		table.insert(tList,item)
+	end
+	if reward["gangFan"] ~= nil and reward["gangFan"] > 0 then
+		local item = {}
+		item.gangFan = reward["gangFan"]
+		item.name = "杠"
+		item.num = reward["gangFan"]
+		table.insert(tList,item)
+	end
+	if reward["lianZhuangFan"] ~= nil and reward["lianZhuangFan"] > 0 then
+		local item = {}
+		item.lianZhuangFan = reward["lianZhuangFan"]
+		item.name = "连庄"
+		item.num = reward["lianZhuangFan"]
+		table.insert(tList,item)
+	end
+
+	return tList
+end
+
+return mahjong_action_getBigSettlementData

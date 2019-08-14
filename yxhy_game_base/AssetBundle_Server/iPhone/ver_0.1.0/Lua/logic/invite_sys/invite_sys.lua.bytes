@@ -1,0 +1,57 @@
+--require "logic/invite_sys/inviteConfig"
+
+invite_sys = {}
+local this = invite_sys
+
+-- 房间邀请
+
+function this.inviteFriend(platform,_roomID, _gameName, _gameRule)
+	--logError(_gameRule)
+	local roomID = _roomID
+	local gameName = _gameName
+	local gameRule = _gameRule
+	local shareStr = string.format(global_define.gameShareTitle, gameName,roomID)
+	local shareType = 0
+	local contentType = 5 
+	local title = shareStr
+	local filePath = ""
+	local url = string.format(global_define.appConfig.MWInviteURL,roomID,data_center.GetLoginUserInfo().uid)
+	local description = gameRule
+	Trace("inviteFriend------- url " .. url.." description:"..tostring(description))
+	
+	shareHelper.doShare(platform,shareType,contentType,title,filePath,url,description)
+	--[[if platform == LoginType.WXLOGIN then
+		YX_APIManage.Instance:WeiXinShare(shareType,contentType,title,filePath,url,description, function (msg)
+			Trace("onWeiXinShareCallBack------"..GetTblData(msg))
+			local msg = string.gsub(msg, "\\/", "/")
+			local retStr = ParseJsonStr(msg)
+			if retStr["errCode"]==0 then
+				http_request_interface.ShareDone(function (msg)
+					-- body
+				end)
+			end
+		end)
+	elseif platform == LoginType.QQLOGIN then
+		YX_APIManage.Instance:QQShare(shareType,contentType,title,filePath,url,description,function (msg)
+			Trace("onQQShareCallBack------"..GetTblData(msg))
+			local msg = string.gsub(msg, "\\/", "/")
+			local retStr = ParseJsonStr(msg)
+			if retStr["result"]==0 then
+				http_request_interface.ShareDone(function (msg)
+					-- body
+				end)
+			end
+		end)
+	elseif platform == LoginType.YOUKE then		----游客暂用微信
+		YX_APIManage.Instance:WeiXinShare(shareType,contentType,title,filePath,url,description, function (msg)
+			Trace("onWeiXinShareCallBack------"..GetTblData(msg))
+			local msg = string.gsub(msg, "\\/", "/")
+			local retStr = ParseJsonStr(msg)
+			if retStr["errCode"]==0 then
+				http_request_interface.ShareDone(function (msg)
+					-- body
+				end)
+			end
+		end)
+	end--]]
+end

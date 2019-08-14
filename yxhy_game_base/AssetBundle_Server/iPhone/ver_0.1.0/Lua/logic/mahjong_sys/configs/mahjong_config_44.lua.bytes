@@ -1,0 +1,107 @@
+
+--[[--
+ * @Description: 莆田麻将玩法配置
+ * @FileName:    play_mode_config_fuzhou.lua
+ ]]
+local config_common = require "logic/mahjong_sys/configs/mahjong_config_common":create()
+
+local mahjong_config_44 = {}
+setmetatable(mahjong_config_44, {__index = config_common})
+
+mahjong_config_44.MahjongTotalCount = 112  -- 麻将总数量
+mahjong_config_44.MahjongDunCount = 14	-- 一排多少墩
+mahjong_config_44.MahjongHandCount = 13	-- 手牌数量
+mahjong_config_44.MahjongWallCount = 4	-- 排墙数量
+
+-- 发牌方式   
+mahjong_config_44.gameDealSendHandCardMap = 
+{
+	-- 每圈每人发牌数量
+	[1] = {4,4,4,4},
+	[2] = {4,4,4,4},
+	[3] = {4,4,4,4},
+	[4] = {1,1,1,1},
+	[5] = {1,0,0,0}
+}
+
+mahjong_config_44.wallDunCountMap = 
+{
+	14,14,14,14
+}
+
+mahjong_config_44.selfHandPosOffsetList = {4,3,3,3,3,3,3}
+
+mahjong_config_44.sceneCfg.mainCameraPos = Vector3(0, 8.31, -7.62)
+mahjong_config_44.sceneCfg.mainCameraEulers = Vector3(48.6, 0,0)
+mahjong_config_44.sceneCfg.mainCameraFieldOfView = 30
+
+mahjong_config_44.sceneCfg.twoCameraPos = Vector3(0.15, 2.3, -4.76)
+mahjong_config_44.sceneCfg.twoCameraEulers = Vector3(12, 0, 0)
+mahjong_config_44.sceneCfg.twoCameraSize = 1.47
+
+mahjong_config_44.tableFontSpriteName = "putianmj"
+
+mahjong_config_44.game_state = {
+    none         = "none",
+    prepare      = "prepare",        --开始
+    banker       = "banker",          --定庄
+    deal         = "deal",               --抓牌
+    opengold     = "opengold",         --开金
+    round        = "round",        --游戏阶段
+    reward       = "reward",       --结算
+    gameend      = "gameend",       --结束
+}
+
+mahjong_config_44.gameCfg.flowerOnTable = true
+mahjong_config_44.gameCfg.changeFlowerSound = "37"
+mahjong_config_44.gameCfg.tingType = MahjongOperTipsEnum.TingYouJin
+mahjong_config_44.gameCfg.small_reward_type = 3
+
+
+mahjong_config_44.sceneCfg.operPointPosList[1]  = Vector3(-3.306, 0.7, -3.622)
+mahjong_config_44.sceneCfg.operPointPosList[2]  = Vector3(2.16, 0.7, -4.123)
+
+mahjong_config_44.big_settlement_show = {}
+mahjong_config_44.big_settlement_show.win_type = {
+	["selfdraw"] = "selfdraw", -- 自摸
+	["gunwin"] = "gunwin", -- 点炮
+	["robgangwin"] = "selfdraw", -- 抢杠
+	["robgoldwin"] = "selfdraw", -- 抢金
+}
+mahjong_config_44.big_settlement_show.fan_change = {
+	["selfdraw"] = "nSelfDraw", -- 自摸
+}
+mahjong_config_44.big_settlement_show.byFanType = {
+	"gunwin", -- 点炮
+	"nSelfDraw", -- 自摸
+	"nQiangJin", -- 抢金
+	"nGodWin", -- 天胡
+	"nSanJinDao", -- 三金倒
+	"nYouJin", -- 游金
+	"nQYS", -- 清一色
+}
+
+mahjong_config_44.big_settlement_mustShow = 
+{
+	"selfdraw",
+	"gunwin",
+}
+
+mahjong_config_44.uiActionCfg.small_reward = {44, "mahjong_action_small_reward_44"}
+mahjong_config_44.uiActionCfg.game_tingType = {0,"mahjong_action_gameTingType"}
+mahjong_config_44.uiActionCfg.game_youjin_count = {44,"mahjong_action_gameYouJinCount"}
+mahjong_config_44.uiActionCfg.game_win = {18, "mahjong_action_gameWin_18"}
+mahjong_config_44.uiActionCfg.total_reward = {18, "mahjong_action_totalreward_18"}
+
+mahjong_config_44.mahjongActionCfg.game_openGlod = {25, "mahjong_mjAction_gameOpenGlod_25"}
+mahjong_config_44.mahjongActionCfg.game_playStart = {40,"mahjong_mjAction_gamePlayStart"}
+
+mahjong_config_44.stateAnimMap[MahjongGameAnimState.openGold] = {"fanjin", mahjong_path_enum.mjCommon, "fangjin", 1}
+
+mahjong_config_44.stateAnimList = {
+	MahjongGameAnimState.start,
+	MahjongGameAnimState.openGold,
+	MahjongGameAnimState.none,
+}
+
+return mahjong_config_44

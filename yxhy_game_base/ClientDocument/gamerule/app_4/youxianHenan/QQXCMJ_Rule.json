@@ -1,0 +1,160 @@
+[ 
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+  [
+    {
+      "exData": [
+        4,
+        8,
+        12
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4局(房卡x1)",
+        "4局(房卡x1)",
+        "8局(房卡x2)"
+      ],
+      "type": 1,
+      "group": 22,
+      "itemHeight": -80,
+      "maxPerLine": 3,
+      "title": "局数:",
+      "id": "rounds"
+    }
+  ],
+  [
+    {
+      "exData": [
+        4,
+        3,
+        2
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4人",
+        "3人",
+        "2人"
+      ],
+      "type": 1,
+      "itemHeight": -80,
+      "group": 21,
+      "title": "人数:",
+      "id": "pnum"
+    }
+  ],
+  [
+    {
+      "multiterm": true,
+      "title": "玩法:",
+      "type": 0,
+      "group": 0,
+      "id": [
+        "hun",
+        "bSupportTing"
+      ],
+      "data": [
+        "带混牌",
+        "报听胡"
+      ],
+      "selectIndex": [],
+	  "connecttype": [ 1 ],
+      "connect": [
+            {
+              "hun": {
+                "disable": [
+                ],
+                "enable": [
+                  { "bSupportSevenDoubleHun": 1 }
+                ]
+              }
+            } 
+          ],
+          "Isconnect": [
+            {
+              "hun": {
+                "select": [
+                ]
+              }
+            } 
+          ],
+      "itemHeight": -80,
+      "maxPerLine":3
+    }
+  ],
+  [
+    {
+      "multiterm": true,
+      "title": "下跑:",
+      "type": 0,
+      "group": 0,
+      "id": [
+        "lowrun",
+        "gangrun"
+      ],
+      "data": [
+        "带下跑",
+        "带杠跑"
+      ],
+      "selectIndex": [],
+      "connecttype": [ 1 ],
+      "connect": [
+            {
+              "lowrun": {
+                "disable": [ 
+                ],
+                "enable": [ 
+                  { "gangrun": 1 } 
+                ]
+              }
+            } 
+          ],
+          "Isconnect": [
+            {
+              "lowrun": {
+              "select": [ 
+                ]
+              }
+            } 
+          ],
+      "itemHeight": -80,
+      "maxPerLine":3
+    }
+  ],  
+  [
+    {
+      "multiterm": true,
+      "title": "牌型:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -90,
+      "id": [
+        "bSupportSevenDoubleHun",
+        "bMissHuAdd",
+        "bWindDrawAdd"
+      ],
+      "data": [
+        "七对带混",
+        "断门加倍",
+        "风摸加倍"
+      ],
+      "selectIndex": [
+        2,3
+      ], 
+      "maxPerLine":3
+    }
+  ]
+]

@@ -1,0 +1,10 @@
+unityfunction_to_luafunction = {}
+local this = unityfunction_to_luafunction
+
+function this.Awake()
+	UI_Manager:Instance():Awake()
+end
+
+function this.Start()
+	UI_Manager:Instance():Awake()
+end

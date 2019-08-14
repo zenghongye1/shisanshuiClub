@@ -1,0 +1,245 @@
+require "logic/shisangshui_sys/card_define"
+require "logic/shisangshui_sys/large_result/large_result"
+require "logic/shisangshui_sys/special_card_show/special_card_show"
+require "logic/shisangshui_sys/card_data_manage"
+
+
+local base = require("logic.framework.ui.uibase.ui_window")
+local small_result_ui = class("small_result_ui",base)
+
+function small_result_ui:ctor()
+	base.ctor(self)
+	self.fangzhuId = 0
+	self.NameByuid = {}		--uid————Name表
+	self.isEnterTotalResult = false
+	self.userTranList = {}		--存放user的tran
+	self.ScorestUid = {}
+end
+
+--最大等待时间
+local leftTime = 0
+local timer_Elapse = nil
+
+function small_result_ui:OnInit()
+	self:InitView()
+end
+
+function small_result_ui:OnOpen(tbl)
+	
+	UI_Manager:Instance():CloseUiForms("chat_ui")
+	UI_Manager:Instance():CloseUiForms("special_card_show")
+	if tbl == nil then
+		logError("small_result_ui-----------tbl == nil ")
+		return
+	end
+	self:UpdateView(tbl)
+end
+
+function small_result_ui:InitView()
+	self.lbl_time = componentGet(child(self.gameObject.transform, "Panel/bottom/readyBtn/readylbl"), "UILabel")
+	
+	local btn_ready = child(self.gameObject.transform, "Panel/bottom/readyBtn")
+	if btn_ready ~= nil then
+		addClickCallbackSelf(btn_ready.gameObject, self.ReadyClick, self)
+	end
+	
+	local tran_userSelf = child(self.gameObject.transform,"Panel/center/Self/user")
+	table.insert(self.userTranList,tran_userSelf)
+	for i=1,5 do
+		local tran_userOther = child(self.gameObject.transform,"Panel/center/resultList/userGrid/user"..i)
+		table.insert(self.userTranList,tran_userOther)
+	end
+	
+	self.lbl_roomInfo = componentGet(child(self.gameObject.transform, "Panel/bottom/room"),"UILabel")
+	self.lbl_gameName = componentGet(child(self.gameObject.transform, "Panel/bottom/gameName"),"UILabel")
+	
+	self.scrollView_result = child(self.gameObject.transform,"Panel/center/resultList")
+end
+
+function small_result_ui:UpdateView(result)
+	self.scrollView_result.gameObject:SetActive(false)
+	self.NameByuid = {}
+	self.fangzhuId = room_data.GetSssRoomDataInfo()["owner_uid"]	 --房主ID
+	Trace("+++++++++++++++++++++++++++当前局++++++++++++++++++++"..tostring(result["curr_ju"] +  1))
+	if result["ju_num"] == result["curr_ju"] then
+		self.isEnterTotalResult = true
+		self.lbl_time.text = "继 续"
+	else
+		--roomdata_center.nCurrJu = result["curr_ju"] +  1
+		self.isEnterTotalResult = false
+	end
+	self:InitPokerResultSys()
+	self.lbl_roomInfo.text = self.pokerResultSys:GetRoomNum()
+	self.lbl_gameName.text = self.pokerResultSys:GetGameName().." "..self.pokerResultSys:GetTime()
+	self:LoadAllResult(result["rewards"])
+end
+
+function small_result_ui:InitPokerResultSys()
+	self.pokerResultSys = require("logic/poker_largeResult_ui/pokerResult_sys"):create(self.userTranList,self.fangzhuId)
+	self.pokerResultSys:SetRoomData()
+end
+
+function small_result_ui:LoadAllResult(result)
+	local tbSort = {}
+	local selfId = data_center.GetLoginUserInfo().uid
+	local ScoreUid = {}	  ----最高分——uid表
+	for i=1,6 do
+		if result[i] ~= nil then
+			local number = player_seat_mgr.GetLogicSeatByStr(result[i]._chair)
+			local userData = room_usersdata_center.GetTempUserByLogicSeat(tonumber(number))
+			ScoreUid[tostring(result[i]._uid)] = result[i].all_score	
+			self.NameByuid[tostring(result[i]._uid)] = userData.name
+			Trace("uid:"..tostring(result[i]._uid).."-------name:"..tostring(userData.name))
+				-------非主机的其他用户----------
+			if selfId ~= result[i]._uid then	
+				table.insert(tbSort,result[i])
+				--------主机用户放在首位---------
+			else	
+				Trace("判断:"..selfId .. "等于" .. result[i]._uid)
+				self.userTranList[1].gameObject:SetActive(true)
+				local NameLbl = subComponentGet(self.userTranList[1],"namelbl","UILabel") ----用户名设置
+				NameLbl.text = self.NameByuid[tostring(result[i]._uid)]	
+				local tex_photo= subComponentGet(self.userTranList[1],"picFrame","UITexture")
+				hall_data.getuserimage(tex_photo,2,room_usersdata_center.GetTempUserByLogicSeat(number).headurl)
+				--local IDLbl = subComponentGet(self.userTranList[i],"IDlbl","UILabel")				
+				--IDLbl.text="ID:"..result[i]._uid	
+		
+				if result[i].nSpecialType ~= nil then
+					self.pokerResultSys:SetSpecialShow(1,result[i].nSpecialType)
+				else
+					logError("result["..i.."].nSpecialType = nil")
+					return
+				end			
+				self.pokerResultSys:ShowCardData(1,result[i].stCards,result[i].nSpecialType)	
+				self.pokerResultSys:SetScoreShow(1,result[i].all_score)
+				self.pokerResultSys:SetRoomer(1,selfId)
+			end
+		end
+	end	
+	self.ScorestUid = self.pokerResultSys:FindHighestByuid(ScoreUid)
+	local bigWin = child(self.userTranList[1],"bigWin")
+	bigWin.gameObject:SetActive(false)
+	self.pokerResultSys:ShowHighest(selfId,self.ScorestUid,function()	
+		bigWin.gameObject:SetActive(true)
+	end)
+	self:ShowOthersResult(tbSort)
+	self:RefreshUI()
+end
+
+--------------------显示客机用户的结算数据-----------------
+function small_result_ui:ShowOthersResult(tbSort)
+	table.sort(tbSort,function (a,b) return a.all_score > b.all_score end)			
+	for i=1,5 do
+		if tbSort[i] ~= nil then 
+			self.userTranList[i+1].gameObject:SetActive(true)
+			local NameLbl = subComponentGet(self.userTranList[i+1],"namelbl","UILabel") ----用户名设置
+			NameLbl.text = self.NameByuid[tostring(tbSort[i]._uid)]
+			local number = player_seat_mgr.GetLogicSeatByStr(tbSort[i]._chair)   
+			local tex_photo = subComponentGet(self.userTranList[i+1],"picFrame","UITexture")
+			hall_data.getuserimage(tex_photo,2,room_usersdata_center.GetTempUserByLogicSeat(number).headurl)
+			--local IDLbl = subComponentGet(self.userTranList[i],"IDlbl","UILabel")		
+			--IDLbl.text="ID:"..tostring(tbSort[i]._uid)
+			
+			if tbSort[i].nSpecialType ~= nil then
+				self.pokerResultSys:SetSpecialShow(i+1,tbSort[i].nSpecialType)
+			else
+				logError("tbSort["..i.."].nSpecialType=nil")
+				return
+			end		
+
+			self.pokerResultSys:ShowCardData(i+1,tbSort[i].stCards,tbSort[i].nSpecialType)
+			self.pokerResultSys:SetScoreShow(i+1,tbSort[i].all_score)
+			self.pokerResultSys:SetRoomer(i+1,tbSort[i]._uid)
+			local bigWin = child(self.userTranList[i+1],"bigWin")
+			bigWin.gameObject:SetActive(false)
+			self.pokerResultSys:ShowHighest(tbSort[i]._uid,self.ScorestUid,function()		
+				bigWin.gameObject:SetActive(true)
+			end)
+		else
+			Trace("------user"..i..".tbSort=nill------")
+			self.userTranList[i+1].gameObject:SetActive(false)
+		end
+	end
+end
+
+
+function small_result_ui:RefreshUI()
+	self.scrollView_result.gameObject:SetActive(true)
+	componentGet(self.scrollView_result,"UIScrollView"):ResetPosition()
+	componentGet(self.scrollView_result,"UIPanel"):Refresh()
+end
+
+function small_result_ui:ReadyClick(obj)
+	ui_sound_mgr.PlaySoundClip(data_center.GetResRootPath().."/sound/audio/anjianxuanze")  ---按键声音
+	Trace("结算完成： "..tostring(self.isEnterTotalResult))
+	if self.isEnterTotalResult then
+		Notifier.dispatchCmd(cmdName.MSG_HANDLE_DONE, cmdName.GAME_SOCKET_SMALL_SETTLEMENT) --确认完成第八局小结算完成消息
+	else
+		self:Reset()
+	end
+	self:CloseWin()
+end
+
+function small_result_ui:Reset()
+	Trace("Reset game")
+	shisangshui_play_sys.ReadyGameReq()--发送准备好的状态进入下一局
+end
+
+function small_result_ui:CloseWin()
+	UI_Manager:Instance():CloseUiForms("shisanshui_smallResult_ui")
+end
+
+function small_result_ui:SetTimerStart(timeo)
+	if(timer_Elapse == nil) then
+		self:StartTimer(timeo)
+	end
+end
+
+function small_result_ui:StartTimer(time)
+	Trace("定时器")
+	if self.isEnterTotalResult ~= true then
+		if(time <= 0) then
+			self.lbl_time.text = "继 续"
+			return
+		end
+		self.lbl_time.text = ("继 续(" ..math.floor(time).."s)")
+	end
+	leftTime = time
+	timer_Elapse = Timer.New(function()
+			self:OnTimer_Proc()
+		end,1,time)
+	timer_Elapse:Start()
+end
+
+function small_result_ui:OnTimer_Proc()
+	if(leftTime >= 1)then
+		leftTime = leftTime -1
+		self.lbl_time.text = ("继 续(" .. math.floor(leftTime).."s)")
+	else
+		self.lbl_time.text = ("继 续")
+	end
+	
+	if leftTime <= 0 and self.isEnterTotalResult ~= true then
+		self.lbl_time.text = ("继 续")
+		self:StopTimer()
+		return
+	end
+end
+
+function small_result_ui:StopTimer()
+	if timer_Elapse ~= nil then
+		timer_Elapse:Stop()
+		timer_Elapse = nil
+	end
+end
+
+function small_result_ui:OnClose()
+	room_data.SetReadyTime(0)
+	self:StopTimer()
+end
+
+function small_result_ui:PlayOpenAmination()
+	--打开动画重写
+end
+
+return small_result_ui

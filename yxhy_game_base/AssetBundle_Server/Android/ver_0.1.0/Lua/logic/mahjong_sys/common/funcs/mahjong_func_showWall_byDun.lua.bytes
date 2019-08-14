@@ -1,0 +1,23 @@
+local base = require "logic/mahjong_sys/common/mahjong_action_base"
+local mahjong_func_showWall_byDun = class('mahjong_func_showWall_byDun',base)
+
+
+function mahjong_func_showWall_byDun:Execute(cb)
+	  self.compTable:ShowWallInternal( 
+            function (i)
+                ui_sound_mgr.PlaySoundClip(mahjong_path_mgr.GetMjCommonSoundPath("audio_showwall"))
+                if i~=self.config.MahjongDunCount then
+                    coroutine.wait(0.07)--0.133牌墙显示音效长度
+                end
+            end,
+            function(mj) 
+                mj:Show(false)
+                mj:SetState(MahjongItemState.inWall)
+            end)
+        if cb~=nil then
+            cb()
+        end
+end
+
+
+return mahjong_func_showWall_byDun

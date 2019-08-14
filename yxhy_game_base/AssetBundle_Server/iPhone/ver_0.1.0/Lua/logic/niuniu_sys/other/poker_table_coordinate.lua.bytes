@@ -1,0 +1,47 @@
+poker_table_coordinate = {}
+local this = poker_table_coordinate
+
+
+
+this.table_two = {
+	[1] = 1,
+	[2] = 4,
+}
+
+this.table_three = {
+	[1] = 1,
+	[2] = 4,
+	[3] = 5,
+}
+
+this.table_four = {
+	[1] = 1,
+	[2] = 3,
+	[3] = 4,
+	[4] = 5,
+}
+
+this.table_five = {
+	[1] = 1,
+	[2] = 3,
+	[3] = 4,
+	[4] = 5,
+	[5] = 6,
+}
+
+this.table_six = {
+	[1] = 1,
+	[2] = 2,
+	[3] = 3,
+	[4] = 4,
+	[5] = 5,
+	[6] = 6,
+}
+
+this.poker_table = {
+	[2] = this.table_two,
+	[3] = this.table_three,
+	[4] = this.table_four,
+	[5] = this.table_five,
+	[6] = this.table_six,
+}

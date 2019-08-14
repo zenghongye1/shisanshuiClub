@@ -1,0 +1,177 @@
+[ 
+	[
+      {
+        "exData": [1,2,0,3],
+        "selectIndex":[3],
+        "maxPerLine": 6, 
+        "data":["AA支付","大赢家支付","房主支付","会长支付"],
+        "title":"房费:",
+        "id": "costtype",
+        "type": 1, 
+        "group":44
+      }
+    ],
+  [
+    {
+      "exData": [
+        4,
+        8,
+        16
+      ],
+      "selectIndex": [
+        1
+      ],
+      "data": [
+        "4局(房卡x1)",
+        "8局(房卡x2)",
+        "16局(房卡x4)"
+      ],
+      "type": 1,
+      "group": 22,
+      "itemHeight": -150, 
+      "title": "局数:",
+      "id": "rounds"
+    }
+  ],
+  [
+    {
+      "exData": [
+        2,
+        3,
+        4
+      ],
+      "selectIndex": [
+        3
+      ],
+      "data": [ 
+         "2人",
+         "3人",
+         "4人"
+      ],
+      "type": 1,
+      "itemHeight": -80,
+      "group": 21,
+      "title": "人数:",
+      "id": "pnum"
+    }
+  ],  
+  [
+    {
+      "multiterm": true,
+      "title": "玩法:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -90,
+      "id": [ 
+        "wind",
+        "hutype",
+        "hun"
+      ],
+      "data": [  
+        "风牌",
+        "可点炮胡",
+        "带混牌"
+      ],
+      "selectIndex": [ 
+	  1,2
+      ], 
+      "connecttype": [ 1 ],
+      "connect": [
+        { 
+          "hun": {
+            "disable": [
+            ],
+            "enable": [
+              { "bFourHunAdd": 1 }
+            ]
+          },
+          "wind": {
+            "disable": [
+            ],
+            "enable": [
+              { "bSuppShiSanBuKao": 1 }
+            ]
+          }
+        }
+      ],
+      "Isconnect": [
+        { 
+          "hun": {
+            "select": [
+            ]
+          },
+          "wind": {
+            "select": [
+            ]
+          }
+        }
+      ],
+      "itemWidth": 200,
+      "maxPerLine":3
+    }
+  ],
+  [
+    {
+      "multiterm": true,
+      "title": "下跑:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -90,
+      "id": [ 
+        "lowrun",
+        "gangrun"
+      ],
+      "data": [  
+        "下跑",
+        "杠跑"
+      ], 
+      "connecttype": [ 1 ],
+      "connect": [
+        {
+          "lowrun": {
+            "disable": [
+            ],
+            "enable": [
+              { "gangrun": 1 }
+            ]
+          }
+        }
+      ],
+      "Isconnect": [
+        {
+          "lowrun": {
+            "select": [
+            ]
+          }
+        }
+      ],
+      "selectIndex": [], 
+      "itemWidth": 200,
+      "maxPerLine":3
+    }
+  ],
+  [
+    {
+      "multiterm": true,
+      "title": "结算:",
+      "type": 0,
+      "group": 0,
+      "itemHeight": -80,
+      "id": [ 
+        "dealeradd",
+        "bFourHunAdd",
+        "gfadd", 
+        "bSuppShiSanBuKao"
+      ],
+      "data": [ 
+        "庄家加2底", 
+        "四混翻倍",
+        "杠上花翻倍", 
+        "十三不靠"
+      ],
+      "selectIndex": [],
+      "itemWidth": 200,
+      "maxPerLine": 3
+    }
+  ]
+]

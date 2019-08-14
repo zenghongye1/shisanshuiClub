@@ -1,0 +1,95 @@
+
+--[[--
+ * @Description: 唐山麻将玩法配置
+ * @FileName:    play_mode_config_fuzhou.lua
+ ]]
+local config_common = require "logic/mahjong_sys/configs/mahjong_config_common":create()
+
+local mahjong_config_24 = {}
+setmetatable(mahjong_config_24, {__index = config_common})
+
+mahjong_config_24.MahjongDunCount = 17				-- 一排多少墩
+
+mahjong_config_24.wallDunCountMap = 
+{
+	17,17,17,17
+}
+
+mahjong_config_24.ignoreEffect = {
+	[13] = true,
+	[14] = true,
+	[15] = true,
+	[16] = true,
+	[17] = true,
+	[18] = true,
+	[19] = true,
+	[20] = true,
+	[26] = true,
+	[37] = true,
+	[52] = true,
+	[53] = true,
+	[54] = true,
+	[55] = true,
+}
+mahjong_config_24.big_settlement_show = {}
+mahjong_config_24.big_settlement_show.win_type = {
+	["selfdraw"] = "selfdraw", 		-- 自摸
+	["gunwin"] = "gunwin", 		-- 点炮
+	["gangflower"] = "gangflower", 	-- 杠上花
+	["huangpai"] = "huangpai" -- 荒庄
+}
+
+mahjong_config_24.big_settlement_show.byFanType = {
+	"gunwin", -- 点炮
+	"selfdraw", -- 自摸
+	"nPinghu",--平胡
+	"nWukui",--五魁
+	"nBian",--边
+	"nKa",--卡
+	"nDiao" ,--吊
+	"nQiDui", -- 七对胡
+	"nDragon",--一条龙
+	"nQinQiDui",
+	"nPengPengHu",--碰碰胡
+	"nQinYise",--清一色
+	"nBenHunLong",--本混龙
+	"nHQidui",--豪华七对
+	"nCHQidui",--超级豪华七对
+	"conceled_gang_count", -- 暗杠
+	"revealed_gang_count", -- 明杠
+	"nGangFlower", -- 杠上花
+	"nGangGun",--杠上炮
+	"nQiangGang",--抢杠胡
+	"nMenqing",--门清
+	"nSuHu",--素胡
+	"nGodWin",
+	"nGroundwin",
+	"nHaidihu",
+	"nHaiDiPao",
+	"nTianTing",
+	"nDiTing",
+	"nXiaoSa",
+}
+mahjong_config_24.big_settlement_mustShow = 
+{
+	"selfdraw",
+	"gunwin",
+}
+
+mahjong_config_24.beishu_wintype_dic = 
+{
+	["nSelfDraw"] = 2,
+	["nGun"] = 1,
+}
+
+mahjong_config_24.mahjongActionCfg.game_askPlay = {8, "mahjong_mjAction_gameAskPlay"}
+mahjong_config_24.mahjongActionCfg.game_playStart = {15, "mahjong_mjAction_gamePlayStart"}
+mahjong_config_24.mahjongActionCfg.game_laiZi = {24, "mahjong_mjAction_gameLaiZi"}
+mahjong_config_24.uiActionCfg.game_tingType = {24,"mahjong_action_gameTingType"}
+mahjong_config_24.uiActionCfg.game_tingInfo = {24, "mahjong_action_gameTingInfo"}
+mahjong_config_24.uiActionCfg.game_followBanker = {15, "mahjong_action_follow_banker_15"}
+mahjong_config_24.uiActionCfg.game_askBlock = {15,"mahjong_action_gameAskBlock"}
+mahjong_config_24.uiActionCfg.small_reward = {24, "mahjong_action_small_reward_24"}
+mahjong_config_24.uiActionCfg.total_reward = {8, "mahjong_action_totalreward_8"} 
+
+return mahjong_config_24

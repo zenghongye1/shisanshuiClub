@@ -1,0 +1,232 @@
+local base = require("logic.framework.ui.uibase.ui_window")
+local ClubGameSelectUI = class("ClubGameSelectUI", base)
+local ToggleView = require("logic/club_sys/View/GameToggleView")
+local ClubGameSelectEnum = ClubGameSelectEnum
+local GameUtil = GameUtil
+local UIManager = UI_Manager:Instance()
+
+local GameSelectMaxCount = 2
+
+function ClubGameSelectUI:OnInit()
+	self.model = model_manager:GetModel("ClubModel")
+	self.scroll = self:GetComponent("panel/container/scroll", typeof(UIScrollView))
+	self.btnGo = self:GetGameObject("panel/button")
+	self.gridTr = self:GetTransform("panel/container/scroll/grid")
+	self.grid = self:GetComponent("panel/container/scroll/grid", typeof(UIGrid))
+	self.itemGo = self:GetGameObject("panel/container/scroll/grid/item")
+
+	self.toggleList = {}
+	self.selectedToggleList = {}
+
+	self.type = ClubGameSelectEnum.games
+
+	local toggle = ToggleView:create(self.itemGo)
+	self:InitToggle(toggle)
+	self.toggleList[1] = toggle
+
+	addClickCallbackSelf(self.btnGo, self.OnBtnClick, self)
+end
+
+-- 自管理 不做成通用的
+function ClubGameSelectUI:OnOpen(viewType, selectIds, callback, target)
+	self:RemoveInvalidItems()
+	self.type = viewType
+	if type(selectIds) ~= "table" then
+		selectIds = {selectIds}
+	end
+	self.selectIds = selectIds
+	self.callback = callback
+	self.target = target
+	local time = FrameTimer.New(
+		function() 
+			self:UpdateView()
+		end,1,1)
+	time:Start()
+end
+
+
+function ClubGameSelectUI:UpdateView()
+	self:ShowToggles()
+	self:UpdateSelectedToggle()
+	self.grid.repositionNow = true
+	self.scroll:ResetPosition()
+end
+
+function ClubGameSelectUI:ShowToggles()
+	local datas = nil
+	local toggleType = 0
+	if self.type == ClubGameSelectEnum.games then
+		datas = self:GetGameData()
+	elseif self.type == ClubGameSelectEnum.locations then
+		datas = self:GetLocationData()
+		toggleType = 1
+	else
+		datas = self:GetAllGameData()
+	end
+	for i = 1, #datas do
+		local toggle = self:GetToggle(i)
+		toggle:SetToggleType(toggleType)
+		toggle.data = datas[i][1]
+		toggle:SetText(datas[i][2])
+		toggle:SetActive(true)
+		toggle:SetSelect(false)
+	end
+	self:HideMoreToggles(#datas)
+end
+
+function ClubGameSelectUI:UpdateSelectedToggle()
+	local toggle
+	for i = 1, #self.toggleList do
+		toggle = self.toggleList[i]
+		if toggle.isActive and self:CheckIsSelect(toggle.data) then
+			toggle:SetSelect(true)
+			table.insert(self.selectedToggleList, toggle)
+		end
+	end
+end
+
+function ClubGameSelectUI:CheckIsSelect(id)
+	if self.selectIds == nil then
+		return false
+	end
+	for i = 1, #self.selectIds do
+		if self.selectIds[i] == id then
+			return true
+		end
+	end
+	return false
+end
+
+function ClubGameSelectUI:GetGameData()
+	local output = {}
+	for i = 1, #self.model.agentInfo.gids do
+		local t = {}
+		t[1] = self.model.agentInfo.gids[i]
+		t[2] = GameUtil.GetGameName(t[1])
+		output[i] = t
+	end
+	return output
+end
+
+function ClubGameSelectUI:GetLocationData()
+	return ClubUtil.locationList
+end
+
+
+function ClubGameSelectUI:GetAllGameData()
+	local output = {}
+	local gids =  model_manager:GetModel("openroom_model"):GetGidList()
+	for i = 1, #gids do
+		local t = {}
+		t[1] = gids[i]
+		t[2] = GameUtil.GetGameName(t[1])
+		output[i] = t
+	end
+	return output
+end
+
+
+function ClubGameSelectUI:OnClose()
+	self:DisSelectAll()
+	self.callback = nil
+	self.target = nil
+end
+
+function ClubGameSelectUI:OnBtnClick()
+	if self.callback ~= nil then
+		local ids= self:GetSelectedIdAndText()
+		if self.type == ClubGameSelectEnum.games then
+			self.callback(self.target, ids)
+		else
+			self.callback(self.target, ids[1])
+		end
+	end
+
+	UIManager:CloseUiForms("ClubGameSelectUI")
+end
+
+function ClubGameSelectUI:GetSelectedIdAndText()
+	local tab = {}
+	local strList = {}
+	for i = 1, #self.selectedToggleList do
+		tab[i] = self.selectedToggleList[i].data
+	end
+	return tab
+end
+
+function ClubGameSelectUI:OnToggleClick(toggle)
+	if toggle.isSelect then
+		if toggle.toggleType == 1 then
+			return
+		end
+		toggle:SetSelect(false)
+		for i = 1, #self.selectedToggleList do
+			if self.selectedToggleList[i] == toggle then
+				table.remove(self.selectedToggleList, i)
+				break
+			end
+		end	
+	else
+		if self.type == ClubGameSelectEnum.games then
+			if #self.selectedToggleList >= GameSelectMaxCount then
+				UIManager:FastTip("已达到游戏上限")
+			else
+				self:AddSelectedToggle(toggle)
+			end
+		else
+			self:DisSelectAll()
+			self:AddSelectedToggle(toggle)
+		end
+	end
+end
+
+function ClubGameSelectUI:DisSelectAll()
+	for i = 1, #self.selectedToggleList do
+		self.selectedToggleList[i]:SetSelect(false)
+	end
+	self.selectedToggleList = {}
+end
+
+function ClubGameSelectUI:AddSelectedToggle(toggle)
+	toggle:SetSelect(true)
+	table.insert(self.selectedToggleList,toggle)
+end
+
+function ClubGameSelectUI:GetToggle(index)
+	local toggle = self.toggleList[index]
+	if toggle ~= nil and toggle:IsValid() then
+		return toggle
+	end
+
+	local go = newobject(self.itemGo)
+	toggle = ToggleView:create(go)
+	toggle.transform:SetParent(self.gridTr, false)
+	self:InitToggle(toggle)
+	table.insert(self.toggleList,toggle)
+	return toggle
+end
+
+function ClubGameSelectUI:HideMoreToggles(count)
+	if count >= #self.toggleList then
+		return
+	end
+	for i = count + 1, #self.toggleList do
+		self.toggleList[i].data = nil
+		self.toggleList[i]:SetActive(false)
+	end
+end
+
+function ClubGameSelectUI:RemoveInvalidItems()
+	for i = #self.toggleList, 1, -1 do
+		if self.toggleList[i] == nil or not self.toggleList[i]:IsValid() then
+			table.remove(self.toggleList, i)
+		end
+	end
+end
+
+function ClubGameSelectUI:InitToggle(toggle)
+	toggle:Init()
+	toggle:SetCallback(self.OnToggleClick, self)
+end
+
+return ClubGameSelectUI
