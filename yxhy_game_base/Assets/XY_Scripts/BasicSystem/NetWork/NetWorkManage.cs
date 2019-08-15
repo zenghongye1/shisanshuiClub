@@ -171,6 +171,11 @@ public class NetWorkManage : Singleton<NetWorkManage>
 
     public void HttpPostRequestWithData(string url, string param, Action<int, string, string> callBack)
     {
+        Debug.Log(BaseUrl);
+        Debug.Log(SubPath);
+        Debug.Log(BaseUrl + SubPath + param);
+        Debug.Log("发送请求：" + url);
+        Debug.Log("发送数据：" + param);
         HTTPRequest request = new HTTPRequest(new Uri(url), HTTPMethods.Post, (HTTPRequest originalRequest, HTTPResponse response) =>
         {
             string responseStr = "";
@@ -178,7 +183,7 @@ public class NetWorkManage : Singleton<NetWorkManage>
             string msg = "";
             if (originalRequest.State == HTTPRequestStates.Finished)
             {
-                //Debug.Log("网络请求成功" + response.StatusCode + response.IsSuccess);
+                Debug.Log("网络请求成功:" + response.StatusCode + response.IsSuccess);
                 result = response.StatusCode;
                 msg = response.Message;
                 if (response.IsSuccess)
@@ -186,6 +191,7 @@ public class NetWorkManage : Singleton<NetWorkManage>
                     result = 0;
                     responseStr = Encoding.UTF8.GetString(response.Data);
                 }
+                Debug.Log(responseStr);
             }
             else
             {
@@ -199,18 +205,20 @@ public class NetWorkManage : Singleton<NetWorkManage>
         });
 
         request.RawData = Encoding.UTF8.GetBytes(param);
+        Debug.Log(request.Uri);
         HTTPManager.SendRequest(request);
     }
 
     public void HttpPOSTRequestV(string url, Action<int, string, string> callBack)
     {
+        Debug.Log("发送请求：" + url);
         HTTPManager.SendRequest(url, HTTPMethods.Post, (HTTPRequest originalRequest, HTTPResponse response) => {
             string responseStr = "";
             int result = 0;
             string msg = "";
             if (originalRequest.State == HTTPRequestStates.Finished)
             {
-                //Debug.Log("网络请求成功" + response.StatusCode + response.IsSuccess);
+                Debug.Log("网络请求成功" + response.StatusCode + response.IsSuccess);
                 result = response.StatusCode;
                 msg = response.Message;
                 if (response.IsSuccess)
@@ -237,7 +245,7 @@ public class NetWorkManage : Singleton<NetWorkManage>
 		string url = BaseUrl + SubPath + param;
 //		PlayerPrefs.DeleteAll();
 //		Debug.Log("HttpPOSTRequest url " + url);
-        Debug.Log("==========================Post:" + url);
+        Debug.Log("请求:" + url);
         HTTPManager.SendRequest(url, HTTPMethods.Post, (HTTPRequest originalRequest, HTTPResponse response) =>
         {
             string responseStr = "";
@@ -245,7 +253,7 @@ public class NetWorkManage : Singleton<NetWorkManage>
             string msg = "";
             if (originalRequest.State == HTTPRequestStates.Finished)
             {
-                //Debug.Log("网络请求成功" + response.StatusCode + response.IsSuccess);
+                Debug.Log("网络请求成功" + response.StatusCode + response.IsSuccess);
                 result = response.StatusCode;
                 msg = response.Message;
                 if (response.IsSuccess)
@@ -271,6 +279,7 @@ public class NetWorkManage : Singleton<NetWorkManage>
    public void HttpRequestByMothdType(HTTPMethods methodType, string param, bool isKeepAlive,bool disableCache, Action<int, string, string> callBack)
     {
         string url = BaseUrl + SubPath + param;
+        Debug.Log("发送请求：" + url);
         HTTPManager.SendRequest(url, methodType,isKeepAlive, disableCache, (HTTPRequest originalRequest, HTTPResponse response) =>
         {
             if (response == null)

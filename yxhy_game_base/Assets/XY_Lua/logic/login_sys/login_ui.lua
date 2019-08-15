@@ -79,7 +79,9 @@ function BaseClass:ShowUI()
 	UI_Manager:Instance():ShowUiForms("waiting_ui")
 
 
-	self.loginModel:GetClientConfig(slot(self.GetClientConfigCallback, self))
+	--self.loginModel:GetClientConfig(slot(self.GetClientConfigCallback, self))
+
+	self:GetClientConfigCallback()
 	 -- login_sys.GetAllUrl(function()
   --  --      if not login_sys.AutoLogin() then
 		--  --    if tostring(Application.platform) ~= "IPhonePlayer" then

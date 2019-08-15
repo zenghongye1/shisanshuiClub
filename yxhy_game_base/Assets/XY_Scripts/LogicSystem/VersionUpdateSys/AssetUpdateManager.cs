@@ -317,6 +317,8 @@ namespace NS_VersionUpdate
 
 		void CheckVer()
 		{
+            VersionResult(VersionUpdateType.NoNeedUpdate);
+            return;
 #if UNITY_ANDROID || UNITY_IPHONE || (AB_WINDOW && UNITY_STANDALONE)
             //php请求 检测是否需要强更或者是热更
             JsonData data = new JsonData();
